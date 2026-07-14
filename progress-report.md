@@ -420,15 +420,21 @@ Risks and follow-ups:
 
 ## In Progress
 
-- No DynamoDB implementation blockers remain. The `dynamodb-complete` tag should be created after the final
-  verification run succeeds in the developer's Docker environment.
+- PostgreSQL infrastructure foundation is complete; JPA entities and PostgreSQL repositories remain intentionally
+  deferred to the next checkpoint.
 
 ## Blocked
 
 ## Next Tasks
 
-- Create the required `dynamodb-complete` release tag, then begin the PostgreSQL/Flyway phase while retaining the
-  DynamoDB adapter as the migration source and comparison baseline.
+- Implement separate PostgreSQL JPA entities and repositories while retaining the DynamoDB adapter as the migration
+  source and comparison baseline.
+
+### PostgreSQL infrastructure foundation
+
+- Added Flyway `V1__initial_schema.sql` for the six relational tables, foreign keys, status and counter checks,
+  alternate-key uniqueness, relationship indexes, and the active-enrollment partial unique index.
+- Documented PostgreSQL schema responsibilities and deferred transaction locking in `docs/postgresql-schema.md`.
 
 ### Six-table DynamoDB persistence foundation
 

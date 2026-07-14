@@ -1,0 +1,14 @@
+spring:
+  autoconfigure:
+    exclude: []
+  datasource:
+    url: ${POSTGRES_JDBC_URL:jdbc:postgresql://localhost:5432/student_portal}
+    username: ${POSTGRES_USER:student_portal}
+    password: ${POSTGRES_PASSWORD:student_portal_dev}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    enabled: true

@@ -24,6 +24,10 @@ dependencies {
 	implementation(libs.spring.boot.starter.validation)
 	implementation(libs.spring.boot.starter.webmvc)
 	implementation(libs.springdoc.openapi.webmvc.ui)
+	implementation(libs.spring.boot.starter.data.jpa)
+	implementation(libs.postgresql)
+	implementation(libs.flyway.core)
+	implementation(libs.flyway.database.postgresql)
 
 	compileOnly(libs.lombok)
 	annotationProcessor(libs.lombok)
@@ -31,6 +35,7 @@ dependencies {
 	testImplementation(libs.spring.boot.starter.webmvc.test)
 	testImplementation(libs.testcontainers.junit.jupiter)
 	testImplementation(libs.testcontainers.localstack)
+	testImplementation(libs.testcontainers.postgresql)
 	testCompileOnly(libs.lombok)
 	testAnnotationProcessor(libs.lombok)
 	testRuntimeOnly(libs.junit.platform.launcher)

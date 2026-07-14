@@ -1,4 +1,5 @@
-.PHONY: localstack-up localstack-down terraform-init terraform-validate terraform-plan terraform-apply terraform-destroy \
+.PHONY: localstack-up localstack-down postgres-up postgres-down postgres-health \
+	terraform-init terraform-validate terraform-plan terraform-apply terraform-destroy \
 	app-run-dynamodb app-run-dynamodb-seeded api-smoke check
 
 localstack-up:
@@ -6,6 +7,16 @@ localstack-up:
 
 localstack-down:
 	docker compose down
+
+postgres-up:
+	docker compose up -d postgres
+
+postgres-down:
+	docker compose stop postgres
+
+postgres-health:
+	docker compose ps postgres
+	@docker compose exec -T postgres pg_isready -U "$${POSTGRES_USER:-student_portal}" -d "$${POSTGRES_DB:-student_portal}"
 
 terraform-init:
 	terraform -chdir=infrastructure/local init
