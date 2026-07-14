@@ -19,7 +19,8 @@ public final class StudentDynamoMapper {
 		record.setUpdatedAt(value.updatedAt().toString());
 		record.setCreatedAtId(DynamoSortKeys.timestampId(value.createdAt(), value.id()));
 		record.setUpdatedAtId(DynamoSortKeys.timestampId(value.updatedAt(), value.id()));
-		record.setLastNameId(DynamoSortKeys.textId(value.lastName(), value.id())); record.setVersion(value.version());
+		record.setLastNameId(DynamoSortKeys.textId(value.lastName(), value.id())); record.setEnrollmentCount(0L);
+		record.setVersion(value.version());
 		return record;
 	}
 

@@ -1,6 +1,8 @@
 package com.abc.studentportal.department.application;
 
 import com.abc.studentportal.common.exception.ResourceNotFoundException;
+import com.abc.studentportal.common.exception.ConflictException;
+import com.abc.studentportal.common.application.DependencyChecker;
 import com.abc.studentportal.department.domain.Department;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
@@ -14,9 +16,10 @@ import java.util.UUID;
 public class DepartmentService {
 	private final DepartmentRepository repository;
 	private final Clock clock;
+	private final DependencyChecker dependencies;
 
-	public DepartmentService(DepartmentRepository repository, Clock clock) {
-		this.repository = repository; this.clock = clock;
+	public DepartmentService(DepartmentRepository repository, Clock clock, DependencyChecker dependencies) {
+		this.repository = repository; this.clock = clock; this.dependencies = dependencies;
 	}
 
 	public Department create(CreateCommand command) {
@@ -33,6 +36,13 @@ public class DepartmentService {
 
 	public Department get(UUID id) {
 		return repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Department", id));
+	}
+
+	public void delete(UUID id, long version) {
+		Department current = get(id);
+		if (dependencies.departmentHasDependents(id)) throw new ConflictException("Department still has dependent records");
+		repository.delete(new Department(current.id(), current.code(), current.name(), current.description(),
+				current.createdAt(), current.updatedAt(), version));
 	}
 
 	public record CreateCommand(String code, String name, String description) { }

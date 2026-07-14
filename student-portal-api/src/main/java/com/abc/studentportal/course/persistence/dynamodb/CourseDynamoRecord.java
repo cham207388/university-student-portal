@@ -21,6 +21,7 @@ public class CourseDynamoRecord implements com.abc.studentportal.common.persiste
 	private Integer credits;
 	private Integer capacity;
 	private Long occupiedSeats;
+	private Long enrollmentCount;
 	private String status;
 	private String departmentId;
 	private String instructorId;

@@ -2,9 +2,11 @@ package com.abc.studentportal.common.configuration;
 
 import com.abc.studentportal.course.application.CourseRepository;
 import com.abc.studentportal.course.application.CourseService;
+import com.abc.studentportal.common.application.DependencyChecker;
 import com.abc.studentportal.department.application.DepartmentRepository;
 import com.abc.studentportal.department.application.DepartmentService;
 import com.abc.studentportal.enrollment.application.EnrollmentRepository;
+import com.abc.studentportal.enrollment.application.EnrollmentService;
 import com.abc.studentportal.instructor.application.InstructorRepository;
 import com.abc.studentportal.instructor.application.InstructorService;
 import com.abc.studentportal.student.application.StudentProfileRepository;
@@ -45,6 +47,10 @@ class DynamoDbPropertiesTest {
 	private InstructorService instructorService;
 	@Autowired
 	private CourseService courseService;
+	@Autowired
+	private EnrollmentService enrollmentService;
+	@Autowired
+	private DependencyChecker dependencyChecker;
 
 	@Test
 	void bindsLocalDynamoDbDefaults() {
@@ -66,5 +72,7 @@ class DynamoDbPropertiesTest {
 		assertThat(studentService).isNotNull();
 		assertThat(instructorService).isNotNull();
 		assertThat(courseService).isNotNull();
+		assertThat(enrollmentService).isNotNull();
+		assertThat(dependencyChecker).isNotNull();
 	}
 }

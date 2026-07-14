@@ -14,7 +14,7 @@ public final class CourseDynamoMapper {
 		CourseDynamoRecord record = new CourseDynamoRecord();
 		record.setId(value.id().toString()); record.setCourseCode(value.courseCode()); record.setTitle(value.title());
 		record.setDescription(value.description()); record.setCredits(value.credits()); record.setCapacity(value.capacity());
-		record.setOccupiedSeats(0L); record.setStatus(value.status().name());
+		record.setOccupiedSeats(0L); record.setEnrollmentCount(0L); record.setStatus(value.status().name());
 		record.setDepartmentId(value.departmentId().toString()); record.setInstructorId(value.instructorId().toString());
 		record.setEntityType("COURSE"); record.setCreatedAt(value.createdAt().toString());
 		record.setUpdatedAt(value.updatedAt().toString());

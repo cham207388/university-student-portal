@@ -27,6 +27,7 @@ public class StudentDynamoRecord implements com.abc.studentportal.common.persist
 	private String createdAtId;
 	private String updatedAtId;
 	private String lastNameId;
+	private Long enrollmentCount;
 	private Long version;
 
 	@DynamoDbPartitionKey public String getId() { return id; }

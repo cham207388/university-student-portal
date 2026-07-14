@@ -43,6 +43,7 @@ public class DynamoCourseRepository extends AbstractDynamoRepository<Course, Cou
 		}
 		CourseDynamoRecord record = CourseDynamoMapper.toRecord(value);
 		record.setOccupiedSeats(current.getOccupiedSeats());
+		record.setEnrollmentCount(current.getEnrollmentCount());
 		Course old = CourseDynamoMapper.toDomain(current);
 		return CourseDynamoMapper.toDomain(writer.update(table(), "id", record, value.version(),
 				java.util.List.of(claim(old)), java.util.List.of(claim(value))));
@@ -52,7 +53,8 @@ public class DynamoCourseRepository extends AbstractDynamoRepository<Course, Cou
 	@Override public void delete(Course value) {
 		Course current = findById(value.id()).orElseThrow(() -> new ConflictException(
 				"Resource does not exist or was modified by another request"));
-		writer.delete(table().tableName(), "id", value.id().toString(), value.version(), java.util.List.of(claim(current)));
+		writer.delete(table().tableName(), "id", value.id().toString(), value.version(), java.util.List.of(claim(current)),
+				java.util.List.of(), true);
 	}
 	@Override public CursorPage<Course> findAll(CursorRequest request) { return query("courses-catalog", "COURSE", request); }
 	@Override public CursorPage<Course> findByDepartment(UUID id, CursorRequest request) {

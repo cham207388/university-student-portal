@@ -18,5 +18,4 @@ public interface EnrollmentRepository {
 
 	boolean existsByCourseId(UUID courseId);
 
-	void delete(Enrollment enrollment);
 }

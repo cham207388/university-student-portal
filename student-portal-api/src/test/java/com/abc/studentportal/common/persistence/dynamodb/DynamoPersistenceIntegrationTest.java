@@ -2,6 +2,7 @@ package com.abc.studentportal.common.persistence.dynamodb;
 
 import com.abc.studentportal.common.exception.ConflictException;
 import com.abc.studentportal.common.exception.InvalidRequestException;
+import com.abc.studentportal.common.application.DependencyChecker;
 import com.abc.studentportal.common.pagination.CursorRequest;
 import com.abc.studentportal.course.domain.Course;
 import com.abc.studentportal.course.domain.CourseStatus;
@@ -83,6 +84,7 @@ class DynamoPersistenceIntegrationTest {
 	private static DynamoInstructorRepository instructors;
 	private static DynamoCourseRepository courses;
 	private static DynamoEnrollmentRepository enrollments;
+	private static DependencyChecker dependencies;
 
 	@BeforeAll
 	static void setUp() {
@@ -109,7 +111,9 @@ class DynamoPersistenceIntegrationTest {
 		profiles = new DynamoStudentProfileRepository(tables);
 		instructors = new DynamoInstructorRepository(tables, cursorCodec, writer);
 		courses = new DynamoCourseRepository(tables, cursorCodec, writer);
-		enrollments = new DynamoEnrollmentRepository(tables, cursorCodec);
+		enrollments = new DynamoEnrollmentRepository(tables, cursorCodec,
+				new com.abc.studentportal.enrollment.persistence.dynamodb.DynamoEnrollmentTransactionWriter(client, tables));
+		dependencies = new DynamoDependencyChecker(students, instructors, courses, enrollments);
 	}
 
 	@AfterAll
@@ -174,12 +178,14 @@ class DynamoPersistenceIntegrationTest {
 				CourseStatus.OPEN, departmentId, instructorId, now, now, 0));
 		Enrollment enrollment = enrollments.create(new Enrollment(UUID.randomUUID(), studentId, courseId,
 				EnrollmentStatus.ENROLLED, now, null, null, now, now, 0));
+		student = students.findById(studentId).orElseThrow();
+		course = courses.findById(courseId).orElseThrow();
 
 		assertEquals(1, department.version());
 		assertEquals(student, students.findById(studentId).orElseThrow());
 		assertEquals(profile, profiles.findByStudentId(studentId).orElseThrow());
 		assertEquals(instructor, instructors.findById(instructorId).orElseThrow());
-		assertEquals(course, courses.findById(courseId).orElseThrow());
+		assertEquals(course.id(), courses.findById(courseId).orElseThrow().id());
 		assertEquals(enrollment, enrollments.findById(enrollment.id()).orElseThrow());
 
 		assertTrue(students.existsByStudentNumber("S-200"));
@@ -189,11 +195,6 @@ class DynamoPersistenceIntegrationTest {
 		assertTrue(courses.existsByCourseCode("MATH-101"));
 		assertTrue(enrollments.existsByStudentId(studentId));
 		assertTrue(enrollments.existsByCourseId(courseId));
-		assertFalse(enrollments.existsActiveByStudentIdAndCourseId(studentId, courseId));
-		EnrollmentDynamoRecord activeLock = new EnrollmentDynamoRecord();
-		activeLock.setId("ACTIVE#" + studentId + "#" + courseId);
-		activeLock.setRecordType("ACTIVE_ENROLLMENT_LOCK");
-		tables.enrollments().putItem(activeLock);
 		assertTrue(enrollments.existsActiveByStudentIdAndCourseId(studentId, courseId));
 
 		assertTrue(DynamoQueries.exists(tables.departments().index("departments-catalog"), "DEPARTMENT"));
@@ -211,7 +212,7 @@ class DynamoPersistenceIntegrationTest {
 		CursorRequest all = new CursorRequest(100, null);
 		assertTrue(departments.findAll(all).content().contains(department));
 		assertEquals(List.of(student), students.findByDepartment(departmentId, "john", all).content());
-		assertEquals(List.of(student), students.findByStatus(StudentStatus.ACTIVE, all).content());
+		assertTrue(students.findByStatus(StudentStatus.ACTIVE, all).content().contains(student));
 		var emptyPage = students.findByStatus(StudentStatus.SUSPENDED, all);
 		assertTrue(emptyPage.content().isEmpty());
 		assertFalse(emptyPage.hasNext());
@@ -220,11 +221,11 @@ class DynamoPersistenceIntegrationTest {
 		assertTrue(instructors.findAll(all).content().contains(instructor));
 		assertEquals(List.of(course), courses.findByDepartment(departmentId, all).content());
 		assertEquals(List.of(course), courses.findByInstructor(instructorId, all).content());
-		assertEquals(List.of(course), courses.findByStatus(CourseStatus.OPEN, all).content());
+		assertTrue(courses.findByStatus(CourseStatus.OPEN, all).content().contains(course));
 		assertTrue(courses.findAll(all).content().contains(course));
 		assertEquals(List.of(enrollment), enrollments.findByStudent(studentId, now, now, all).content());
 		assertEquals(List.of(enrollment), enrollments.findByCourse(courseId, null, now, all).content());
-		assertEquals(List.of(enrollment), enrollments.findByStatus(EnrollmentStatus.ENROLLED, all).content());
+		assertTrue(enrollments.findByStatus(EnrollmentStatus.ENROLLED, all).content().contains(enrollment));
 		assertTrue(enrollments.findAll(all).content().contains(enrollment));
 		assertThrows(InvalidRequestException.class,
 				() -> enrollments.findByStudent(studentId, now.plusSeconds(1), now, all));
@@ -232,7 +233,7 @@ class DynamoPersistenceIntegrationTest {
 				.queryConditional(software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional.keyEqualTo(
 						software.amazon.awssdk.enhanced.dynamodb.Key.builder().partitionValue("ENROLLMENT").build())))
 				.stream().flatMap(page -> page.items().stream()).count();
-		assertEquals(1, logicalEnrollmentCount);
+		assertEquals(enrollments.findAll(all).content().size(), logicalEnrollmentCount);
 
 		CourseDynamoRecord capacityState = tables.courses().getItem(request -> request.key(key(courseId))
 				.consistentRead(true));
@@ -322,6 +323,102 @@ class DynamoPersistenceIntegrationTest {
 		}
 		assertEquals(1, successes.get());
 		assertEquals(1, conflicts.get());
+	}
+
+	@Test
+	void enforcesEnrollmentCapacityLocksTransitionsAndConcurrentRollback() throws Exception {
+		Instant now = Instant.parse("2026-06-01T00:00:00Z");
+		String suffix = UUID.randomUUID().toString().substring(0, 8).toUpperCase(java.util.Locale.ROOT);
+		Department department = departments.create(new Department(UUID.randomUUID(), "D" + suffix, "Enrollment", null,
+				now, now, 0));
+		Instructor instructor = instructors.create(new Instructor(UUID.randomUUID(), "E" + suffix, "Test", "Teacher",
+				"teacher-" + suffix.toLowerCase(java.util.Locale.ROOT) + "@example.com", department.id(), now, now, 0));
+		Course course = courses.create(new Course(UUID.randomUUID(), "C" + suffix, "Capacity", null, 3, 1,
+				CourseStatus.OPEN, department.id(), instructor.id(), now, now, 0));
+		Student firstStudent = createStudent("A" + suffix, department.id(), now);
+		Student secondStudent = createStudent("B" + suffix, department.id(), now);
+
+		Enrollment first = enrollments.create(new Enrollment(UUID.randomUUID(), firstStudent.id(), course.id(),
+				EnrollmentStatus.ENROLLED, now, null, null, now, now, 0));
+		assertEquals(1L, occupiedSeats(course.id()));
+		assertTrue(enrollments.existsActiveByStudentIdAndCourseId(firstStudent.id(), course.id()));
+		assertTrue(dependencies.departmentHasDependents(department.id()));
+		assertTrue(dependencies.studentHasEnrollmentHistory(firstStudent.id()));
+		assertTrue(dependencies.instructorHasCourses(instructor.id()));
+		assertTrue(dependencies.courseHasEnrollmentHistory(course.id()));
+		assertThrows(ConflictException.class, () -> students.delete(students.findById(firstStudent.id()).orElseThrow()));
+		assertThrows(ConflictException.class, () -> courses.delete(courses.findById(course.id()).orElseThrow()));
+		assertThrows(ConflictException.class, () -> enrollments.create(new Enrollment(UUID.randomUUID(), firstStudent.id(),
+				course.id(), EnrollmentStatus.ENROLLED, now, null, null, now, now, 0)));
+		assertThrows(ConflictException.class, () -> enrollments.create(new Enrollment(UUID.randomUUID(), secondStudent.id(),
+				course.id(), EnrollmentStatus.ENROLLED, now, null, null, now, now, 0)));
+		assertEquals(1L, occupiedSeats(course.id()));
+
+		Enrollment droppedCandidate = first.transitionTo(EnrollmentStatus.DROPPED, null, now.plusSeconds(1));
+		Enrollment dropped = enrollments.update(droppedCandidate);
+		assertEquals(0L, occupiedSeats(course.id()));
+		assertFalse(enrollments.existsActiveByStudentIdAndCourseId(firstStudent.id(), course.id()));
+		assertThrows(ConflictException.class, () -> enrollments.update(droppedCandidate));
+
+		Enrollment second = enrollments.create(new Enrollment(UUID.randomUUID(), secondStudent.id(), course.id(),
+				EnrollmentStatus.ENROLLED, now.plusSeconds(2), null, null, now.plusSeconds(2), now.plusSeconds(2), 0));
+		Enrollment completed = enrollments.update(second.transitionTo(EnrollmentStatus.COMPLETED, "A", now.plusSeconds(3)));
+		assertEquals(1L, occupiedSeats(course.id()));
+		assertFalse(enrollments.existsActiveByStudentIdAndCourseId(secondStudent.id(), course.id()));
+		assertEquals(EnrollmentStatus.COMPLETED, completed.status());
+		assertEquals(EnrollmentStatus.DROPPED, dropped.status());
+
+		Course raceCourse = courses.create(new Course(UUID.randomUUID(), "R" + suffix, "Race capacity", null, 3, 1,
+				CourseStatus.OPEN, department.id(), instructor.id(), now, now, 0));
+		CountDownLatch start = new CountDownLatch(1);
+		AtomicInteger successes = new AtomicInteger();
+		AtomicInteger conflicts = new AtomicInteger();
+		try (var executor = Executors.newFixedThreadPool(2)) {
+			var candidates = List.of(firstStudent, secondStudent);
+			var tasks = candidates.stream().map(student -> executor.submit(() -> {
+				start.await();
+				try {
+					enrollments.create(new Enrollment(UUID.randomUUID(), student.id(), raceCourse.id(),
+							EnrollmentStatus.ENROLLED, now, null, null, now, now, 0));
+					successes.incrementAndGet();
+				} catch (ConflictException exception) { conflicts.incrementAndGet(); }
+				return null;
+			})).toList();
+			start.countDown();
+			for (var task : tasks) task.get();
+		}
+		assertEquals(1, successes.get());
+		assertEquals(1, conflicts.get());
+		assertEquals(1L, occupiedSeats(raceCourse.id()));
+	}
+
+	@Test
+	void deletesStudentAndProfileAtomicallyAndReleasesStudentClaims() {
+		Instant now = Instant.parse("2026-07-01T00:00:00Z");
+		String suffix = UUID.randomUUID().toString().substring(0, 8);
+		Department department = departments.create(new Department(UUID.randomUUID(), "X" + suffix, "Delete", null,
+				now, now, 0));
+		Student student = createStudent("DELETE-" + suffix, department.id(), now);
+		StudentProfile profile = profiles.create(new StudentProfile(UUID.randomUUID(), student.id(),
+				LocalDate.parse("2000-01-01"), "555-0123", "3 Main", null, "Austin", "TX", "78701", "US",
+				now, now, 0));
+
+		students.delete(student);
+		assertTrue(students.findById(student.id()).isEmpty());
+		assertTrue(profiles.findByStudentId(student.id()).isEmpty());
+		Student reused = students.create(new Student(UUID.randomUUID(), student.studentNumber(), "Reuse", "Claims",
+				student.email(), StudentStatus.ACTIVE, department.id(), now, now, 0));
+		assertEquals(student.studentNumber(), reused.studentNumber());
+		assertEquals(1, profile.version());
+	}
+
+	private static Student createStudent(String number, UUID departmentId, Instant now) {
+		return students.create(new Student(UUID.randomUUID(), number, "Capacity", "Student",
+				number.toLowerCase(java.util.Locale.ROOT) + "@example.com", StudentStatus.ACTIVE, departmentId, now, now, 0));
+	}
+
+	private static long occupiedSeats(UUID courseId) {
+		return tables.courses().getItem(request -> request.key(key(courseId)).consistentRead(true)).getOccupiedSeats();
 	}
 
 	private static void createTable(TableSpec spec) {

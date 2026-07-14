@@ -1,6 +1,8 @@
 package com.abc.studentportal.student.application;
 
 import com.abc.studentportal.common.exception.ResourceNotFoundException;
+import com.abc.studentportal.common.exception.ConflictException;
+import com.abc.studentportal.common.application.DependencyChecker;
 import com.abc.studentportal.department.application.DepartmentRepository;
 import com.abc.studentportal.student.domain.Student;
 import com.abc.studentportal.student.domain.StudentProfile;
@@ -20,10 +22,12 @@ public class StudentService {
 	private final StudentProfileRepository profiles;
 	private final DepartmentRepository departments;
 	private final Clock clock;
+	private final DependencyChecker dependencies;
 
 	public StudentService(StudentRepository students, StudentProfileRepository profiles,
-			DepartmentRepository departments, Clock clock) {
+			DepartmentRepository departments, Clock clock, DependencyChecker dependencies) {
 		this.students = students; this.profiles = profiles; this.departments = departments; this.clock = clock;
+		this.dependencies = dependencies;
 	}
 
 	public Student create(CreateCommand command) {
@@ -56,6 +60,21 @@ public class StudentService {
 
 	public Student get(UUID id) {
 		return students.findById(id).orElseThrow(() -> new ResourceNotFoundException("Student", id));
+	}
+
+	public void delete(UUID id, long version) {
+		Student current = get(id);
+		if (dependencies.studentHasEnrollmentHistory(id)) throw new ConflictException("Student has enrollment history");
+		students.delete(new Student(current.id(), current.studentNumber(), current.firstName(), current.lastName(),
+				current.email(), current.status(), current.departmentId(), current.createdAt(), current.updatedAt(), version));
+	}
+
+	public void deleteProfile(UUID studentId, long version) {
+		StudentProfile profile = profiles.findByStudentId(studentId)
+				.orElseThrow(() -> new ResourceNotFoundException("Student profile", studentId));
+		profiles.delete(new StudentProfile(profile.id(), profile.studentId(), profile.dateOfBirth(), profile.phoneNumber(),
+				profile.addressLine1(), profile.addressLine2(), profile.city(), profile.state(), profile.postalCode(),
+				profile.country(), profile.createdAt(), profile.updatedAt(), version));
 	}
 
 	private StudentProfile profile(UUID id, UUID studentId, ProfileCommand command, Instant createdAt, Instant updatedAt) {

@@ -23,13 +23,20 @@ import java.util.UUID;
 public class DynamoEnrollmentRepository extends AbstractDynamoRepository<Enrollment, EnrollmentDynamoRecord>
 		implements EnrollmentRepository, DynamoEnrollmentQueries {
 	private final DynamoCursorCodec cursorCodec;
-	public DynamoEnrollmentRepository(DynamoDbTables tables, DynamoCursorCodec cursorCodec) {
+	private final DynamoEnrollmentTransactionWriter transactionWriter;
+	public DynamoEnrollmentRepository(DynamoDbTables tables, DynamoCursorCodec cursorCodec,
+			DynamoEnrollmentTransactionWriter transactionWriter) {
 		super(tables.enrollments(), "id", EnrollmentDynamoMapper::toRecord, EnrollmentDynamoMapper::toDomain,
 				value -> value.id().toString());
 		this.cursorCodec = cursorCodec;
+		this.transactionWriter = transactionWriter;
 	}
-	@Override public Enrollment create(Enrollment value) { return createItem(value); }
-	@Override public Enrollment update(Enrollment value) { return updateItem(value); }
+	@Override public Enrollment create(Enrollment value) { return transactionWriter.create(value); }
+	@Override public Enrollment update(Enrollment value) {
+		Enrollment current = findById(value.id()).orElseThrow(() -> new com.abc.studentportal.common.exception.ConflictException(
+				"Enrollment does not exist or was modified by another request"));
+		return transactionWriter.update(current, value);
+	}
 	@Override public Optional<Enrollment> findById(UUID id) { return findItem(id.toString()); }
 	@Override public boolean existsActiveByStudentIdAndCourseId(UUID studentId, UUID courseId) {
 		return table().getItem(request -> request.key(key("ACTIVE#" + studentId + "#" + courseId))
@@ -37,7 +44,6 @@ public class DynamoEnrollmentRepository extends AbstractDynamoRepository<Enrollm
 	}
 	@Override public boolean existsByStudentId(UUID id) { return DynamoQueries.exists(table().index("enrollments-by-student"), id.toString()); }
 	@Override public boolean existsByCourseId(UUID id) { return DynamoQueries.exists(table().index("enrollments-by-course"), id.toString()); }
-	@Override public void delete(Enrollment value) { deleteItem(value, value.version()); }
 	@Override public CursorPage<Enrollment> findAll(CursorRequest request) {
 		return query("enrollments-catalog", "ENROLLMENT", null, null, request);
 	}

@@ -1,6 +1,8 @@
 package com.abc.studentportal.instructor.application;
 
 import com.abc.studentportal.common.exception.ResourceNotFoundException;
+import com.abc.studentportal.common.exception.ConflictException;
+import com.abc.studentportal.common.application.DependencyChecker;
 import com.abc.studentportal.department.application.DepartmentRepository;
 import com.abc.studentportal.instructor.domain.Instructor;
 import org.springframework.context.annotation.Profile;
@@ -16,9 +18,11 @@ public class InstructorService {
 	private final InstructorRepository instructors;
 	private final DepartmentRepository departments;
 	private final Clock clock;
+	private final DependencyChecker dependencies;
 
-	public InstructorService(InstructorRepository instructors, DepartmentRepository departments, Clock clock) {
-		this.instructors = instructors; this.departments = departments; this.clock = clock;
+	public InstructorService(InstructorRepository instructors, DepartmentRepository departments, Clock clock,
+			DependencyChecker dependencies) {
+		this.instructors = instructors; this.departments = departments; this.clock = clock; this.dependencies = dependencies;
 	}
 
 	public Instructor create(CreateCommand command) {
@@ -36,6 +40,13 @@ public class InstructorService {
 
 	public Instructor get(UUID id) {
 		return instructors.findById(id).orElseThrow(() -> new ResourceNotFoundException("Instructor", id));
+	}
+
+	public void delete(UUID id, long version) {
+		Instructor current = get(id);
+		if (dependencies.instructorHasCourses(id)) throw new ConflictException("Instructor still has assigned courses");
+		instructors.delete(new Instructor(current.id(), current.employeeNumber(), current.firstName(), current.lastName(),
+				current.email(), current.departmentId(), current.createdAt(), current.updatedAt(), version));
 	}
 
 	private void requireDepartment(UUID id) {

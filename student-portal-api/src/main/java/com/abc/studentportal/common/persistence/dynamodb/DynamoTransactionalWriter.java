@@ -52,12 +52,29 @@ public final class DynamoTransactionalWriter {
 
 	public void delete(String table, String partitionKey, String entityId, long expectedVersion,
 			List<DynamoUniqueClaim> claims) {
+		delete(table, partitionKey, entityId, expectedVersion, claims, List.of(), false);
+	}
+
+	public void delete(String table, String partitionKey, String entityId, long expectedVersion,
+			List<DynamoUniqueClaim> claims, List<TransactWriteItem> additionalActions) {
+		delete(table, partitionKey, entityId, expectedVersion, claims, additionalActions, false);
+	}
+
+	public void delete(String table, String partitionKey, String entityId, long expectedVersion,
+			List<DynamoUniqueClaim> claims, List<TransactWriteItem> additionalActions, boolean requireNoEnrollments) {
 		List<TransactWriteItem> actions = new ArrayList<>();
+		String condition = requireNoEnrollments
+				? "#version = :version AND (attribute_not_exists(enrollmentCount) OR enrollmentCount = :zero)"
+				: "#version = :version";
+		Map<String, AttributeValue> values = requireNoEnrollments
+				? Map.of(":version", number(expectedVersion), ":zero", number(0))
+				: Map.of(":version", number(expectedVersion));
 		actions.add(TransactWriteItem.builder().delete(Delete.builder().tableName(table)
-				.key(Map.of(partitionKey, string(entityId))).conditionExpression("#version = :version")
+				.key(Map.of(partitionKey, string(entityId))).conditionExpression(condition)
 				.expressionAttributeNames(Map.of("#version", "version"))
-				.expressionAttributeValues(Map.of(":version", number(expectedVersion))).build()).build());
+				.expressionAttributeValues(values).build()).build());
 		claims.forEach(claim -> actions.add(deleteClaim(table, partitionKey, claim)));
+		actions.addAll(additionalActions);
 		execute(actions, "Resource was modified by another request");
 	}
 

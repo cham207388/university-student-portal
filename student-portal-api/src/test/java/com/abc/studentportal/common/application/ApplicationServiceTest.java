@@ -1,6 +1,7 @@
 package com.abc.studentportal.common.application;
 
 import com.abc.studentportal.common.exception.InvalidRequestException;
+import com.abc.studentportal.common.application.DependencyChecker;
 import com.abc.studentportal.common.exception.ResourceNotFoundException;
 import com.abc.studentportal.course.application.CourseRepository;
 import com.abc.studentportal.course.application.CourseService;
@@ -39,7 +40,8 @@ class ApplicationServiceTest {
 	void studentCreationRequiresAnExistingDepartment() {
 		StudentRepository students = mock(StudentRepository.class);
 		DepartmentRepository departments = mock(DepartmentRepository.class);
-		StudentService service = new StudentService(students, mock(StudentProfileRepository.class), departments, CLOCK);
+		StudentService service = new StudentService(students, mock(StudentProfileRepository.class), departments, CLOCK,
+				mock(DependencyChecker.class));
 		UUID departmentId = UUID.randomUUID();
 		var command = new StudentService.CreateCommand("S-1", "Ada", "Lovelace", "ADA@EXAMPLE.COM",
 				StudentStatus.ACTIVE, departmentId);
@@ -60,7 +62,7 @@ class ApplicationServiceTest {
 		CourseRepository courses = mock(CourseRepository.class);
 		DepartmentRepository departments = mock(DepartmentRepository.class);
 		InstructorRepository instructors = mock(InstructorRepository.class);
-		CourseService service = new CourseService(courses, departments, instructors, CLOCK);
+		CourseService service = new CourseService(courses, departments, instructors, CLOCK, mock(DependencyChecker.class));
 		UUID departmentId = UUID.randomUUID();
 		UUID instructorId = UUID.randomUUID();
 		when(departments.findById(departmentId)).thenReturn(Optional.of(department(departmentId)));
@@ -79,6 +81,24 @@ class ApplicationServiceTest {
 		Course created = service.create(command);
 		assertThat(created.departmentId()).isEqualTo(departmentId);
 		assertThat(created.instructorId()).isEqualTo(instructorId);
+	}
+
+	@Test
+	void dependencyAwareDeletionRejectsStudentEnrollmentHistory() {
+		StudentRepository students = mock(StudentRepository.class);
+		DependencyChecker dependencies = mock(DependencyChecker.class);
+		UUID studentId = UUID.randomUUID();
+		UUID departmentId = UUID.randomUUID();
+		Student student = new Student(studentId, "S-DELETE", "Ada", "Lovelace", "ada@example.com",
+				StudentStatus.ACTIVE, departmentId, NOW, NOW, 3);
+		when(students.findById(studentId)).thenReturn(Optional.of(student));
+		when(dependencies.studentHasEnrollmentHistory(studentId)).thenReturn(true);
+		StudentService service = new StudentService(students, mock(StudentProfileRepository.class),
+				mock(DepartmentRepository.class), CLOCK, dependencies);
+
+		assertThatThrownBy(() -> service.delete(studentId, 3)).isInstanceOf(com.abc.studentportal.common.exception.ConflictException.class)
+				.hasMessage("Student has enrollment history");
+		verify(students, never()).delete(any());
 	}
 
 	private static Department department(UUID id) {

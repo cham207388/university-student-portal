@@ -58,6 +58,8 @@ An active enrollment means `ENROLLED` or `WAITLISTED`. A student cannot have mor
 
 These conservative policies work in both persistence models. DynamoDB enforces them with bounded relationship queries and transactional conditions where possible; PostgreSQL additionally uses foreign keys and constraints.
 
-## Open implementation detail
+## Capacity implementation
 
-Capacity accounting will be database-specific. DynamoDB may maintain an authoritative counter item updated transactionally. PostgreSQL will use a documented locking or atomic-update strategy. The public rule remains identical: concurrent requests must never overbook a course.
+DynamoDB maintains authoritative Course occupied-seat and enrollment-history counters in cross-table transactions with
+Enrollment state and active-pair locks. PostgreSQL will use a documented locking or atomic-update strategy. The public
+rule remains identical: concurrent requests must never overbook a course.

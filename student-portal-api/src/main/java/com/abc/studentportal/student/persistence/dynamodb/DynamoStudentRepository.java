@@ -16,6 +16,7 @@ import com.abc.studentportal.student.domain.Student;
 import com.abc.studentportal.student.domain.StudentStatus;
 
 import java.util.Optional;
+import java.util.List;
 import java.util.UUID;
 
 @DynamoPersistenceAdapter
@@ -23,20 +24,26 @@ public class DynamoStudentRepository extends AbstractDynamoRepository<Student, S
 		implements StudentRepository, DynamoStudentQueries {
 	private final DynamoCursorCodec cursorCodec;
 	private final DynamoTransactionalWriter writer;
+	private final software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable<StudentProfileDynamoRecord> profiles;
 	public DynamoStudentRepository(DynamoDbTables tables, DynamoCursorCodec cursorCodec,
 			DynamoTransactionalWriter writer) {
 		super(tables.students(), "id", StudentDynamoMapper::toRecord, StudentDynamoMapper::toDomain,
 				value -> value.id().toString());
 		this.cursorCodec = cursorCodec;
 		this.writer = writer;
+		this.profiles = tables.studentProfiles();
 	}
 	@Override public Student create(Student value) {
 		return StudentDynamoMapper.toDomain(writer.create(table(), "id", StudentDynamoMapper.toRecord(value), claims(value)));
 	}
 	@Override public Student update(Student value) {
-		Student current = findById(value.id()).orElseThrow(() -> new com.abc.studentportal.common.exception.ConflictException(
-				"Resource does not exist or was modified by another request"));
-		return StudentDynamoMapper.toDomain(writer.update(table(), "id", StudentDynamoMapper.toRecord(value), value.version(),
+		StudentDynamoRecord currentRecord = table().getItem(request -> request.key(key(value.id().toString())).consistentRead(true));
+		if (currentRecord == null) throw new com.abc.studentportal.common.exception.ConflictException(
+				"Resource does not exist or was modified by another request");
+		Student current = StudentDynamoMapper.toDomain(currentRecord);
+		StudentDynamoRecord next = StudentDynamoMapper.toRecord(value);
+		next.setEnrollmentCount(currentRecord.getEnrollmentCount());
+		return StudentDynamoMapper.toDomain(writer.update(table(), "id", next, value.version(),
 				claims(current), claims(value)));
 	}
 	@Override public Optional<Student> findById(UUID id) { return findItem(id.toString()); }
@@ -45,7 +52,16 @@ public class DynamoStudentRepository extends AbstractDynamoRepository<Student, S
 	@Override public void delete(Student value) {
 		Student current = findById(value.id()).orElseThrow(() -> new com.abc.studentportal.common.exception.ConflictException(
 				"Resource does not exist or was modified by another request"));
-		writer.delete(table().tableName(), "id", value.id().toString(), value.version(), claims(current));
+		StudentProfileDynamoRecord profile = profiles.getItem(request -> request.key(key(value.id().toString())).consistentRead(true));
+		List<software.amazon.awssdk.services.dynamodb.model.TransactWriteItem> extra = profile == null ? List.of()
+				: List.of(software.amazon.awssdk.services.dynamodb.model.TransactWriteItem.builder().delete(
+				software.amazon.awssdk.services.dynamodb.model.Delete.builder().tableName(profiles.tableName())
+						.key(java.util.Map.of("studentId", software.amazon.awssdk.services.dynamodb.model.AttributeValue.builder()
+								.s(value.id().toString()).build())).conditionExpression("#version = :version")
+						.expressionAttributeNames(java.util.Map.of("#version", "version"))
+						.expressionAttributeValues(java.util.Map.of(":version", software.amazon.awssdk.services.dynamodb.model.AttributeValue
+								.builder().n(profile.getVersion().toString()).build())).build()).build());
+		writer.delete(table().tableName(), "id", value.id().toString(), value.version(), claims(current), extra, true);
 	}
 	@Override public CursorPage<Student> findAll(CursorRequest request) {
 		return query("students-catalog", DynamoCursorQueries.equalTo("STUDENT"), request, "STUDENT");

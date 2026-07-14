@@ -2,6 +2,8 @@ package com.abc.studentportal.course.application;
 
 import com.abc.studentportal.common.exception.InvalidRequestException;
 import com.abc.studentportal.common.exception.ResourceNotFoundException;
+import com.abc.studentportal.common.exception.ConflictException;
+import com.abc.studentportal.common.application.DependencyChecker;
 import com.abc.studentportal.course.domain.Course;
 import com.abc.studentportal.course.domain.CourseStatus;
 import com.abc.studentportal.department.application.DepartmentRepository;
@@ -21,10 +23,12 @@ public class CourseService {
 	private final DepartmentRepository departments;
 	private final InstructorRepository instructors;
 	private final Clock clock;
+	private final DependencyChecker dependencies;
 
 	public CourseService(CourseRepository courses, DepartmentRepository departments,
-			InstructorRepository instructors, Clock clock) {
+			InstructorRepository instructors, Clock clock, DependencyChecker dependencies) {
 		this.courses = courses; this.departments = departments; this.instructors = instructors; this.clock = clock;
+		this.dependencies = dependencies;
 	}
 
 	public Course create(CreateCommand command) {
@@ -51,6 +55,14 @@ public class CourseService {
 
 	public Course get(UUID id) {
 		return courses.findById(id).orElseThrow(() -> new ResourceNotFoundException("Course", id));
+	}
+
+	public void delete(UUID id, long version) {
+		Course current = get(id);
+		if (dependencies.courseHasEnrollmentHistory(id)) throw new ConflictException("Course has enrollment history");
+		courses.delete(new Course(current.id(), current.courseCode(), current.title(), current.description(), current.credits(),
+				current.capacity(), current.status(), current.departmentId(), current.instructorId(), current.createdAt(),
+				current.updatedAt(), version));
 	}
 
 	private void validateRelationships(UUID departmentId, UUID instructorId) {

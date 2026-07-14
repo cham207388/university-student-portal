@@ -61,8 +61,9 @@ The enrollment table also contains short-lived/active integrity records with IDs
 deletes it when the enrollment becomes terminal. These records have `recordType=ACTIVE_ENROLLMENT_LOCK` and are absent
 from catalog/status indexes, so migration readers ignore them.
 
-The course record owns `occupiedSeats`. Enrollment transactions conditionally update that counter while creating or
-changing enrollment state. This intentionally demonstrates a DynamoDB transaction spanning multiple tables.
+The Course record owns `occupiedSeats` and an enrollment-history count; Student records also own an enrollment-history
+count. Enrollment transactions conditionally update these counters and entity versions while creating or changing
+enrollment state. This intentionally demonstrates a DynamoDB transaction spanning multiple tables.
 
 ## Integrity and consistency
 

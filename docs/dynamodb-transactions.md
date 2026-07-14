@@ -24,8 +24,31 @@ Any failed condition cancels the whole transaction and becomes a `409` conflict.
 Instructor write leaves neither a partial entity nor a partial claim, and concurrent writers for one value have one
 winner. GSI exact lookups remain useful reads but are never the uniqueness authority.
 
-## Planned enrollment transaction
+## Enrollment and capacity
 
-Enrollment/capacity consistency remains the next transactional checkpoint. It will atomically condition-check Student
-and Course state, update Course occupied seats, write Enrollment state, and maintain the deterministic active-pair lock.
-Dependency-aware deletes will similarly combine relationship checks with destructive writes to close cross-table races.
+Enrollment creation is one four-action transaction:
+
+1. Update the Student only when it exists and is `ACTIVE`, incrementing its enrollment-history count and version.
+2. Update the Course only when it exists and is `OPEN`; increment its history count/version and, for an enrolled seat,
+   increment `occupiedSeats` only when it remains below `capacity`.
+3. Condition-put the authoritative Enrollment.
+4. Condition-put `ACTIVE#<studentId>#<courseId>` with the Enrollment as owner.
+
+The deterministic lock makes concurrent duplicate active enrollment attempts single-winner. The conditional Course
+update makes concurrent last-seat attempts single-winner. A failure cancels Student/Course counters, Enrollment, and lock.
+
+Status transitions condition-put the Enrollment at its expected version. `WAITLISTED → ENROLLED` conditionally consumes
+capacity; a capacity-consuming transition to `DROPPED` decrements it; `ENROLLED → COMPLETED` retains the historical seat
+count according to the domain rule. Leaving an active state deletes the owned lock in the same transaction. Physical
+Enrollment deletion is not exposed—the application DELETE use case executes the transactional drop transition.
+
+## Dependency-aware deletion
+
+Student and Course records retain authoritative enrollment-history counters. Enrollment creation increments those
+counters and entity versions transactionally. Student/Course deletion rejects nonzero counters; a concurrent enrollment
+also changes the expected version, closing the gap even if a relationship GSI is briefly stale. Student deletion includes
+its optional Profile and uniqueness claims in one transaction.
+
+Department and Instructor deletion uses bounded relationship-index probes. Those GSIs are eventually consistent, so a
+concurrent new Student/Instructor/Course relationship remains a documented race until parent dependency counters are
+introduced. Destructive controllers must not overstate this as foreign-key behavior.

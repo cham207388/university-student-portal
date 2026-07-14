@@ -2,6 +2,30 @@
 
 ## Completed Tasks
 
+### Enrollment transactions and dependency-aware deletion
+
+- Added an Enrollment application service for enroll, status-transition, and drop use cases; physical Enrollment deletion
+  was removed from the repository contract so history cannot bypass capacity/lock repair.
+- Implemented a cross-table create transaction that validates active Student/open Course state, atomically enforces
+  capacity, writes Enrollment, and creates the deterministic active-pair lock.
+- Implemented transactional status changes with optimistic Enrollment versions, capacity deltas, final-grade/domain
+  transitions, and owned active-lock deletion.
+- Added authoritative Student/Course enrollment-history counters. Enrollment creation updates their counters and versions,
+  allowing deletion to reject history and conflict safely with concurrent enrollment even during GSI propagation delay.
+- Added dependency-check capabilities and delete methods for Departments, Students, Instructors, and Courses. Student
+  deletion atomically removes its optional Profile and uniqueness claims.
+- Added LocalStack coverage for duplicate active enrollment, full capacity, rollback, drop/re-enroll, completion,
+  stale transitions, concurrent last-seat attempts, history deletion guards, and atomic Student/Profile deletion.
+- Updated domain, relationship, table-design, transaction, implementation, README, and progress documentation; the
+  remaining eventual-GSI race for concurrent Department/Instructor dependency creation/deletion is explicit.
+
+Verification results:
+
+- `./gradlew clean check`: successful; 29 unit/MVC tests and 7 LocalStack integration tests passed.
+- `terraform fmt -check -recursive infrastructure`: successful.
+- `terraform -chdir=infrastructure/local validate`: successful.
+- `git diff --check`: no whitespace errors.
+
 ### Relationship-validating services and transactional uniqueness
 
 - Added profile-scoped application services for Department, Student/Profile, Instructor, and Course create/update/status
@@ -209,13 +233,12 @@ Risks and follow-ups:
 
 ## In Progress
 
-- Implement the cross-table enrollment/capacity transaction and dependency-aware delete services.
+- Add concrete REST controllers backed by the completed DynamoDB application services.
 
 ## Blocked
 
 ## Next Tasks
 
-- Implement the cross-table enrollment/capacity transaction and active-enrollment lock protocol.
 - Add concrete REST controllers backed by those services and seed-data support.
 
 ### Six-table DynamoDB persistence foundation
