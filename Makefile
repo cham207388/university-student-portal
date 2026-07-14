@@ -9,14 +9,16 @@ localstack-down:
 	docker compose down
 
 postgres-up:
-	docker compose up -d postgres
+	docker compose up -d localstack
+	terraform -chdir=infrastructure/local apply -auto-approve
 
 postgres-down:
-	docker compose stop postgres
+	terraform -chdir=infrastructure/local destroy -auto-approve
 
 postgres-health:
-	docker compose ps postgres
-	@docker compose exec -T postgres pg_isready -U "$${POSTGRES_USER:-student_portal}" -d "$${POSTGRES_DB:-student_portal}"
+	@aws --endpoint-url="$${AWS_ENDPOINT_URL:-http://127.0.0.1:4566}" rds describe-db-instances \
+		--db-instance-identifier "$${POSTGRES_INSTANCE_ID:-student-portal-postgres}" \
+		--query 'DBInstances[0].DBInstanceStatus' --output text
 
 terraform-init:
 	terraform -chdir=infrastructure/local init

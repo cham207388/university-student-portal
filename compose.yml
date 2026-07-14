@@ -8,7 +8,7 @@ services:
       - "127.0.0.1:4566:4566"
     environment:
       LOCALSTACK_AUTH_TOKEN: ${LOCALSTACK_AUTH_TOKEN}
-      SERVICES: dynamodb
+      SERVICES: dynamodb,rds,secretsmanager
       DEBUG: ${LOCALSTACK_DEBUG:-0}
       PERSISTENCE: "1"
     healthcheck:
@@ -23,29 +23,8 @@ services:
     networks:
       - student-portal-network
 
-  postgres:
-    image: postgres:17-alpine
-    container_name: student-portal-postgres
-    ports:
-      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
-    environment:
-      POSTGRES_DB: ${POSTGRES_DB:-student_portal}
-      POSTGRES_USER: ${POSTGRES_USER:-student_portal}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-student_portal_dev}
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
-      interval: 5s
-      timeout: 3s
-      retries: 20
-      start_period: 10s
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
-    networks:
-      - student-portal-network
-
 volumes:
   localstack-data:
-  postgres-data:
 
 networks:
   student-portal-network:
