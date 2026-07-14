@@ -20,6 +20,11 @@ class DynamoDbPropertiesTest {
 	void bindsLocalDynamoDbDefaults() {
 		assertThat(properties.region()).isEqualTo("us-east-1");
 		assertThat(properties.endpoint()).isEqualTo(URI.create("http://localhost:4566"));
-		assertThat(properties.tableName()).isEqualTo("student-portal");
+		assertThat(properties.tables().departments()).isEqualTo("student-portal-departments");
+		assertThat(properties.tables().students()).isEqualTo("student-portal-students");
+		assertThat(properties.tables().studentProfiles()).isEqualTo("student-portal-student-profiles");
+		assertThat(properties.tables().instructors()).isEqualTo("student-portal-instructors");
+		assertThat(properties.tables().courses()).isEqualTo("student-portal-courses");
+		assertThat(properties.tables().enrollments()).isEqualTo("student-portal-enrollments");
 	}
 }

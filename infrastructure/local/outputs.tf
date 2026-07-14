@@ -1,11 +1,11 @@
-output "dynamodb_table_name" {
-  description = "Table name consumed by local application configuration."
-  value       = module.student_portal_dynamodb.table_name
+output "dynamodb_table_names" {
+  description = "Table names consumed by local application configuration."
+  value       = { for name, table in module.student_portal_dynamodb : name => table.table_name }
 }
 
-output "dynamodb_table_arn" {
-  description = "LocalStack DynamoDB table ARN."
-  value       = module.student_portal_dynamodb.table_arn
+output "dynamodb_table_arns" {
+  description = "LocalStack DynamoDB table ARNs."
+  value       = { for name, table in module.student_portal_dynamodb : name => table.table_arn }
 }
 
 output "dynamodb_endpoint" {

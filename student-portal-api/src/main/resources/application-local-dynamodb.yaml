@@ -2,4 +2,10 @@ student-portal:
   dynamodb:
     region: ${AWS_REGION:us-east-1}
     endpoint: ${DYNAMODB_ENDPOINT:http://localhost:4566}
-    table-name: ${DYNAMODB_TABLE_NAME:student-portal}
+    tables:
+      departments: ${DYNAMODB_DEPARTMENTS_TABLE:student-portal-departments}
+      students: ${DYNAMODB_STUDENTS_TABLE:student-portal-students}
+      student-profiles: ${DYNAMODB_STUDENT_PROFILES_TABLE:student-portal-student-profiles}
+      instructors: ${DYNAMODB_INSTRUCTORS_TABLE:student-portal-instructors}
+      courses: ${DYNAMODB_COURSES_TABLE:student-portal-courses}
+      enrollments: ${DYNAMODB_ENROLLMENTS_TABLE:student-portal-enrollments}

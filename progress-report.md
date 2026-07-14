@@ -2,7 +2,39 @@
 
 ## Completed Tasks
 
+### DynamoDB architecture revision — six source tables
+
+- Reviewed the supplied reference project inventory of 13 DynamoDB tables, heterogeneous keys/GSIs, embedded arrays, JSON strings, cross-table logical joins, legacy attributes, and migration exclusions.
+- Superseded the initial single-table ADR while preserving it as project decision history.
+- Added ADR 0009 explaining why six source tables better serve the project’s migration-learning objective.
+- Rewrote the access-pattern and table-design documents around Departments, Students, StudentProfiles, Instructors, Courses, and Enrollments tables.
+- Replaced enrollment relationship copies with authoritative enrollment records indexed by student/course GSIs.
+- Defined typed active-enrollment lock records in the Enrollment table and authoritative occupied-seat state in Course records for future cross-table transactions.
+- Refactored the Terraform module to accept arbitrary partition keys and GSI key schemas, then instantiated it six times from a table definition map.
+- Updated application configuration and `.env.example` with six independently configurable table names.
+- Updated README and architecture documentation for multi-table operation and migration concerns.
+
+Verification results:
+
+- `terraform fmt -check -recursive infrastructure`: successful.
+- `terraform validate`: successful with no warnings.
+- Reviewed Terraform plan: 6 resources added, 1 obsolete empty table destroyed, no unrelated changes.
+- Terraform apply: successful, exactly 6 added and 1 destroyed.
+- Live LocalStack verification: all six tables `ACTIVE`, expected partition keys, and all documented GSIs present.
+- Post-apply Terraform plan: no changes.
+- `./gradlew clean check`: successful, 17 tests passed.
+
+Migration-learning additions:
+
+- Per-table source pagination and checkpoints.
+- Referentially ordered reads across six independent source tables.
+- Cross-table orphan and count reconciliation.
+- Planned fixtures for legacy aliases, invalid enums, duplicates, missing references, and JSON-encoded source values.
+
 ### DynamoDB infrastructure and access-pattern design
+
+> Historical checkpoint: this initial single-table decision was later superseded after reviewing the multi-table
+> reference migration. See the architecture revision recorded below and ADR 0009.
 
 - Inventoried entity, relationship, enrollment, integrity, deletion, filtering, ordering, consistency, and transaction access patterns before selecting keys.
 - Selected and documented a single-table design with authoritative items, unique claims, enrollment copies, an active-pair claim, and course capacity state.

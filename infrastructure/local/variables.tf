@@ -10,8 +10,8 @@ variable "aws_endpoint" {
   default     = "http://localhost:4566"
 }
 
-variable "table_name" {
-  description = "Student Portal DynamoDB table name."
+variable "table_prefix" {
+  description = "Prefix shared by Student Portal DynamoDB tables."
   type        = string
   default     = "student-portal"
 }

@@ -42,3 +42,5 @@ Phase 0 has no persistence profile. Profile-specific beans will be configured ex
 - Enrollment concurrency is implemented and tested separately for each database.
 - Flyway, not Hibernate schema generation, owns the relational schema.
 - Infrastructure is provisioned externally; application startup will not create DynamoDB tables.
+- DynamoDB uses six domain-oriented source tables so migration exercises cross-table references, ordering, checkpoints,
+  and reconciliation representative of the reference project. This supersedes the initial single-table ADR.

@@ -4,9 +4,9 @@ A learning-oriented backend that first implements a university course registrati
 
 ## Current checkpoint
 
-Phase 1 provides the persistence-neutral domain and REST contract foundation. It includes domain invariants,
-validated immutable DTOs, response mapping, RFC 9457 Problem Details, pagination contracts, and repository ports.
-It contains no DynamoDB or PostgreSQL persistence code.
+The DynamoDB infrastructure checkpoint now provisions six domain-oriented source tables. The persistence-neutral domain,
+validated REST contracts, table-specific access patterns, typed configuration, Terraform, and LocalStack infrastructure
+are complete. DynamoDB persistence adapters and PostgreSQL code have not yet been implemented.
 
 ## Repository layout
 
@@ -53,7 +53,7 @@ export LOCALSTACK_AUTH_TOKEN="<your-token>"
 docker compose up -d localstack
 ```
 
-Provision the access-pattern-driven table:
+Provision the six access-pattern-driven source tables:
 
 ```shell
 terraform -chdir=infrastructure/local init
@@ -69,10 +69,11 @@ cd student-portal-api
 ./gradlew bootRun --args='--spring.profiles.active=local-dynamodb'
 ```
 
-The profile reads `AWS_REGION`, `DYNAMODB_ENDPOINT`, and `DYNAMODB_TABLE_NAME`; safe local defaults are shown in
-`.env.example`. The application does not create infrastructure on startup.
+The profile reads `AWS_REGION`, `DYNAMODB_ENDPOINT`, and six table-name variables; safe local defaults are shown in
+`.env.example`. The application does not create infrastructure on startup. The tables mirror domain boundaries for
+migration learning, but reference attributes are not foreign keys and DynamoDB performs no joins.
 
-To remove the local table and services:
+To remove the local tables and services:
 
 ```shell
 terraform -chdir=infrastructure/local destroy

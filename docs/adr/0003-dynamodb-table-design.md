@@ -1,5 +1,7 @@
 # ADR 0003: DynamoDB table design
 
+**Status:** Superseded by [ADR 0009](0009-use-multiple-dynamodb-tables.md).
+
 ## Context
 
 The API needs direct entity lookup, alternate-identifier uniqueness, department and instructor relationships, status
