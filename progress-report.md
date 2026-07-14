@@ -2,6 +2,27 @@
 
 ## Completed Tasks
 
+### DynamoDB cursor pagination and query capabilities
+
+- Added a domain-level immutable `CursorPage` and database-specific capability ports without adding DynamoDB pagination
+  semantics to the common CRUD repositories.
+- Implemented bounded Enhanced Client queries for every documented catalog and relationship GSI across Departments,
+  Students, Instructors, Courses, and Enrollments.
+- Added normalized student last-name prefix queries and inclusive enrollment date-range queries using sort-key conditions.
+- Added a versioned URL-safe opaque cursor codec for typed `LastEvaluatedKey` attributes. Cursors are bound to physical
+  table, index, partition, prefix, and range identity; malformed or mismatched cursors return the invalid-request contract.
+- Fixed derived timestamp sort keys to use fixed-width signed-epoch seconds plus nanoseconds and UUID. Stored timestamps
+  remain ISO-8601, while GSI ordering is chronological across whole, fractional, and pre-epoch instants.
+- Added cursor codec unit tests and LocalStack tests for multi-page traversal, no duplicates, query mismatch rejection,
+  every capability query, last-name prefix selection, and inclusive enrollment date bounds.
+
+Verification results:
+
+- `./gradlew clean check`: successful; 26 unit/MVC tests and 4 LocalStack integration tests passed.
+- `terraform fmt -check -recursive infrastructure`: successful.
+- `terraform -chdir=infrastructure/local validate`: successful.
+- `git diff --check`: no whitespace errors.
+
 ### DynamoDB persistence-foundation review
 
 - Audited the six Enhanced Client schemas, mappings, adapters, Spring profile wiring, Terraform table/index definitions,
@@ -165,13 +186,12 @@ Risks and follow-ups:
 
 ## In Progress
 
-- Implement DynamoDB cursor query capabilities and application services on top of the completed persistence foundation.
+- Implement DynamoDB application services with relationship validation and transactional alternate-key uniqueness.
 
 ## Blocked
 
 ## Next Tasks
 
-- Add repository capability interfaces and opaque cursor encoding for the documented catalog and relationship GSIs.
 - Implement application services with relationship validation and transactional alternate-key uniqueness claims.
 - Implement the cross-table enrollment/capacity transaction and active-enrollment lock protocol.
 - Add concrete REST controllers backed by those services and seed-data support.

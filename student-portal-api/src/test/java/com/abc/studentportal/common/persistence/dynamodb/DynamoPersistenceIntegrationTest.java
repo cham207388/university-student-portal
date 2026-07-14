@@ -1,6 +1,8 @@
 package com.abc.studentportal.common.persistence.dynamodb;
 
 import com.abc.studentportal.common.exception.ConflictException;
+import com.abc.studentportal.common.exception.InvalidRequestException;
+import com.abc.studentportal.common.pagination.CursorRequest;
 import com.abc.studentportal.course.domain.Course;
 import com.abc.studentportal.course.domain.CourseStatus;
 import com.abc.studentportal.course.persistence.dynamodb.CourseDynamoRecord;
@@ -47,6 +49,7 @@ import software.amazon.awssdk.services.dynamodb.model.ScalarAttributeType;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -96,12 +99,13 @@ class DynamoPersistenceIntegrationTest {
 				enhanced.table(name("instructors"), TableSchema.fromBean(InstructorDynamoRecord.class)),
 				enhanced.table(name("courses"), TableSchema.fromBean(CourseDynamoRecord.class)),
 				enhanced.table(name("enrollments"), TableSchema.fromBean(EnrollmentDynamoRecord.class)));
-		departments = new DynamoDepartmentRepository(tables);
-		students = new DynamoStudentRepository(tables);
+		DynamoCursorCodec cursorCodec = new DynamoCursorCodec();
+		departments = new DynamoDepartmentRepository(tables, cursorCodec);
+		students = new DynamoStudentRepository(tables, cursorCodec);
 		profiles = new DynamoStudentProfileRepository(tables);
-		instructors = new DynamoInstructorRepository(tables);
-		courses = new DynamoCourseRepository(tables);
-		enrollments = new DynamoEnrollmentRepository(tables);
+		instructors = new DynamoInstructorRepository(tables, cursorCodec);
+		courses = new DynamoCourseRepository(tables, cursorCodec);
+		enrollments = new DynamoEnrollmentRepository(tables, cursorCodec);
 	}
 
 	@AfterAll
@@ -200,6 +204,26 @@ class DynamoPersistenceIntegrationTest {
 		assertTrue(DynamoQueries.exists(tables.courses().index("courses-catalog"), "COURSE"));
 		assertTrue(DynamoQueries.exists(tables.enrollments().index("enrollments-by-status"), EnrollmentStatus.ENROLLED.name()));
 		assertTrue(DynamoQueries.exists(tables.enrollments().index("enrollments-catalog"), "ENROLLMENT"));
+		CursorRequest all = new CursorRequest(100, null);
+		assertTrue(departments.findAll(all).content().contains(department));
+		assertEquals(List.of(student), students.findByDepartment(departmentId, "john", all).content());
+		assertEquals(List.of(student), students.findByStatus(StudentStatus.ACTIVE, all).content());
+		var emptyPage = students.findByStatus(StudentStatus.SUSPENDED, all);
+		assertTrue(emptyPage.content().isEmpty());
+		assertFalse(emptyPage.hasNext());
+		assertTrue(students.findAll(all).content().contains(student));
+		assertEquals(List.of(instructor), instructors.findByDepartment(departmentId, all).content());
+		assertTrue(instructors.findAll(all).content().contains(instructor));
+		assertEquals(List.of(course), courses.findByDepartment(departmentId, all).content());
+		assertEquals(List.of(course), courses.findByInstructor(instructorId, all).content());
+		assertEquals(List.of(course), courses.findByStatus(CourseStatus.OPEN, all).content());
+		assertTrue(courses.findAll(all).content().contains(course));
+		assertEquals(List.of(enrollment), enrollments.findByStudent(studentId, now, now, all).content());
+		assertEquals(List.of(enrollment), enrollments.findByCourse(courseId, null, now, all).content());
+		assertEquals(List.of(enrollment), enrollments.findByStatus(EnrollmentStatus.ENROLLED, all).content());
+		assertTrue(enrollments.findAll(all).content().contains(enrollment));
+		assertThrows(InvalidRequestException.class,
+				() -> enrollments.findByStudent(studentId, now.plusSeconds(1), now, all));
 		long logicalEnrollmentCount = tables.enrollments().index("enrollments-catalog").query(request -> request
 				.queryConditional(software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional.keyEqualTo(
 						software.amazon.awssdk.enhanced.dynamodb.Key.builder().partitionValue("ENROLLMENT").build())))
@@ -221,6 +245,34 @@ class DynamoPersistenceIntegrationTest {
 		Course missing = new Course(UUID.randomUUID(), "MATH-404", "Missing", null, 3, 20, CourseStatus.DRAFT,
 				departmentId, instructorId, now, now, 1);
 		assertThrows(ConflictException.class, () -> courses.update(missing));
+	}
+
+	@Test
+	void paginatesWithOpaqueQueryBoundCursorsWithoutDuplicates() {
+		Instant base = Instant.parse("2026-03-01T00:00:00Z");
+		Set<UUID> inserted = new java.util.HashSet<>();
+		for (int index = 0; index < 5; index++) {
+			UUID id = UUID.randomUUID();
+			inserted.add(id);
+			departments.create(new Department(id, "P" + index, "Pagination " + index, null,
+					base.plusSeconds(index), base.plusSeconds(index), 0));
+		}
+
+		List<UUID> seen = new ArrayList<>();
+		String cursor = null;
+		do {
+			var page = departments.findAll(new CursorRequest(2, cursor));
+			assertTrue(page.content().size() <= 2);
+			seen.addAll(page.content().stream().map(Department::id).toList());
+			cursor = page.nextCursor();
+			assertEquals(cursor != null, page.hasNext());
+		} while (cursor != null);
+
+		assertTrue(seen.containsAll(inserted));
+		assertEquals(seen.size(), Set.copyOf(seen).size());
+		String departmentCursor = departments.findAll(new CursorRequest(1, null)).nextCursor();
+		assertThrows(InvalidRequestException.class,
+				() -> students.findAll(new CursorRequest(1, departmentCursor)));
 	}
 
 	private static void createTable(TableSpec spec) {

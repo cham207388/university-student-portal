@@ -24,8 +24,9 @@ Implement Enhanced Client records and adapters, indexed queries, cursor paginati
 
 Status: persistence foundation complete. Six distinct record schemas and domain mappings, profile-scoped client/table
 configuration, primary-key CRUD adapters, optimistic locking, exact alternate-key GSI checks, and LocalStack
-Testcontainers coverage are implemented. Cursor query capabilities, transactional uniqueness/capacity, services,
-controllers, seed data, and full API scenarios remain in this phase.
+Testcontainers coverage are implemented. Database-specific capability ports now provide bounded, opaque cursor queries
+for every documented catalog and relationship GSI, including student last-name prefixes and enrollment date ranges.
+Transactional uniqueness/capacity, services, controllers, seed data, and full API scenarios remain in this phase.
 
 ## Phase 4 — PostgreSQL infrastructure and model
 

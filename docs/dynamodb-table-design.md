@@ -79,6 +79,14 @@ Every list query uses an index/table `LastEvaluatedKey`, encoded into an opaque 
 identity. Exact total counts, page offsets, arbitrary sorting, course-title substrings, global student last-name search,
 credit ranges, and arbitrary filter combinations are unsupported in DynamoDB mode.
 
+The cursor is a versioned URL-safe Base64 binary envelope containing the query identity and typed key attributes. It is
+not a public bookmark format. Decoding rejects malformed cursors and cursors issued for another table, index, partition,
+prefix, or date range. `limit` is bounded to 1–100, ordering follows the selected GSI sort key, and `hasNext` reflects the
+presence of a DynamoDB `LastEvaluatedKey`; totals and offsets are intentionally absent.
+
+Stored business timestamps remain ISO-8601. Derived timestamp GSI sort keys use a fixed-width signed-epoch/nanosecond
+prefix followed by UUID, because variable-width ISO-8601 fractional seconds do not have reliable string sort order.
+
 Migration and reconciliation are the deliberate scan exception. They scan each source table independently, paginate
 all reads, select only authoritative `recordType` values, and track a checkpoint per table/entity type.
 

@@ -7,6 +7,7 @@ import com.abc.studentportal.instructor.persistence.dynamodb.InstructorDynamoRec
 import com.abc.studentportal.student.persistence.dynamodb.StudentDynamoRecord;
 import com.abc.studentportal.student.persistence.dynamodb.StudentProfileDynamoRecord;
 import com.abc.studentportal.common.persistence.dynamodb.DynamoDbTables;
+import com.abc.studentportal.common.persistence.dynamodb.DynamoCursorCodec;
 import org.springframework.context.annotation.Bean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
@@ -37,6 +38,11 @@ public class DynamoDbConfiguration {
 	@Bean
 	DynamoDbEnhancedClient dynamoDbEnhancedClient(DynamoDbClient client) {
 		return DynamoDbEnhancedClient.builder().dynamoDbClient(client).build();
+	}
+
+	@Bean
+	DynamoCursorCodec dynamoCursorCodec() {
+		return new DynamoCursorCodec();
 	}
 
 	@Bean

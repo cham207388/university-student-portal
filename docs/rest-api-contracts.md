@@ -45,6 +45,9 @@ Unsupported filter combinations or sorting return a clear `400` Problem Detail. 
 
 DynamoDB collections use `limit` and an opaque `cursor`, returning `content`, `limit`, `nextCursor`, and `hasNext`. PostgreSQL collections use zero-based `page`, bounded `size`, and validated `sort`, returning content plus totals and navigation metadata.
 
+A DynamoDB cursor is valid only for the table, index, partition, prefix, and date-range query that issued it. Reusing it
+with different filters, or supplying malformed cursor data, returns a `400` invalid-request Problem Detail.
+
 Because offsets, arbitrary sorting, and exact totals are not efficient DynamoDB access patterns, these variants are explicit database capabilities. Contract parity tests will verify shared resource semantics and separately verify the pagination differences.
 
 ## Delete semantics

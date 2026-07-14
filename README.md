@@ -6,7 +6,8 @@ A learning-oriented backend that first implements a university course registrati
 
 The DynamoDB foundation now provisions six domain-oriented source tables and maps persistence-neutral domain objects to
 separate Enhanced Client records. Profile-scoped clients and table bindings, conditional CRUD adapters, optimistic
-locking, exact GSI lookups, and isolated LocalStack integration tests are in place. Cursor collections, transactional
+locking, exact GSI lookups, and isolated LocalStack integration tests are in place. Cursor pagination over every
+documented catalog and relationship GSI is also implemented through database-specific capability ports. Transactional
 uniqueness/enrollment workflows, application services, and PostgreSQL remain later checkpoints.
 
 ## Repository layout

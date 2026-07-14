@@ -11,7 +11,12 @@ public final class DynamoSortKeys {
 	}
 
 	public static String timestampId(Instant timestamp, UUID id) {
-		return timestamp + SEPARATOR + id;
+		return timestampPrefix(timestamp) + id;
+	}
+
+	public static String timestampPrefix(Instant timestamp) {
+		long sortableSeconds = timestamp.getEpochSecond() ^ Long.MIN_VALUE;
+		return String.format(Locale.ROOT, "%016x%09d%s", sortableSeconds, timestamp.getNano(), SEPARATOR);
 	}
 
 	public static String textId(String text, UUID id) {

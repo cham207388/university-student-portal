@@ -72,3 +72,19 @@ the enrollment, counter when capacity consumption changes, and active lock atomi
 The migration scans tables in referential order: Departments, Students, Profiles, Instructors, Courses, Enrollments.
 Each table has its own `LastEvaluatedKey` checkpoint, counters, retry boundary, and rejected-record reporting. Enrollment
 lock records are physical source items but not logical enrollment entities; reconciliation reports both counts.
+
+## Implemented cursor capability ports
+
+The common CRUD repositories remain persistence-neutral. Separate `Dynamo*Queries` capability ports expose only these
+efficient query shapes:
+
+- Department catalog.
+- Student catalog, department with optional normalized last-name prefix, and status.
+- Instructor catalog and department.
+- Course catalog, department, instructor, and status.
+- Enrollment catalog, student/course with optional inclusive date range, and status.
+
+Each method requires a bounded `CursorRequest` and returns a domain-level `CursorPage`. The cursor identity includes the
+physical table, GSI, partition value, and normalized prefix/range bounds, preventing accidental cursor reuse across
+different filters. Exact alternate-key lookups remain separate common repository operations; unsupported filter
+combinations never fall back to `Scan`.

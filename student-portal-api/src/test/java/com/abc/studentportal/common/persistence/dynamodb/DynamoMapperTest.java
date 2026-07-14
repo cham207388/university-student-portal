@@ -23,6 +23,7 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class DynamoMapperTest {
 	private static final Instant CREATED = Instant.parse("2026-01-02T03:04:05Z");
@@ -34,12 +35,24 @@ class DynamoMapperTest {
 	private static final UUID ENROLLMENT_ID = UUID.fromString("50000000-0000-0000-0000-000000000005");
 
 	@Test
+	void timestampKeysSortChronologicallyAcrossFractionalAndPreEpochInstants() {
+		String beforeEpoch = DynamoSortKeys.timestampPrefix(Instant.parse("1969-12-31T23:59:59.999999999Z"));
+		String wholeSecond = DynamoSortKeys.timestampPrefix(Instant.parse("2026-01-01T00:00:00Z"));
+		String fractional = DynamoSortKeys.timestampPrefix(Instant.parse("2026-01-01T00:00:00.100Z"));
+		String nextSecond = DynamoSortKeys.timestampPrefix(Instant.parse("2026-01-01T00:00:01Z"));
+
+		assertTrue(beforeEpoch.compareTo(wholeSecond) < 0);
+		assertTrue(wholeSecond.compareTo(fractional) < 0);
+		assertTrue(fractional.compareTo(nextSecond) < 0);
+	}
+
+	@Test
 	void roundTripsDepartmentAndBuildsCatalogKeys() {
 		Department domain = new Department(DEPARTMENT_ID, "cs", "Computing", null, CREATED, UPDATED, 7);
 		var record = DepartmentDynamoMapper.toRecord(domain);
 
 		assertEquals("DEPARTMENT", record.getEntityType());
-		assertEquals(CREATED + "#" + DEPARTMENT_ID, record.getCreatedAtId());
+		assertEquals(DynamoSortKeys.timestampId(CREATED, DEPARTMENT_ID), record.getCreatedAtId());
 		assertNull(record.getDescription());
 		assertEquals(domain, DepartmentDynamoMapper.toDomain(record));
 	}
@@ -51,8 +64,8 @@ class DynamoMapperTest {
 		var record = StudentDynamoMapper.toRecord(domain);
 
 		assertEquals("STUDENT", record.getEntityType());
-		assertEquals(CREATED + "#" + STUDENT_ID, record.getCreatedAtId());
-		assertEquals(UPDATED + "#" + STUDENT_ID, record.getUpdatedAtId());
+		assertEquals(DynamoSortKeys.timestampId(CREATED, STUDENT_ID), record.getCreatedAtId());
+		assertEquals(DynamoSortKeys.timestampId(UPDATED, STUDENT_ID), record.getUpdatedAtId());
 		assertEquals("LOVELACE#" + STUDENT_ID, record.getLastNameId());
 		assertEquals("ada@example.com", record.getEmail());
 		assertEquals(domain, StudentDynamoMapper.toDomain(record));
@@ -76,7 +89,7 @@ class DynamoMapperTest {
 		var record = InstructorDynamoMapper.toRecord(domain);
 
 		assertEquals("INSTRUCTOR", record.getEntityType());
-		assertEquals(CREATED + "#" + INSTRUCTOR_ID, record.getCreatedAtId());
+		assertEquals(DynamoSortKeys.timestampId(CREATED, INSTRUCTOR_ID), record.getCreatedAtId());
 		assertEquals("HOPPER#" + INSTRUCTOR_ID, record.getLastNameId());
 		assertEquals("grace@example.com", record.getEmail());
 		assertEquals(domain, InstructorDynamoMapper.toDomain(record));
@@ -90,8 +103,8 @@ class DynamoMapperTest {
 
 		assertEquals("COURSE", record.getEntityType());
 		assertEquals(0L, record.getOccupiedSeats());
-		assertEquals(CREATED + "#" + COURSE_ID, record.getCreatedAtId());
-		assertEquals(UPDATED + "#" + COURSE_ID, record.getUpdatedAtId());
+		assertEquals(DynamoSortKeys.timestampId(CREATED, COURSE_ID), record.getCreatedAtId());
+		assertEquals(DynamoSortKeys.timestampId(UPDATED, COURSE_ID), record.getUpdatedAtId());
 		assertEquals("CS-101#" + COURSE_ID, record.getCourseCodeId());
 		assertEquals(domain, CourseDynamoMapper.toDomain(record));
 	}
@@ -104,7 +117,7 @@ class DynamoMapperTest {
 
 		assertEquals("ENROLLMENT", record.getRecordType());
 		assertEquals("ENROLLMENT", record.getEntityType());
-		assertEquals(CREATED + "#" + ENROLLMENT_ID, record.getEnrolledAtId());
+		assertEquals(DynamoSortKeys.timestampId(CREATED, ENROLLMENT_ID), record.getEnrolledAtId());
 		assertNull(record.getDroppedAt());
 		assertNull(record.getFinalGrade());
 		assertEquals(domain, EnrollmentDynamoMapper.toDomain(record));
