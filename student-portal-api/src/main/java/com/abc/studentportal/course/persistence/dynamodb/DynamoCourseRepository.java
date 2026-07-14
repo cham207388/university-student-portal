@@ -1,5 +1,6 @@
 package com.abc.studentportal.course.persistence.dynamodb;
 
+import com.abc.studentportal.common.exception.ConflictException;
 import com.abc.studentportal.common.persistence.dynamodb.AbstractDynamoRepository;
 import com.abc.studentportal.common.persistence.dynamodb.DynamoDbTables;
 import com.abc.studentportal.common.persistence.dynamodb.DynamoPersistenceAdapter;
@@ -19,10 +20,12 @@ public class DynamoCourseRepository extends AbstractDynamoRepository<Course, Cou
 	@Override public Course create(Course value) { return createItem(value); }
 	@Override
 	public Course update(Course value) {
-		long occupiedSeats = table().getItem(request -> request.key(key(value.id().toString())).consistentRead(true))
-				.getOccupiedSeats();
+		CourseDynamoRecord current = table().getItem(request -> request.key(key(value.id().toString())).consistentRead(true));
+		if (current == null) {
+			throw new ConflictException("Resource does not exist or was modified by another request");
+		}
 		CourseDynamoRecord record = CourseDynamoMapper.toRecord(value);
-		record.setOccupiedSeats(occupiedSeats);
+		record.setOccupiedSeats(current.getOccupiedSeats());
 		return updateRecord(record);
 	}
 	@Override public Optional<Course> findById(UUID id) { return findItem(id.toString()); }

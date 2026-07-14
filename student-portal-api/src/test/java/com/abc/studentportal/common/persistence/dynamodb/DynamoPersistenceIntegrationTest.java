@@ -1,12 +1,25 @@
 package com.abc.studentportal.common.persistence.dynamodb;
 
 import com.abc.studentportal.common.exception.ConflictException;
+import com.abc.studentportal.course.domain.Course;
+import com.abc.studentportal.course.domain.CourseStatus;
 import com.abc.studentportal.course.persistence.dynamodb.CourseDynamoRecord;
+import com.abc.studentportal.course.persistence.dynamodb.DynamoCourseRepository;
 import com.abc.studentportal.department.domain.Department;
 import com.abc.studentportal.department.persistence.dynamodb.DepartmentDynamoRecord;
 import com.abc.studentportal.department.persistence.dynamodb.DynamoDepartmentRepository;
 import com.abc.studentportal.enrollment.persistence.dynamodb.EnrollmentDynamoRecord;
+import com.abc.studentportal.enrollment.persistence.dynamodb.DynamoEnrollmentRepository;
+import com.abc.studentportal.enrollment.domain.Enrollment;
+import com.abc.studentportal.enrollment.domain.EnrollmentStatus;
+import com.abc.studentportal.instructor.domain.Instructor;
+import com.abc.studentportal.instructor.persistence.dynamodb.DynamoInstructorRepository;
 import com.abc.studentportal.instructor.persistence.dynamodb.InstructorDynamoRecord;
+import com.abc.studentportal.student.domain.Student;
+import com.abc.studentportal.student.domain.StudentProfile;
+import com.abc.studentportal.student.domain.StudentStatus;
+import com.abc.studentportal.student.persistence.dynamodb.DynamoStudentProfileRepository;
+import com.abc.studentportal.student.persistence.dynamodb.DynamoStudentRepository;
 import com.abc.studentportal.student.persistence.dynamodb.StudentDynamoRecord;
 import com.abc.studentportal.student.persistence.dynamodb.StudentProfileDynamoRecord;
 import org.junit.jupiter.api.AfterAll;
@@ -33,6 +46,7 @@ import software.amazon.awssdk.services.dynamodb.model.ProjectionType;
 import software.amazon.awssdk.services.dynamodb.model.ScalarAttributeType;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -56,7 +70,13 @@ class DynamoPersistenceIntegrationTest {
 			DockerImageName.parse("localstack/localstack:4.14.0")).withServices("dynamodb");
 
 	private static DynamoDbClient client;
+	private static DynamoDbTables tables;
 	private static DynamoDepartmentRepository departments;
+	private static DynamoStudentRepository students;
+	private static DynamoStudentProfileRepository profiles;
+	private static DynamoInstructorRepository instructors;
+	private static DynamoCourseRepository courses;
+	private static DynamoEnrollmentRepository enrollments;
 
 	@BeforeAll
 	static void setUp() {
@@ -69,7 +89,7 @@ class DynamoPersistenceIntegrationTest {
 
 		TABLES.forEach(DynamoPersistenceIntegrationTest::createTable);
 		DynamoDbEnhancedClient enhanced = DynamoDbEnhancedClient.builder().dynamoDbClient(client).build();
-		DynamoDbTables tables = new DynamoDbTables(
+		tables = new DynamoDbTables(
 				enhanced.table(name("departments"), TableSchema.fromBean(DepartmentDynamoRecord.class)),
 				enhanced.table(name("students"), TableSchema.fromBean(StudentDynamoRecord.class)),
 				enhanced.table(name("student-profiles"), TableSchema.fromBean(StudentProfileDynamoRecord.class)),
@@ -77,6 +97,11 @@ class DynamoPersistenceIntegrationTest {
 				enhanced.table(name("courses"), TableSchema.fromBean(CourseDynamoRecord.class)),
 				enhanced.table(name("enrollments"), TableSchema.fromBean(EnrollmentDynamoRecord.class)));
 		departments = new DynamoDepartmentRepository(tables);
+		students = new DynamoStudentRepository(tables);
+		profiles = new DynamoStudentProfileRepository(tables);
+		instructors = new DynamoInstructorRepository(tables);
+		courses = new DynamoCourseRepository(tables);
+		enrollments = new DynamoEnrollmentRepository(tables);
 	}
 
 	@AfterAll
@@ -113,9 +138,89 @@ class DynamoPersistenceIntegrationTest {
 		assertEquals(2, updated.version());
 		assertEquals("Computing", departments.findById(id).orElseThrow().name());
 		assertThrows(ConflictException.class, () -> departments.update(changed));
+		assertThrows(ConflictException.class, () -> departments.delete(created));
 
 		departments.delete(updated);
 		assertFalse(departments.findById(id).isPresent());
+		assertThrows(ConflictException.class, () -> departments.update(updated));
+	}
+
+	@Test
+	void persistsEveryDomainRecordAndExposesItsAlternateKeys() {
+		Instant now = Instant.parse("2026-02-03T04:05:06Z");
+		UUID departmentId = UUID.randomUUID();
+		UUID studentId = UUID.randomUUID();
+		UUID instructorId = UUID.randomUUID();
+		UUID courseId = UUID.randomUUID();
+
+		Department department = departments.create(new Department(departmentId, "MATH", "Mathematics", null,
+				now, now, 0));
+		Student student = students.create(new Student(studentId, "S-200", "Katherine", "Johnson",
+				"KATHERINE@EXAMPLE.COM", StudentStatus.ACTIVE, departmentId, now, now, 0));
+		StudentProfile profile = profiles.create(new StudentProfile(UUID.randomUUID(), studentId,
+				LocalDate.parse("2001-04-05"), "555-0110", "2 Main St", null, "Austin", "TX", "78701", "US",
+				now, now, 0));
+		Instructor instructor = instructors.create(new Instructor(instructorId, "E-200", "Alan", "Turing",
+				"ALAN@EXAMPLE.COM", departmentId, now, now, 0));
+		Course course = courses.create(new Course(courseId, "MATH-101", "Discrete Mathematics", null, 3, 20,
+				CourseStatus.OPEN, departmentId, instructorId, now, now, 0));
+		Enrollment enrollment = enrollments.create(new Enrollment(UUID.randomUUID(), studentId, courseId,
+				EnrollmentStatus.ENROLLED, now, null, null, now, now, 0));
+
+		assertEquals(1, department.version());
+		assertEquals(student, students.findById(studentId).orElseThrow());
+		assertEquals(profile, profiles.findByStudentId(studentId).orElseThrow());
+		assertEquals(instructor, instructors.findById(instructorId).orElseThrow());
+		assertEquals(course, courses.findById(courseId).orElseThrow());
+		assertEquals(enrollment, enrollments.findById(enrollment.id()).orElseThrow());
+
+		assertTrue(students.existsByStudentNumber("S-200"));
+		assertTrue(students.existsByEmail("katherine@example.com"));
+		assertTrue(instructors.existsByEmployeeNumber("E-200"));
+		assertTrue(instructors.existsByEmail("alan@example.com"));
+		assertTrue(courses.existsByCourseCode("MATH-101"));
+		assertTrue(enrollments.existsByStudentId(studentId));
+		assertTrue(enrollments.existsByCourseId(courseId));
+		assertFalse(enrollments.existsActiveByStudentIdAndCourseId(studentId, courseId));
+		EnrollmentDynamoRecord activeLock = new EnrollmentDynamoRecord();
+		activeLock.setId("ACTIVE#" + studentId + "#" + courseId);
+		activeLock.setRecordType("ACTIVE_ENROLLMENT_LOCK");
+		tables.enrollments().putItem(activeLock);
+		assertTrue(enrollments.existsActiveByStudentIdAndCourseId(studentId, courseId));
+
+		assertTrue(DynamoQueries.exists(tables.departments().index("departments-catalog"), "DEPARTMENT"));
+		assertTrue(DynamoQueries.exists(tables.students().index("students-by-department"), departmentId.toString()));
+		assertTrue(DynamoQueries.exists(tables.students().index("students-by-status"), StudentStatus.ACTIVE.name()));
+		assertTrue(DynamoQueries.exists(tables.students().index("students-catalog"), "STUDENT"));
+		assertTrue(DynamoQueries.exists(tables.instructors().index("instructors-by-department"), departmentId.toString()));
+		assertTrue(DynamoQueries.exists(tables.instructors().index("instructors-catalog"), "INSTRUCTOR"));
+		assertTrue(DynamoQueries.exists(tables.courses().index("courses-by-department"), departmentId.toString()));
+		assertTrue(DynamoQueries.exists(tables.courses().index("courses-by-instructor"), instructorId.toString()));
+		assertTrue(DynamoQueries.exists(tables.courses().index("courses-by-status"), CourseStatus.OPEN.name()));
+		assertTrue(DynamoQueries.exists(tables.courses().index("courses-catalog"), "COURSE"));
+		assertTrue(DynamoQueries.exists(tables.enrollments().index("enrollments-by-status"), EnrollmentStatus.ENROLLED.name()));
+		assertTrue(DynamoQueries.exists(tables.enrollments().index("enrollments-catalog"), "ENROLLMENT"));
+		long logicalEnrollmentCount = tables.enrollments().index("enrollments-catalog").query(request -> request
+				.queryConditional(software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional.keyEqualTo(
+						software.amazon.awssdk.enhanced.dynamodb.Key.builder().partitionValue("ENROLLMENT").build())))
+				.stream().flatMap(page -> page.items().stream()).count();
+		assertEquals(1, logicalEnrollmentCount);
+
+		CourseDynamoRecord capacityState = tables.courses().getItem(request -> request.key(key(courseId))
+				.consistentRead(true));
+		capacityState.setOccupiedSeats(2L);
+		tables.courses().updateItem(capacityState);
+		Course afterCapacityChange = courses.findById(courseId).orElseThrow();
+		Course renamed = new Course(courseId, afterCapacityChange.courseCode(), "Discrete Structures", null,
+				afterCapacityChange.credits(), afterCapacityChange.capacity(), afterCapacityChange.status(), departmentId,
+				instructorId, now, now.plusSeconds(1), afterCapacityChange.version());
+		courses.update(renamed);
+		assertEquals(2L, tables.courses().getItem(request -> request.key(key(courseId)).consistentRead(true))
+				.getOccupiedSeats());
+
+		Course missing = new Course(UUID.randomUUID(), "MATH-404", "Missing", null, 3, 20, CourseStatus.DRAFT,
+				departmentId, instructorId, now, now, 1);
+		assertThrows(ConflictException.class, () -> courses.update(missing));
 	}
 
 	private static void createTable(TableSpec spec) {
@@ -148,6 +253,10 @@ class DynamoPersistenceIntegrationTest {
 
 	private static String name(String suffix) {
 		return PREFIX + "-" + suffix;
+	}
+
+	private static software.amazon.awssdk.enhanced.dynamodb.Key key(UUID id) {
+		return software.amazon.awssdk.enhanced.dynamodb.Key.builder().partitionValue(id.toString()).build();
 	}
 
 	private record TableSpec(String suffix, String partitionKey, List<IndexSpec> indexes) {

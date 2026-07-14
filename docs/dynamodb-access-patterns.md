@@ -9,10 +9,10 @@ bounded and cursor-paginated.
 | Operation | Input | Result/cardinality/order | Consistency | Key/index | Transaction |
 | --- | --- | --- | --- | --- | --- |
 | Get department | ID | One | Strong | Departments `id` | No |
-| Get department by code | code | Zero/one | GSI eventual; strong recheck for writes | `departments-by-code` | Create/update uniqueness condition |
+| Get department by code | code | Zero/one | GSI eventual; deterministic claim for writes | `departments-by-code` | Create/update uniqueness claim |
 | List departments | cursor, limit | Many by creation time/ID | Eventual | `departments-catalog` | No |
 | Get student | ID | One | Strong | Students `id` | No |
-| Get student by number/email | exact normalized value | Zero/one | GSI eventual; strong recheck for writes | `students-by-number` / `students-by-email` | Create/update uniqueness condition |
+| Get student by number/email | exact normalized value | Zero/one | GSI eventual; deterministic claims for writes | `students-by-number` / `students-by-email` | Create/update uniqueness claims |
 | List students | cursor, limit | Many by creation time/ID | Eventual | `students-catalog` | No |
 | List students by department | department ID, optional last-name prefix | Many by last name/ID | Eventual | `students-by-department` | No |
 | List students by status | status | Many by update time/ID | Eventual | `students-by-status` | No |
@@ -24,11 +24,11 @@ bounded and cursor-paginated.
 | Operation | Input | Result/cardinality/order | Consistency | Key/index | Transaction |
 | --- | --- | --- | --- | --- | --- |
 | Get instructor | ID | One | Strong | Instructors `id` | No |
-| Get instructor by employee number/email | exact normalized value | Zero/one | Eventual lookup; strong write recheck | number/email indexes | Create/update uniqueness condition |
+| Get instructor by employee number/email | exact normalized value | Zero/one | Eventual lookup; deterministic claims for writes | number/email indexes | Create/update uniqueness claims |
 | List instructors | cursor, limit | Many by creation time/ID | Eventual | `instructors-catalog` | No |
 | List instructors by department | department ID | Many by last name/ID | Eventual | `instructors-by-department` | No |
 | Get course | ID | One including capacity state | Strong | Courses `id` | No |
-| Get course by code | exact normalized code | Zero/one | Eventual lookup; strong write recheck | `courses-by-code` | Create/update uniqueness condition |
+| Get course by code | exact normalized code | Zero/one | Eventual lookup; deterministic claim for writes | `courses-by-code` | Create/update uniqueness claim |
 | List courses | cursor, limit | Many by creation time/ID | Eventual | `courses-catalog` | No |
 | List courses by department/instructor/status | relevant ID/status | Many in index order | Eventual | department/instructor/status index | No |
 | Create/update course | course, department, instructor, version | One | Strong reference checks | Courses plus Department/Instructor conditions | Yes |

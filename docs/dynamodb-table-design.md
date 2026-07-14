@@ -63,12 +63,12 @@ changing enrollment state. This intentionally demonstrates a DynamoDB transactio
 
 ## Integrity and consistency
 
-- Entity creation uses conditional puts and a preceding strongly consistent uniqueness check. GSIs alone cannot enforce
-  uniqueness, so conflicting writers are resolved by deterministic lock records or transaction conditions implemented
-  by the adapter.
+- Primary-key creation uses a conditional put. GSIs cannot be read strongly and therefore cannot enforce alternate-key
+  uniqueness; student numbers, emails, employee numbers, department/course codes use deterministic claim records in
+  the same table, written transactionally with the authoritative record in the application-service checkpoint.
 - Student, instructor, course, and enrollment services strongly read referenced records before writes and include
   transaction conditions where a create/delete race would violate integrity.
-- Updates condition on `version` and increment it explicitly.
+- Updates condition on `version` and increment it through the Enhanced Client version extension.
 - Direct table reads can be strongly consistent. GSI queries are eventually consistent and do not promise immediate
   list visibility after writes.
 - DynamoDB provides no foreign keys. Orphan detection and repair are explicit reconciliation operations.

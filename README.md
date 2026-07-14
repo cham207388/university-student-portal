@@ -96,4 +96,5 @@ LocalStack instance can be used by Terraform at the same endpoint; do not stop u
 - [DynamoDB access patterns](docs/dynamodb-access-patterns.md)
 - [DynamoDB table design](docs/dynamodb-table-design.md)
 
-LocalStack, Terraform, database profiles, seed data, Swagger UI, migration commands, and reconciliation instructions will be added and verified in their corresponding phases.
+Seed data, Swagger UI, PostgreSQL profiles, migration commands, and reconciliation instructions will be added and
+verified in their corresponding phases.

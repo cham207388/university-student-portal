@@ -21,7 +21,8 @@ public class DynamoEnrollmentRepository extends AbstractDynamoRepository<Enrollm
 	@Override public Enrollment update(Enrollment value) { return updateItem(value); }
 	@Override public Optional<Enrollment> findById(UUID id) { return findItem(id.toString()); }
 	@Override public boolean existsActiveByStudentIdAndCourseId(UUID studentId, UUID courseId) {
-		return table().getItem(key("ACTIVE#" + studentId + "#" + courseId)) != null;
+		return table().getItem(request -> request.key(key("ACTIVE#" + studentId + "#" + courseId))
+				.consistentRead(true)) != null;
 	}
 	@Override public boolean existsByStudentId(UUID id) { return DynamoQueries.exists(table().index("enrollments-by-student"), id.toString()); }
 	@Override public boolean existsByCourseId(UUID id) { return DynamoQueries.exists(table().index("enrollments-by-course"), id.toString()); }

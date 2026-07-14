@@ -2,6 +2,29 @@
 
 ## Completed Tasks
 
+### DynamoDB persistence-foundation review
+
+- Audited the six Enhanced Client schemas, mappings, adapters, Spring profile wiring, Terraform table/index definitions,
+  access-pattern documentation, and checkpoint claims against the master prompt.
+- Made the deterministic active-enrollment lookup explicitly strongly consistent, matching the documented concurrency protocol.
+- Made missing Course updates return the same conflict contract as other missing/stale optimistic updates instead of a null-pointer failure.
+- Corrected uniqueness documentation: GSIs are eventually consistent and cannot enforce uniqueness; the next application-service
+  checkpoint will transactionally maintain deterministic alternate-key claims.
+- Corrected stale README text that still described LocalStack, Terraform, and DynamoDB profiles as future work.
+- Added mapper round-trip tests for every domain/record boundary, including normalization, nullable fields, timestamps,
+  versions, record discriminators, and all derived GSI sort keys.
+- Expanded LocalStack tests to create and read all six domain records, exercise every GSI, verify every exact lookup adapter,
+  verify profile partition-key behavior, reject missing/stale mutations, preserve occupied-seat state during Course updates,
+  and prove active-lock records are strongly visible but absent from logical enrollment indexes.
+- Extended the Spring profile test to verify all six repository ports resolve to DynamoDB adapters.
+
+Verification results:
+
+- `./gradlew clean check`: successful; 23 unit/MVC tests and 3 LocalStack integration tests passed.
+- `terraform fmt -check -recursive infrastructure`: successful.
+- `terraform -chdir=infrastructure/local validate`: successful.
+- `git diff --check`: no whitespace errors.
+
 ### DynamoDB architecture revision — six source tables
 
 - Reviewed the supplied reference project inventory of 13 DynamoDB tables, heterogeneous keys/GSIs, embedded arrays, JSON strings, cross-table logical joins, legacy attributes, and migration exclusions.
