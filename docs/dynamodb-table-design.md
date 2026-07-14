@@ -62,8 +62,10 @@ deletes it when the enrollment becomes terminal. These records have `recordType=
 from catalog/status indexes, so migration readers ignore them.
 
 The Course record owns `occupiedSeats` and an enrollment-history count; Student records also own an enrollment-history
-count. Enrollment transactions conditionally update these counters and entity versions while creating or changing
-enrollment state. This intentionally demonstrates a DynamoDB transaction spanning multiple tables.
+count. Department records own Student, Instructor, and Course dependency counts, and Instructor records own a Course
+dependency count. Child create, move, and delete transactions conditionally update these counters and parent versions.
+Enrollment transactions likewise update their counters and entity versions while creating or changing enrollment state.
+These counters make destructive integrity checks authoritative without treating eventually consistent GSIs as locks.
 
 ## Integrity and consistency
 

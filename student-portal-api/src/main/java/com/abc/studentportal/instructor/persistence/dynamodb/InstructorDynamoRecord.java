@@ -25,6 +25,7 @@ public class InstructorDynamoRecord implements com.abc.studentportal.common.pers
 	private String updatedAt;
 	private String createdAtId;
 	private String lastNameId;
+	private Long courseCount;
 	private Long version;
 
 	@DynamoDbPartitionKey public String getId() { return id; }

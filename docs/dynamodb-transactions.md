@@ -49,6 +49,9 @@ counters and entity versions transactionally. Student/Course deletion rejects no
 also changes the expected version, closing the gap even if a relationship GSI is briefly stale. Student deletion includes
 its optional Profile and uniqueness claims in one transaction.
 
-Department and Instructor deletion uses bounded relationship-index probes. Those GSIs are eventually consistent, so a
-concurrent new Student/Instructor/Course relationship remains a documented race until parent dependency counters are
-introduced. Destructive controllers must not overstate this as foreign-key behavior.
+Department records own authoritative `studentCount`, `instructorCount`, and `courseCount` values; Instructor records own
+an authoritative `courseCount`. Creating, moving, or deleting a child updates the affected parent counters and versions
+in the same transaction as the child write. Department and Instructor deletion conditionally requires every owned
+counter to be zero. Because both operations write the same parent item, a concurrent child mutation and parent delete
+cannot both commit: one transaction wins and the other returns a conflict. Relationship GSIs remain useful for lists and
+friendly preflight errors, but they are not the deletion authority.

@@ -16,7 +16,8 @@ public final class InstructorDynamoMapper {
 		record.setDepartmentId(value.departmentId().toString()); record.setEntityType("INSTRUCTOR");
 		record.setCreatedAt(value.createdAt().toString()); record.setUpdatedAt(value.updatedAt().toString());
 		record.setCreatedAtId(DynamoSortKeys.timestampId(value.createdAt(), value.id()));
-		record.setLastNameId(DynamoSortKeys.textId(value.lastName(), value.id())); record.setVersion(value.version()); return record;
+		record.setLastNameId(DynamoSortKeys.textId(value.lastName(), value.id())); record.setCourseCount(0L);
+		record.setVersion(value.version()); return record;
 	}
 
 	public static Instructor toDomain(InstructorDynamoRecord value) {

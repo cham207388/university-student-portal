@@ -36,9 +36,14 @@ public class DynamoDepartmentRepository extends AbstractDynamoRepository<Departm
 				java.util.List.of(claim(value))));
 	}
 	@Override public Department update(Department value) {
-		Department current = findById(value.id()).orElseThrow(() -> new com.abc.studentportal.common.exception.ConflictException(
-				"Resource does not exist or was modified by another request"));
-		return DepartmentDynamoMapper.toDomain(writer.update(table(), "id", DepartmentDynamoMapper.toRecord(value),
+		DepartmentDynamoRecord currentRecord = table().getItem(request -> request.key(key(value.id().toString())).consistentRead(true));
+		if (currentRecord == null) throw new com.abc.studentportal.common.exception.ConflictException(
+				"Resource does not exist or was modified by another request");
+		Department current = DepartmentDynamoMapper.toDomain(currentRecord);
+		DepartmentDynamoRecord next = DepartmentDynamoMapper.toRecord(value);
+		next.setStudentCount(currentRecord.getStudentCount()); next.setInstructorCount(currentRecord.getInstructorCount());
+		next.setCourseCount(currentRecord.getCourseCount());
+		return DepartmentDynamoMapper.toDomain(writer.update(table(), "id", next,
 				value.version(), java.util.List.of(claim(current)), java.util.List.of(claim(value))));
 	}
 	@Override public Optional<Department> findById(UUID id) { return findItem(id.toString()); }
@@ -46,7 +51,9 @@ public class DynamoDepartmentRepository extends AbstractDynamoRepository<Departm
 	@Override public void delete(Department value) {
 		Department current = findById(value.id()).orElseThrow(() -> new com.abc.studentportal.common.exception.ConflictException(
 				"Resource does not exist or was modified by another request"));
-		writer.delete(table().tableName(), "id", value.id().toString(), value.version(), java.util.List.of(claim(current)));
+		writer.deleteRequiringZeroCounters(table().tableName(), "id", value.id().toString(), value.version(),
+				java.util.List.of(claim(current)), java.util.List.of(),
+				java.util.List.of("studentCount", "instructorCount", "courseCount"));
 	}
 	@Override public CursorPage<Department> findAll(CursorRequest request) {
 		String index = "departments-catalog";

@@ -34,6 +34,9 @@ public class InstructorService {
 
 	public Instructor update(UUID id, UpdateCommand command) {
 		Instructor current = get(id); requireDepartment(command.departmentId());
+		if (!current.departmentId().equals(command.departmentId()) && dependencies.instructorHasCourses(id)) {
+			throw new ConflictException("Instructor with assigned courses cannot move departments");
+		}
 		return instructors.update(new Instructor(id, command.employeeNumber(), command.firstName(), command.lastName(),
 				command.email(), command.departmentId(), current.createdAt(), clock.instant(), command.version()));
 	}

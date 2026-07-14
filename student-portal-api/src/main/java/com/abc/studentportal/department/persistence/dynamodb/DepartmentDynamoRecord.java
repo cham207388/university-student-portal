@@ -22,6 +22,9 @@ public class DepartmentDynamoRecord implements com.abc.studentportal.common.pers
 	private String createdAt;
 	private String updatedAt;
 	private String createdAtId;
+	private Long studentCount;
+	private Long instructorCount;
+	private Long courseCount;
 	private Long version;
 
 	@DynamoDbPartitionKey

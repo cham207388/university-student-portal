@@ -22,18 +22,30 @@ public final class DynamoTransactionalWriter {
 
 	public <R extends VersionedDynamoRecord> R create(DynamoDbTable<R> table, String partitionKey, R record,
 			List<DynamoUniqueClaim> claims) {
+		return create(table, partitionKey, record, claims, List.of());
+	}
+
+	public <R extends VersionedDynamoRecord> R create(DynamoDbTable<R> table, String partitionKey, R record,
+			List<DynamoUniqueClaim> claims, List<TransactWriteItem> additionalActions) {
 		record.setVersion(1L);
 		List<TransactWriteItem> actions = new ArrayList<>();
 		actions.add(TransactWriteItem.builder().put(Put.builder().tableName(table.tableName())
 				.item(table.tableSchema().itemToMap(record, true)).conditionExpression("attribute_not_exists(#pk)")
 				.expressionAttributeNames(Map.of("#pk", partitionKey)).build()).build());
 		claims.forEach(claim -> actions.add(putClaim(table.tableName(), partitionKey, claim)));
+		actions.addAll(additionalActions);
 		execute(actions, "Resource or alternate key already exists");
 		return record;
 	}
 
 	public <R extends VersionedDynamoRecord> R update(DynamoDbTable<R> table, String partitionKey, R record,
 			long expectedVersion, List<DynamoUniqueClaim> previousClaims, List<DynamoUniqueClaim> nextClaims) {
+		return update(table, partitionKey, record, expectedVersion, previousClaims, nextClaims, List.of());
+	}
+
+	public <R extends VersionedDynamoRecord> R update(DynamoDbTable<R> table, String partitionKey, R record,
+			long expectedVersion, List<DynamoUniqueClaim> previousClaims, List<DynamoUniqueClaim> nextClaims,
+			List<TransactWriteItem> additionalActions) {
 		record.setVersion(expectedVersion + 1);
 		List<TransactWriteItem> actions = new ArrayList<>();
 		actions.add(TransactWriteItem.builder().put(Put.builder().tableName(table.tableName())
@@ -46,6 +58,7 @@ public final class DynamoTransactionalWriter {
 		for (DynamoUniqueClaim next : nextClaims) {
 			if (!previousClaims.contains(next)) actions.add(putClaim(table.tableName(), partitionKey, next));
 		}
+		actions.addAll(additionalActions);
 		execute(actions, "Resource was modified or an alternate key is already in use");
 		return record;
 	}
@@ -62,16 +75,25 @@ public final class DynamoTransactionalWriter {
 
 	public void delete(String table, String partitionKey, String entityId, long expectedVersion,
 			List<DynamoUniqueClaim> claims, List<TransactWriteItem> additionalActions, boolean requireNoEnrollments) {
+		deleteRequiringZeroCounters(table, partitionKey, entityId, expectedVersion, claims, additionalActions,
+				requireNoEnrollments ? List.of("enrollmentCount") : List.of());
+	}
+
+	public void deleteRequiringZeroCounters(String table, String partitionKey, String entityId, long expectedVersion,
+			List<DynamoUniqueClaim> claims, List<TransactWriteItem> additionalActions, List<String> zeroCounters) {
 		List<TransactWriteItem> actions = new ArrayList<>();
-		String condition = requireNoEnrollments
-				? "#version = :version AND (attribute_not_exists(enrollmentCount) OR enrollmentCount = :zero)"
-				: "#version = :version";
-		Map<String, AttributeValue> values = requireNoEnrollments
-				? Map.of(":version", number(expectedVersion), ":zero", number(0))
-				: Map.of(":version", number(expectedVersion));
+		StringBuilder condition = new StringBuilder("#version = :version");
+		Map<String, String> names = new java.util.LinkedHashMap<>(); names.put("#version", "version");
+		Map<String, AttributeValue> values = new java.util.LinkedHashMap<>(); values.put(":version", number(expectedVersion));
+		if (!zeroCounters.isEmpty()) values.put(":zero", number(0));
+		for (int index = 0; index < zeroCounters.size(); index++) {
+			String alias = "#counter" + index; names.put(alias, zeroCounters.get(index));
+			condition.append(" AND (attribute_not_exists(").append(alias).append(") OR ")
+					.append(alias).append(" = :zero)");
+		}
 		actions.add(TransactWriteItem.builder().delete(Delete.builder().tableName(table)
-				.key(Map.of(partitionKey, string(entityId))).conditionExpression(condition)
-				.expressionAttributeNames(Map.of("#version", "version"))
+				.key(Map.of(partitionKey, string(entityId))).conditionExpression(condition.toString())
+				.expressionAttributeNames(names)
 				.expressionAttributeValues(values).build()).build());
 		claims.forEach(claim -> actions.add(deleteClaim(table, partitionKey, claim)));
 		actions.addAll(additionalActions);

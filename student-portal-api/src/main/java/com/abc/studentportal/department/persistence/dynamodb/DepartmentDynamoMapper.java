@@ -14,7 +14,8 @@ public final class DepartmentDynamoMapper {
 		record.setId(value.id().toString()); record.setCode(value.code()); record.setName(value.name());
 		record.setDescription(value.description()); record.setEntityType("DEPARTMENT");
 		record.setCreatedAt(value.createdAt().toString()); record.setUpdatedAt(value.updatedAt().toString());
-		record.setCreatedAtId(DynamoSortKeys.timestampId(value.createdAt(), value.id())); record.setVersion(value.version());
+		record.setCreatedAtId(DynamoSortKeys.timestampId(value.createdAt(), value.id())); record.setStudentCount(0L);
+		record.setInstructorCount(0L); record.setCourseCount(0L); record.setVersion(value.version());
 		return record;
 	}
 

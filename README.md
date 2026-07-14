@@ -10,7 +10,8 @@ locking, exact GSI lookups, and isolated LocalStack integration tests are in pla
 documented catalog and relationship GSI is also implemented through database-specific capability ports. Transactional
 alternate-key claims and relationship-validating application services are now implemented for Departments, Students,
 Profiles, Instructors, and Courses. Cross-table enrollment/capacity transactions, active locks, history counters, and
-dependency-aware deletion are implemented. Controllers, seed data, and PostgreSQL remain later checkpoints.
+dependency-aware deletion are implemented. Authoritative parent counters now close Department/Instructor deletion races
+with concurrent relationship writes. Controllers, seed data, and PostgreSQL remain later checkpoints.
 
 ## Repository layout
 

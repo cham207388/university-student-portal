@@ -8,6 +8,7 @@ import com.abc.studentportal.common.persistence.dynamodb.DynamoCursorCodec;
 import com.abc.studentportal.common.persistence.dynamodb.DynamoCursorQueries;
 import com.abc.studentportal.common.persistence.dynamodb.DynamoTransactionalWriter;
 import com.abc.studentportal.common.persistence.dynamodb.DynamoUniqueClaim;
+import com.abc.studentportal.common.persistence.dynamodb.DynamoRelationshipCounters;
 import com.abc.studentportal.common.pagination.CursorPage;
 import com.abc.studentportal.common.pagination.CursorRequest;
 import com.abc.studentportal.instructor.application.DynamoInstructorQueries;
@@ -22,21 +23,31 @@ public class DynamoInstructorRepository extends AbstractDynamoRepository<Instruc
 		implements InstructorRepository, DynamoInstructorQueries {
 	private final DynamoCursorCodec cursorCodec;
 	private final DynamoTransactionalWriter writer;
+	private final DynamoRelationshipCounters counters;
 	public DynamoInstructorRepository(DynamoDbTables tables, DynamoCursorCodec cursorCodec,
-			DynamoTransactionalWriter writer) {
+			DynamoTransactionalWriter writer, DynamoRelationshipCounters counters) {
 		super(tables.instructors(), "id", InstructorDynamoMapper::toRecord, InstructorDynamoMapper::toDomain,
 				value -> value.id().toString());
 		this.cursorCodec = cursorCodec;
 		this.writer = writer;
+		this.counters = counters;
 	}
 	@Override public Instructor create(Instructor value) {
-		return InstructorDynamoMapper.toDomain(writer.create(table(), "id", InstructorDynamoMapper.toRecord(value), claims(value)));
+		return InstructorDynamoMapper.toDomain(writer.create(table(), "id", InstructorDynamoMapper.toRecord(value), claims(value),
+				java.util.List.of(counters.department(value.departmentId().toString(), "instructorCount", 1))));
 	}
 	@Override public Instructor update(Instructor value) {
-		Instructor current = findById(value.id()).orElseThrow(() -> new com.abc.studentportal.common.exception.ConflictException(
-				"Resource does not exist or was modified by another request"));
-		return InstructorDynamoMapper.toDomain(writer.update(table(), "id", InstructorDynamoMapper.toRecord(value),
-				value.version(), claims(current), claims(value)));
+		InstructorDynamoRecord currentRecord = table().getItem(request -> request.key(key(value.id().toString())).consistentRead(true));
+		if (currentRecord == null) throw new com.abc.studentportal.common.exception.ConflictException(
+				"Resource does not exist or was modified by another request");
+		Instructor current = InstructorDynamoMapper.toDomain(currentRecord);
+		InstructorDynamoRecord next = InstructorDynamoMapper.toRecord(value); next.setCourseCount(currentRecord.getCourseCount());
+		java.util.List<software.amazon.awssdk.services.dynamodb.model.TransactWriteItem> moves = current.departmentId()
+				.equals(value.departmentId()) ? java.util.List.of() : java.util.List.of(
+				counters.department(current.departmentId().toString(), "instructorCount", -1),
+				counters.department(value.departmentId().toString(), "instructorCount", 1));
+		return InstructorDynamoMapper.toDomain(writer.update(table(), "id", next,
+				value.version(), claims(current), claims(value), moves));
 	}
 	@Override public Optional<Instructor> findById(UUID id) { return findItem(id.toString()); }
 	@Override public boolean existsByEmployeeNumber(String value) { return DynamoQueries.exists(table().index("instructors-by-number"), value); }
@@ -44,7 +55,9 @@ public class DynamoInstructorRepository extends AbstractDynamoRepository<Instruc
 	@Override public void delete(Instructor value) {
 		Instructor current = findById(value.id()).orElseThrow(() -> new com.abc.studentportal.common.exception.ConflictException(
 				"Resource does not exist or was modified by another request"));
-		writer.delete(table().tableName(), "id", value.id().toString(), value.version(), claims(current));
+		writer.deleteRequiringZeroCounters(table().tableName(), "id", value.id().toString(), value.version(), claims(current),
+				java.util.List.of(counters.department(current.departmentId().toString(), "instructorCount", -1)),
+				java.util.List.of("courseCount"));
 	}
 	@Override public CursorPage<Instructor> findAll(CursorRequest request) {
 		return query("instructors-catalog", "INSTRUCTOR", request);

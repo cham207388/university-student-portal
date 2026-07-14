@@ -8,6 +8,7 @@ import com.abc.studentportal.common.persistence.dynamodb.DynamoCursorCodec;
 import com.abc.studentportal.common.persistence.dynamodb.DynamoCursorQueries;
 import com.abc.studentportal.common.persistence.dynamodb.DynamoTransactionalWriter;
 import com.abc.studentportal.common.persistence.dynamodb.DynamoUniqueClaim;
+import com.abc.studentportal.common.persistence.dynamodb.DynamoRelationshipCounters;
 import com.abc.studentportal.common.pagination.CursorPage;
 import com.abc.studentportal.common.pagination.CursorRequest;
 import com.abc.studentportal.student.application.DynamoStudentQueries;
@@ -25,16 +26,19 @@ public class DynamoStudentRepository extends AbstractDynamoRepository<Student, S
 	private final DynamoCursorCodec cursorCodec;
 	private final DynamoTransactionalWriter writer;
 	private final software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable<StudentProfileDynamoRecord> profiles;
+	private final DynamoRelationshipCounters counters;
 	public DynamoStudentRepository(DynamoDbTables tables, DynamoCursorCodec cursorCodec,
-			DynamoTransactionalWriter writer) {
+			DynamoTransactionalWriter writer, DynamoRelationshipCounters counters) {
 		super(tables.students(), "id", StudentDynamoMapper::toRecord, StudentDynamoMapper::toDomain,
 				value -> value.id().toString());
 		this.cursorCodec = cursorCodec;
 		this.writer = writer;
 		this.profiles = tables.studentProfiles();
+		this.counters = counters;
 	}
 	@Override public Student create(Student value) {
-		return StudentDynamoMapper.toDomain(writer.create(table(), "id", StudentDynamoMapper.toRecord(value), claims(value)));
+		return StudentDynamoMapper.toDomain(writer.create(table(), "id", StudentDynamoMapper.toRecord(value), claims(value),
+				List.of(counters.department(value.departmentId().toString(), "studentCount", 1))));
 	}
 	@Override public Student update(Student value) {
 		StudentDynamoRecord currentRecord = table().getItem(request -> request.key(key(value.id().toString())).consistentRead(true));
@@ -43,8 +47,12 @@ public class DynamoStudentRepository extends AbstractDynamoRepository<Student, S
 		Student current = StudentDynamoMapper.toDomain(currentRecord);
 		StudentDynamoRecord next = StudentDynamoMapper.toRecord(value);
 		next.setEnrollmentCount(currentRecord.getEnrollmentCount());
+		List<software.amazon.awssdk.services.dynamodb.model.TransactWriteItem> moves = current.departmentId()
+				.equals(value.departmentId()) ? List.of() : List.of(
+				counters.department(current.departmentId().toString(), "studentCount", -1),
+				counters.department(value.departmentId().toString(), "studentCount", 1));
 		return StudentDynamoMapper.toDomain(writer.update(table(), "id", next, value.version(),
-				claims(current), claims(value)));
+				claims(current), claims(value), moves));
 	}
 	@Override public Optional<Student> findById(UUID id) { return findItem(id.toString()); }
 	@Override public boolean existsByStudentNumber(String value) { return DynamoQueries.exists(table().index("students-by-number"), value); }
@@ -61,7 +69,9 @@ public class DynamoStudentRepository extends AbstractDynamoRepository<Student, S
 						.expressionAttributeNames(java.util.Map.of("#version", "version"))
 						.expressionAttributeValues(java.util.Map.of(":version", software.amazon.awssdk.services.dynamodb.model.AttributeValue
 								.builder().n(profile.getVersion().toString()).build())).build()).build());
-		writer.delete(table().tableName(), "id", value.id().toString(), value.version(), claims(current), extra, true);
+		java.util.ArrayList<software.amazon.awssdk.services.dynamodb.model.TransactWriteItem> actions = new java.util.ArrayList<>(extra);
+		actions.add(counters.department(current.departmentId().toString(), "studentCount", -1));
+		writer.delete(table().tableName(), "id", value.id().toString(), value.version(), claims(current), actions, true);
 	}
 	@Override public CursorPage<Student> findAll(CursorRequest request) {
 		return query("students-catalog", DynamoCursorQueries.equalTo("STUDENT"), request, "STUDENT");

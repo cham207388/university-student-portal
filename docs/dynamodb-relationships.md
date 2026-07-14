@@ -14,10 +14,13 @@ Application services strongly read required targets before creating or changing 
 Relationship collections use the documented GSIs and bounded cursor capability ports. DynamoDB performs no join;
 services that need related representations query IDs in bounded pages and perform bounded batch reads.
 
-Dependency-aware services reject Department, Student, Instructor, and Course deletes when bounded relationship probes
-find dependents. Student deletion atomically removes its optional Profile. Student and Course enrollment-history counters
-are updated by enrollment transactions, making their history-based delete rules authoritative under concurrency.
+Dependency-aware services reject Department, Student, Instructor, and Course deletes when dependents exist. Student
+deletion atomically removes its optional Profile. Student and Course enrollment-history counters make their history-based
+delete rules authoritative under concurrency.
 
-Strong pre-reads and Department/Instructor GSI probes do not lock another table. A new Student, Instructor, or Course can
-still race a parent delete because GSIs are eventually consistent; parent dependency counters are required to eliminate
-that final race. Reconciliation reports legacy or externally introduced orphans rather than silently deleting them.
+Department and Instructor dependency guards are also authoritative. Department owns Student, Instructor, and Course
+counters, while Instructor owns a Course counter. Every child create, relationship move, and delete transaction updates
+the affected parent counters; parent deletion requires zero counters in its transaction. Competing relationship creation
+and deletion therefore write the same parent item and cannot both commit. GSI probes remain eventual-consistency read
+paths for friendly errors, not integrity authorities. Reconciliation reports legacy or externally introduced orphans
+rather than silently deleting them.

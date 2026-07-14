@@ -29,7 +29,9 @@ for every documented catalog and relationship GSI, including student last-name p
 Application services strongly validate entity relationships, and transactional sparse claims enforce alternate-key
 uniqueness across create, update, and delete. Cross-table enrollment transactions now enforce eligibility, capacity,
 active-pair uniqueness, transitions, and Student/Course history counters. Dependency-aware services guard deletion and
-atomically remove Student/Profile. Controllers, seed data, and full API scenarios remain in this phase.
+atomically remove Student/Profile. Transactional parent dependency counters serialize Department/Instructor deletion
+against concurrent child creation, movement, and deletion. Controllers, seed data, and full API scenarios remain in this
+phase.
 
 ## Phase 4 — PostgreSQL infrastructure and model
 

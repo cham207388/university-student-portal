@@ -106,11 +106,12 @@ class DynamoPersistenceIntegrationTest {
 				enhanced.table(name("enrollments"), TableSchema.fromBean(EnrollmentDynamoRecord.class)));
 		DynamoCursorCodec cursorCodec = new DynamoCursorCodec();
 		DynamoTransactionalWriter writer = new DynamoTransactionalWriter(client);
+		DynamoRelationshipCounters relationshipCounters = new DynamoRelationshipCounters(tables);
 		departments = new DynamoDepartmentRepository(tables, cursorCodec, writer);
-		students = new DynamoStudentRepository(tables, cursorCodec, writer);
+		students = new DynamoStudentRepository(tables, cursorCodec, writer, relationshipCounters);
 		profiles = new DynamoStudentProfileRepository(tables);
-		instructors = new DynamoInstructorRepository(tables, cursorCodec, writer);
-		courses = new DynamoCourseRepository(tables, cursorCodec, writer);
+		instructors = new DynamoInstructorRepository(tables, cursorCodec, writer, relationshipCounters);
+		courses = new DynamoCourseRepository(tables, cursorCodec, writer, relationshipCounters);
 		enrollments = new DynamoEnrollmentRepository(tables, cursorCodec,
 				new com.abc.studentportal.enrollment.persistence.dynamodb.DynamoEnrollmentTransactionWriter(client, tables));
 		dependencies = new DynamoDependencyChecker(students, instructors, courses, enrollments);
@@ -180,8 +181,10 @@ class DynamoPersistenceIntegrationTest {
 				EnrollmentStatus.ENROLLED, now, null, null, now, now, 0));
 		student = students.findById(studentId).orElseThrow();
 		course = courses.findById(courseId).orElseThrow();
+		department = departments.findById(departmentId).orElseThrow();
+		instructor = instructors.findById(instructorId).orElseThrow();
 
-		assertEquals(1, department.version());
+		assertTrue(department.version() > 1);
 		assertEquals(student, students.findById(studentId).orElseThrow());
 		assertEquals(profile, profiles.findByStudentId(studentId).orElseThrow());
 		assertEquals(instructor, instructors.findById(instructorId).orElseThrow());
@@ -411,6 +414,94 @@ class DynamoPersistenceIntegrationTest {
 		assertEquals(student.studentNumber(), reused.studentNumber());
 		assertEquals(1, profile.version());
 	}
+
+	@Test
+	void transfersRelationshipCountersOnMovesAndReleasesParentsOnDelete() {
+		Instant now = Instant.parse("2026-08-01T00:00:00Z");
+		String suffix = UUID.randomUUID().toString().substring(0, 6).toUpperCase(java.util.Locale.ROOT);
+		Department firstDepartment = departments.create(new Department(UUID.randomUUID(), "MA" + suffix, "Move A", null,
+				now, now, 0));
+		Department secondDepartment = departments.create(new Department(UUID.randomUUID(), "MB" + suffix, "Move B", null,
+				now, now, 0));
+		Instructor firstInstructor = instructors.create(new Instructor(UUID.randomUUID(), "IA" + suffix, "First", "Teacher",
+				"ia-" + suffix.toLowerCase(java.util.Locale.ROOT) + "@example.com", firstDepartment.id(), now, now, 0));
+		Instructor secondInstructor = instructors.create(new Instructor(UUID.randomUUID(), "IB" + suffix, "Second", "Teacher",
+				"ib-" + suffix.toLowerCase(java.util.Locale.ROOT) + "@example.com", secondDepartment.id(), now, now, 0));
+		Student student = createStudent("MS" + suffix, firstDepartment.id(), now);
+		Course course = courses.create(new Course(UUID.randomUUID(), "MC" + suffix, "Moving", null, 3, 10,
+				CourseStatus.DRAFT, firstDepartment.id(), firstInstructor.id(), now, now, 0));
+
+		assertDepartmentCounts(firstDepartment.id(), 1, 1, 1);
+		assertDepartmentCounts(secondDepartment.id(), 0, 1, 0);
+		assertInstructorCourseCount(firstInstructor.id(), 1);
+		Student movedStudent = students.update(new Student(student.id(), student.studentNumber(), student.firstName(),
+				student.lastName(), student.email(), student.status(), secondDepartment.id(), student.createdAt(),
+				now.plusSeconds(1), student.version()));
+		Course movedCourse = courses.update(new Course(course.id(), course.courseCode(), course.title(), course.description(),
+				course.credits(), course.capacity(), course.status(), secondDepartment.id(), secondInstructor.id(),
+				course.createdAt(), now.plusSeconds(1), course.version()));
+
+		assertDepartmentCounts(firstDepartment.id(), 0, 1, 0);
+		assertDepartmentCounts(secondDepartment.id(), 1, 1, 1);
+		assertInstructorCourseCount(firstInstructor.id(), 0);
+		assertInstructorCourseCount(secondInstructor.id(), 1);
+		students.delete(movedStudent);
+		courses.delete(movedCourse);
+		assertDepartmentCounts(secondDepartment.id(), 0, 1, 0);
+		assertInstructorCourseCount(secondInstructor.id(), 0);
+		instructors.delete(instructors.findById(firstInstructor.id()).orElseThrow());
+		instructors.delete(instructors.findById(secondInstructor.id()).orElseThrow());
+		departments.delete(departments.findById(firstDepartment.id()).orElseThrow());
+		departments.delete(departments.findById(secondDepartment.id()).orElseThrow());
+	}
+
+	@Test
+	void serializesDepartmentDeleteAgainstStudentCreateAndInstructorDeleteAgainstCourseCreate() throws Exception {
+		Instant now = Instant.parse("2026-09-01T00:00:00Z");
+		String suffix = UUID.randomUUID().toString().substring(0, 6).toUpperCase(java.util.Locale.ROOT);
+		Department department = departments.create(new Department(UUID.randomUUID(), "RD" + suffix, "Race delete", null,
+				now, now, 0));
+		AtomicInteger departmentWins = race(
+				() -> departments.delete(department),
+				() -> createStudent("RS" + suffix, department.id(), now));
+		assertEquals(1, departmentWins.get());
+
+		Department courseDepartment = departments.create(new Department(UUID.randomUUID(), "RC" + suffix, "Race course", null,
+				now, now, 0));
+		Instructor instructor = instructors.create(new Instructor(UUID.randomUUID(), "RI" + suffix, "Race", "Teacher",
+				"ri-" + suffix.toLowerCase(java.util.Locale.ROOT) + "@example.com", courseDepartment.id(), now, now, 0));
+		AtomicInteger instructorWins = race(
+				() -> instructors.delete(instructor),
+				() -> courses.create(new Course(UUID.randomUUID(), "RX" + suffix, "Race", null, 3, 5,
+						CourseStatus.DRAFT, courseDepartment.id(), instructor.id(), now, now, 0)));
+		assertEquals(1, instructorWins.get());
+	}
+
+	private static AtomicInteger race(ThrowingAction first, ThrowingAction second) throws Exception {
+		CountDownLatch start = new CountDownLatch(1); AtomicInteger successes = new AtomicInteger();
+		try (var executor = Executors.newFixedThreadPool(2)) {
+			var tasks = List.of(first, second).stream().map(action -> executor.submit(() -> {
+				start.await();
+				try { action.run(); successes.incrementAndGet(); } catch (ConflictException ignored) { }
+				return null;
+			})).toList();
+			start.countDown(); for (var task : tasks) task.get();
+		}
+		return successes;
+	}
+
+	private static void assertDepartmentCounts(UUID id, long students, long instructors, long courses) {
+		DepartmentDynamoRecord record = tables.departments().getItem(request -> request.key(key(id)).consistentRead(true));
+		assertEquals(students, record.getStudentCount()); assertEquals(instructors, record.getInstructorCount());
+		assertEquals(courses, record.getCourseCount());
+	}
+
+	private static void assertInstructorCourseCount(UUID id, long expected) {
+		assertEquals(expected, tables.instructors().getItem(request -> request.key(key(id)).consistentRead(true)).getCourseCount());
+	}
+
+	@FunctionalInterface
+	private interface ThrowingAction { void run() throws Exception; }
 
 	private static Student createStudent(String number, UUID departmentId, Instant now) {
 		return students.create(new Student(UUID.randomUUID(), number, "Capacity", "Student",

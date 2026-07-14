@@ -2,6 +2,26 @@
 
 ## Completed Tasks
 
+### Authoritative parent dependency counters
+
+- Added Department Student/Instructor/Course counters and an Instructor Course counter, initialized on entity creation
+  and preserved across ordinary updates.
+- Made Student, Instructor, and Course create, relationship-move, and delete operations update affected parent counters
+  and versions in the same DynamoDB transaction as the child write.
+- Made Department and Instructor deletion conditionally require zero authoritative counters. Parent deletion and a
+  concurrent relationship write now contend on the same item, so both cannot commit even while GSIs are stale.
+- Prevented moving an Instructor between Departments while Courses remain assigned, preserving the Course
+  department/instructor invariant.
+- Added LocalStack coverage for counter transfer and release plus concurrent Department-delete/Student-create and
+  Instructor-delete/Course-create races.
+
+Verification results:
+
+- `./gradlew clean check`: successful; 29 unit/MVC tests and 9 LocalStack integration tests passed.
+- `terraform fmt -check -recursive infrastructure`: successful.
+- `terraform -chdir=infrastructure/local validate`: successful.
+- `git diff --check`: no whitespace errors.
+
 ### Enrollment transactions and dependency-aware deletion
 
 - Added an Enrollment application service for enroll, status-transition, and drop use cases; physical Enrollment deletion
@@ -16,8 +36,8 @@
   deletion atomically removes its optional Profile and uniqueness claims.
 - Added LocalStack coverage for duplicate active enrollment, full capacity, rollback, drop/re-enroll, completion,
   stale transitions, concurrent last-seat attempts, history deletion guards, and atomic Student/Profile deletion.
-- Updated domain, relationship, table-design, transaction, implementation, README, and progress documentation; the
-  remaining eventual-GSI race for concurrent Department/Instructor dependency creation/deletion is explicit.
+- Updated domain, relationship, table-design, transaction, implementation, README, and progress documentation. This
+  historical checkpoint's eventual-GSI deletion limitation was closed by the later parent-counter checkpoint.
 
 Verification results:
 
@@ -39,8 +59,8 @@ Verification results:
 - Translated transaction cancellation to the existing conflict contract; failed multi-claim and conflicting-update
   transactions leave both authoritative records and prior claims unchanged.
 - Added service unit coverage plus LocalStack rollback, key reuse, deletion release, and simultaneous-writer race coverage.
-- Added dedicated DynamoDB relationship and transaction documentation, including the remaining cross-table deletion race
-  that dependency-aware transaction checks must close before destructive endpoints are exposed.
+- Added dedicated DynamoDB relationship and transaction documentation, including the then-remaining cross-table deletion
+  race that the later authoritative parent-counter checkpoint closed before destructive endpoints were exposed.
 
 Verification results:
 
