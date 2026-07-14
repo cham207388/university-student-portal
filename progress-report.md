@@ -2,6 +2,26 @@
 
 ## Completed Tasks
 
+### Final DynamoDB phase audit — tag withheld
+
+- Traced the master prompt's DynamoDB, Terraform, API, testing, documentation, observability, and operational requirements
+  to the current implementation.
+- Re-ran the full Gradle/LocalStack suite, Terraform formatting/validation/plan, Compose/artifact/secret/scan checks, and
+  the live 12-request seeded HTTP workflow.
+- Confirmed the core implementation is functional, but withheld `dynamodb-complete` because OpenAPI, DynamoDB-specific
+  observability, exact alternate-key reads, strict unsupported-query handling, automated REST-to-LocalStack coverage,
+  required documentation/diagrams, and Terraform convergence remain incomplete.
+- Recorded the evidence and ordered remediation plan in `docs/dynamodb-phase-audit.md`.
+
+Verification results:
+
+- `./gradlew clean check`: successful; 35 unit/MVC tests and 11 LocalStack integration tests passed.
+- `terraform fmt -check -recursive infrastructure`: successful.
+- `terraform -chdir=infrastructure/local validate`: successful.
+- `terraform ... plan -detailed-exitcode`: exit `2`; non-convergent Enrollment GSI metadata diff remains a blocker.
+- `docker compose config --quiet`, shell syntax, Postman JSON, scan audit, secret audit, and whitespace checks: successful.
+- `./scripts/dynamodb-api-smoke.sh`: successful against the already-running application on port 8080.
+
 ### Documentation reconciliation after the complete DynamoDB API surface
 
 - Reconciled the table/index inventory with the two durable relationship-edge GSIs and typed Enrollment records.
@@ -338,14 +358,14 @@ Risks and follow-ups:
 
 ## In Progress
 
-- Verify the complete DynamoDB API checkpoint and prepare the `dynamodb-complete` tag.
+- Remediate the release blockers recorded in `docs/dynamodb-phase-audit.md`; the tag is intentionally withheld.
 
 ## Blocked
 
 ## Next Tasks
 
-- Perform the final DynamoDB phase audit, close any remaining operational/documentation gaps, and create the
-  `dynamodb-complete` tag only after all checks pass.
+- Resolve Terraform convergence first, then implement the API-query, OpenAPI, observability, automated HTTP integration,
+  and documentation blockers in the audit's required order.
 
 ### Six-table DynamoDB persistence foundation
 
