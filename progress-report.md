@@ -2,6 +2,25 @@
 
 ## Completed Tasks
 
+### Terraform convergence recovery
+
+- Reproduced the six-table configuration with an isolated state and unique table prefix; the immediate refreshed second
+  plan exited `0`, proving the module and locked AWS provider converge from clean table creation.
+- Isolated the real drift to two Enrollment GSIs previously added with `UpdateTable`. LocalStack returned explicit
+  unlimited on-demand throughput for those indexes, destabilizing the provider's inline-GSI set comparison.
+- Evaluated the stable standalone GSI resource, but rejected it for this local workflow because LocalStack 4.14 does not
+  return the warm-throughput status required by the AWS provider waiter.
+- Backed up and recreated only the local Enrollment table so all six GSIs were created atomically, reconciled the
+  deterministic seed counters, and restored the seed through the normal transactional seeder.
+- Removed both disposable table sets after testing.
+
+Verification results:
+
+- `terraform -chdir=infrastructure/local validate`: successful.
+- `terraform -chdir=infrastructure/local plan -detailed-exitcode -no-color`: exit `0`; no changes.
+- Enrollment table: `ACTIVE`; all six configured GSIs: `ACTIVE`.
+- Enrollment seed state: 15 physical items representing six Enrollments plus locks and durable relationship edges.
+
 ### Final DynamoDB phase audit — tag withheld
 
 - Traced the master prompt's DynamoDB, Terraform, API, testing, documentation, observability, and operational requirements
@@ -18,7 +37,7 @@ Verification results:
 - `./gradlew clean check`: successful; 35 unit/MVC tests and 11 LocalStack integration tests passed.
 - `terraform fmt -check -recursive infrastructure`: successful.
 - `terraform -chdir=infrastructure/local validate`: successful.
-- `terraform ... plan -detailed-exitcode`: exit `2`; non-convergent Enrollment GSI metadata diff remains a blocker.
+- `terraform ... plan -detailed-exitcode`: exit `2` at audit time; resolved by the later Terraform convergence recovery.
 - `docker compose config --quiet`, shell syntax, Postman JSON, scan audit, secret audit, and whitespace checks: successful.
 - `./scripts/dynamodb-api-smoke.sh`: successful against the already-running application on port 8080.
 

@@ -45,12 +45,16 @@ Enrollment folder must be run in order because test scripts capture IDs and opti
 
 ## LocalStack Terraform GSI note
 
-With LocalStack 4.14 and AWS provider 6.54, adding the two relationship GSIs exposed an emulator/provider mismatch. The
-first Terraform apply created one GSI but its waiter timed out despite DynamoDB reporting the index `ACTIVE`; the second
-index was then created through the local DynamoDB API. All six configured Enrollment indexes were verified `ACTIVE`.
-Subsequent plans can show a computed `warm_throughput`/`on_demand_throughput` set diff even when index names and key
-schemas match. Treat this as an emulator-only diagnostic: inspect `describe-table` before applying, never use the manual
-workaround against AWS, and re-audit provider convergence before tagging the DynamoDB phase complete.
+With LocalStack 4.14 and AWS provider 6.54, indexes added after table creation can expose an emulator/provider mismatch.
+LocalStack reports explicit unlimited `on_demand_throughput` for an `UpdateTable` GSI while indexes created with the table
+omit that block. Because the table resource stores inline GSIs as a set, this can produce a full-set computed metadata
+diff. The standalone GSI resource is not a local workaround: LocalStack does not currently return the warm-throughput
+status required by its provider waiter.
+
+The verified local recovery is to preserve or regenerate development data, then recreate the affected local table with
+all configured GSIs in its initial `CreateTable` request. The July 2026 recovery recreated only Enrollment, restored its
+deterministic data through the transactional seeder, verified all six GSIs `ACTIVE`, and produced a refreshed Terraform
+plan with exit `0`. Never use this destructive local recovery against AWS or non-disposable data.
 
 The script uses these stable seed IDs:
 

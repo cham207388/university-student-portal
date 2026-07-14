@@ -5,8 +5,8 @@ Audit date: 2026-07-14
 ## Decision
 
 The DynamoDB implementation is functional but is **not ready** for the `dynamodb-complete` tag. Core domain,
-persistence, concurrency, API, seed, and live LocalStack workflows pass. The tag remains blocked by explicit prompt
-requirements that are not implemented and by a non-convergent LocalStack Terraform plan.
+persistence, concurrency, API, seed, live LocalStack, and Terraform convergence workflows pass. The tag remains blocked
+by explicit prompt requirements that are not implemented.
 
 ## Passing gates
 
@@ -23,6 +23,7 @@ requirements that are not implemented and by a non-convergent LocalStack Terrafo
 | Live API | 12-request `scripts/dynamodb-api-smoke.sh` workflow passed against port 8080 |
 | Compose and artifacts | `docker compose config --quiet`, `bash -n`, `jq empty postman.json`, and `git diff --check` passed |
 | Terraform syntax | Recursive formatting and `terraform validate` passed |
+| Terraform convergence | Clean-state reproduction and recovered real state both produced exit `0` no-change plans |
 | Secrets | No committed LocalStack token value found; documented placeholders only |
 
 ## Tag blockers
@@ -62,14 +63,6 @@ The required `architecture-dynamodb.md` and `dynamodb-limitations.md` files do n
 required Mermaid diagrams for item layout, main access patterns, and transactional enrollment flow. Transaction limits,
 repair/reconciliation behavior, operational tradeoffs, and migration changes need one consolidated checkpoint.
 
-### 7. Terraform does not converge against LocalStack
-
-Formatting and validation pass, and all six Enrollment GSIs report active, but
-`terraform -chdir=infrastructure/local plan -detailed-exitcode -no-color` exits `2`. AWS provider 6.54 sees
-LocalStack-emulated `on_demand_throughput`/computed `warm_throughput` metadata as a replacement of the full GSI set. A
-repeat apply is unsafe as a release gate. Resolve through a provider/LocalStack-compatible Terraform representation or
-a reproducible clean-state strategy; do not normalize this as acceptable drift.
-
 ## Additional quality gaps
 
 - The fallback `Exception` handler is appropriate as a last boundary, but structured contextual request logging is not
@@ -81,11 +74,10 @@ a reproducible clean-state strategy; do not normalize this as acceptable drift.
 
 ## Required remediation order
 
-1. Resolve Terraform convergence from a clean LocalStack table deployment and verify a zero-change second plan.
-2. Add exact alternate-key query capabilities and strict unsupported-query handling.
-3. Add OpenAPI/Swagger and contract tests.
-4. Add correlation IDs, DynamoDB health, and safe startup logging with focused tests.
-5. Add automated controller-to-LocalStack workflow coverage.
-6. Complete the DynamoDB architecture/limitations documents and required Mermaid diagrams.
-7. Rerun all automated, Terraform, clean-deploy, live HTTP, documentation, and secret gates.
-8. Commit the completed checkpoint and create `dynamodb-complete` only if every blocker is closed.
+1. Add exact alternate-key query capabilities and strict unsupported-query handling.
+2. Add OpenAPI/Swagger and contract tests.
+3. Add correlation IDs, DynamoDB health, and safe startup logging with focused tests.
+4. Add automated controller-to-LocalStack workflow coverage.
+5. Complete the DynamoDB architecture/limitations documents and required Mermaid diagrams.
+6. Rerun all automated, Terraform, clean-deploy, live HTTP, documentation, and secret gates.
+7. Commit the completed checkpoint and create `dynamodb-complete` only if every blocker is closed.
