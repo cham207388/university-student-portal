@@ -430,6 +430,12 @@ Risks and follow-ups:
 - Implement separate PostgreSQL JPA entities and repositories while retaining the DynamoDB adapter as the migration
   source and comparison baseline.
 
+### PostgreSQL persistence integration scaffold
+
+- Added a tagged `PostgresPersistenceIntegrationTest` using a PostgreSQL 17 Testcontainers database.
+- Added the `postgresIntegrationTest` Gradle task; `check` now runs both DynamoDB and PostgreSQL integration suites.
+- The test confirms Flyway creates the initial relational schema before JPA repositories are introduced.
+
 ### PostgreSQL infrastructure foundation
 
 - Added Flyway `V1__initial_schema.sql` for the six relational tables, foreign keys, status and counter checks,

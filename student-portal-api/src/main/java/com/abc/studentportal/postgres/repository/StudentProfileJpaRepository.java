@@ -1,0 +1,1 @@
+package com.abc.studentportal.postgres.repository; import org.springframework.data.jpa.repository.JpaRepository; import com.abc.studentportal.postgres.entity.StudentProfileEntity; import java.util.*; public interface StudentProfileJpaRepository extends JpaRepository<StudentProfileEntity,UUID>{}

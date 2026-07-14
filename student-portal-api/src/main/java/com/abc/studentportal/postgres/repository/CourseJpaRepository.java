@@ -1,0 +1,1 @@
+package com.abc.studentportal.postgres.repository; import org.springframework.data.jpa.repository.JpaRepository; import com.abc.studentportal.postgres.entity.CourseEntity; import java.util.*; public interface CourseJpaRepository extends JpaRepository<CourseEntity,UUID>{ Optional<CourseEntity> findByCode(String code); }

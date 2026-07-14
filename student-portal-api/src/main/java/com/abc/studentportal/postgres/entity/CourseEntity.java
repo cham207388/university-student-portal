@@ -1,0 +1,2 @@
+package com.abc.studentportal.postgres.entity;
+import jakarta.persistence.*; import java.util.UUID; @Entity @Table(name="courses") public class CourseEntity { @Id private UUID id; @Column(unique=true) private String code; private String title,description; private int credits,capacity,occupiedSeats; @ManyToOne(fetch=FetchType.LAZY) @JoinColumn(name="department_id") private DepartmentEntity department; @ManyToOne(fetch=FetchType.LAZY) @JoinColumn(name="instructor_id") private InstructorEntity instructor; protected CourseEntity(){} public UUID getId(){return id;} }

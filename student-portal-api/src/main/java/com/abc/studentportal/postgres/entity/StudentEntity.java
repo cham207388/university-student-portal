@@ -1,0 +1,3 @@
+package com.abc.studentportal.postgres.entity;
+import jakarta.persistence.*; import java.time.Instant; import java.util.UUID; import com.abc.studentportal.student.domain.StudentStatus;
+@Entity @Table(name="students") public class StudentEntity { @Id private UUID id; @Column(name="student_number",nullable=false,unique=true) private String studentNumber; @Column(nullable=false,unique=true) private String email; @Column(name="first_name") private String firstName; @Column(name="last_name") private String lastName; @Enumerated(EnumType.STRING) private StudentStatus status; @ManyToOne(fetch=FetchType.LAZY) @JoinColumn(name="department_id") private DepartmentEntity department; protected StudentEntity(){} public UUID getId(){return id;} }

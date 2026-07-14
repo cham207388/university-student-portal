@@ -62,6 +62,16 @@ val dynamodbIntegrationTest by tasks.registering(Test::class) {
 	}
 }
 
+val postgresIntegrationTest by tasks.registering(Test::class) {
+	description = "Runs PostgreSQL persistence foundation tests against a Testcontainers database."
+	group = LifecycleBasePlugin.VERIFICATION_GROUP
+	testClassesDirs = sourceSets.test.get().output.classesDirs
+	classpath = sourceSets.test.get().runtimeClasspath
+	shouldRunAfter(tasks.test)
+	useJUnitPlatform { includeTags("postgres-integration") }
+}
+
 tasks.check {
 	dependsOn(dynamodbIntegrationTest)
+	dependsOn(postgresIntegrationTest)
 }
