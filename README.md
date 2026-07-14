@@ -23,6 +23,8 @@ transactional relationship edges and bounded batch hydration.
 ├── student-portal-api/   Spring Boot application and Gradle wrapper
 ├── docs/                 Architecture, domain, and API decisions
 ├── infrastructure/       Terraform (introduced in the DynamoDB phase)
+├── scripts/              Verified local API smoke workflows
+├── postman.json          Importable Postman collection
 ├── compose.yml           Local development services (introduced by phase)
 └── Makefile              Verified developer shortcuts (introduced by phase)
 ```
@@ -46,7 +48,7 @@ cd student-portal-api
 `check` includes the isolated LocalStack/Testcontainers persistence suite. It requires a running Docker engine but does
 not require the project Compose stack or a LocalStack token. Run only that suite with `./gradlew dynamodbIntegrationTest`.
 
-## Run the foundation application
+## Run the health-only application
 
 ```shell
 cd student-portal-api
@@ -96,6 +98,10 @@ The seeder runs only with the `local-dynamodb` profile and `STUDENT_PORTAL_SEED_
 safe to rerun, and creates three Departments, ten Students with Profiles, five Instructors, ten Courses, and six
 Enrollments. The data includes multiple statuses and a full two-seat Course. See
 [DynamoDB development data](docs/dynamodb-development-data.md) for its behavior and stable smoke-test identifiers.
+
+For interactive testing, import [postman.json](postman.json) into Postman. The collection includes seeded reads, error
+examples, and an ordered Department → Instructor → Student/Profile → Course → Enrollment workflow that captures generated
+IDs and optimistic versions automatically. Keep `make app-run-dynamodb-seeded` running while using the collection.
 
 To remove the local tables and services:
 

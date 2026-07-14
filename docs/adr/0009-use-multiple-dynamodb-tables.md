@@ -12,7 +12,8 @@ issues into PostgreSQL.
 Use six DynamoDB tables aligned to the Student Portal’s source entities: Departments, Students, StudentProfiles,
 Instructors, Courses, and Enrollments. Keep database-specific records separate from the domain and eventual JPA entities.
 Relationships remain application-enforced references. Cross-entity enrollment consistency uses DynamoDB transactions
-across the Student, Course, and Enrollment tables.
+across the Student, Course, and Enrollment tables. The Enrollment table also owns typed active-pair locks and one
+durable, deterministic edge per distinct Student/Course pair for deduplicated relationship navigation.
 
 ## Alternatives considered
 
@@ -33,7 +34,8 @@ do not provide uniqueness or foreign keys.
 
 The model can look deceptively relational even though DynamoDB supplies no joins or referential constraints. Cross-table
 transactions have action/size limits. GSI propagation is eventually consistent. Data migration must distinguish typed
-enrollment lock records from logical enrollments and must not assume all source references are valid.
+enrollment lock and relationship-edge records from logical enrollments and must not assume all source references are
+valid.
 
 ## Validation approach
 

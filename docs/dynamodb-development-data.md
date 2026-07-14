@@ -40,6 +40,18 @@ The smoke script checks health, strongly consistent resource/profile reads, dire
 pagination, Enrollment reads, validation errors, unsupported-filter errors, and not-found Problem Details. Set
 `STUDENT_PORTAL_API_URL` to test a non-default base URL.
 
+Alternatively, import the root-level `postman.json` collection. Its seeded folder can be run independently; its CRUD and
+Enrollment folder must be run in order because test scripts capture IDs and optimistic versions for later requests.
+
+## LocalStack Terraform GSI note
+
+With LocalStack 4.14 and AWS provider 6.54, adding the two relationship GSIs exposed an emulator/provider mismatch. The
+first Terraform apply created one GSI but its waiter timed out despite DynamoDB reporting the index `ACTIVE`; the second
+index was then created through the local DynamoDB API. All six configured Enrollment indexes were verified `ACTIVE`.
+Subsequent plans can show a computed `warm_throughput`/`on_demand_throughput` set diff even when index names and key
+schemas match. Treat this as an emulator-only diagnostic: inspect `describe-table` before applying, never use the manual
+workaround against AWS, and re-audit provider convergence before tagging the DynamoDB phase complete.
+
 The script uses these stable seed IDs:
 
 | Record | ID |

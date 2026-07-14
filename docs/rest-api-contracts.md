@@ -35,9 +35,12 @@ Response DTOs contain the resource ID, business fields, audit timestamps, and ve
 
 ## Filtering
 
-- Students: `departmentId`, `status`, exact normalized `email`, exact `studentNumber`, and database-supported `lastName` behavior.
-- Courses: `departmentId`, `instructorId`, `status`, exact `courseCode`, database-supported `title`, `minimumCredits`, and `maximumCredits`.
-- Enrollments: `studentId`, `courseId`, `status`, `enrolledFrom`, and `enrolledTo`.
+- Students in DynamoDB mode: unfiltered catalog, `departmentId` with optional `lastName` prefix, or `status`. A request
+  cannot combine department and status; `lastName` requires `departmentId`.
+- Instructors in DynamoDB mode: unfiltered catalog or `departmentId`.
+- Courses in DynamoDB mode: unfiltered catalog or exactly one of `departmentId`, `instructorId`, and `status`.
+- Enrollments in DynamoDB mode: unfiltered catalog or exactly one of `studentId`, `courseId`, and `status`.
+  `enrolledFrom` and `enrolledTo` are supported only with `studentId` or `courseId`.
 
 Unsupported filter combinations or sorting return a clear `400` Problem Detail. The application will not hide a DynamoDB scan or unbounded in-memory sort behind these contracts.
 
@@ -59,7 +62,9 @@ query parameter.
 
 Derived views page deterministic relationship-edge GSIs and hydrate each bounded page with strongly consistent
 `BatchGetItem` calls. Re-enrollment does not duplicate a Student or Course in these views. Exact alternate-key collection
-filters remain deferred to their dedicated lookup capability; no controller substitutes a scan.
+Exact alternate-key reads by email, student/employee number, or department/course code remain repository capabilities
+but are not exposed as collection filters. Title search and credit ranges are also not exposed in DynamoDB mode. No
+controller substitutes a scan.
 
 ## Delete semantics
 

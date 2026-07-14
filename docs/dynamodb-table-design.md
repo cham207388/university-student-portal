@@ -11,7 +11,7 @@ Use six domain-oriented DynamoDB tables:
 | `student-portal-student-profiles` | `studentId` | One profile per student |
 | `student-portal-instructors` | `id` | Instructor records and department access |
 | `student-portal-courses` | `id` | Course records, status, and authoritative occupied-seat count |
-| `student-portal-enrollments` | `id` | Enrollment records plus active-pair lock items |
+| `student-portal-enrollments` | `id` | Enrollment records, active-pair locks, and durable Student/Course edges |
 
 The design intentionally resembles the multi-table DynamoDB estate that motivated this learning project. Tables remain
 NoSQL stores: IDs in other records are logical references, not foreign keys, and no ORM relationship or cascade exists.
@@ -43,6 +43,8 @@ All GSIs use `ALL` projection for the learning project. GSI reads are eventually
 | Enrollments | `enrollments-by-course` | `courseId`, `enrolledAtId` | Course enrollments/date range |
 | Enrollments | `enrollments-by-status` | `status`, `enrolledAtId` | Status query |
 | Enrollments | `enrollments-catalog` | `entityType`, `enrolledAtId` | Bounded list |
+| Enrollments | `enrollment-relationships-by-student` | `relationshipStudentId`, `relationshipCourseId` | Distinct Courses for a Student |
+| Enrollments | `enrollment-relationships-by-course` | `relationshipCourseId`, `relationshipStudentId` | Distinct Students for a Course |
 
 Catalog indexes avoid full-table scans for ordinary list endpoints. `entityType` is constant within a table but provides
 the partition key required for an ordered, cursor-paginated `Query`.

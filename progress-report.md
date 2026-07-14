@@ -2,6 +2,22 @@
 
 ## Completed Tasks
 
+### Documentation reconciliation after the complete DynamoDB API surface
+
+- Reconciled the table/index inventory with the two durable relationship-edge GSIs and typed Enrollment records.
+- Updated architecture, implementation, domain deletion, REST filtering, ADR, seed workflow, README, Postman, and
+  developer-help documentation to describe the implemented application rather than earlier deferred checkpoints.
+- Distinguished historical progress entries from current limitations and consolidated the LocalStack 4.14/AWS provider
+  GSI waiter/computed-throughput behavior into the development operations guide.
+- Cross-checked all 38 controller mappings, current DynamoDB filters, 35 unit/MVC tests, and 11 LocalStack integration
+  tests against the documents.
+
+Verification results:
+
+- `jq empty postman.json`: successful.
+- Markdown stale-state audit: no current section claims controllers or derived routes are pending.
+- `git diff --check`: no whitespace errors.
+
 ### Deduplicated Student/Course relationship views
 
 - Added a deterministic durable relationship edge per Student/Course pair to the Enrollments table. Enrollment creation
@@ -50,6 +66,9 @@ Verification results:
 - `git diff --check`: no whitespace errors.
 
 ### DynamoDB REST controllers
+
+> Historical checkpoint: the two derived relationship routes noted below were implemented by the later deduplicated
+> Student/Course relationship-view checkpoint.
 
 - Added profile-scoped controllers for Departments, Students/Profiles, Instructors, Courses, and Enrollments.
 - Exposed create/get/update/status/delete workflows with validated DTOs, `Location` headers, optimistic versions, and
@@ -239,6 +258,9 @@ Operational findings:
 - The existing user-managed LocalStack container was preserved and used for verification; the failed project-owned container was removed.
 
 ### Phase 1 — core domain and REST contracts
+
+> Historical checkpoint: database adapters, application services, and concrete controllers described as future work in
+> this section were implemented by the later DynamoDB checkpoints above.
 
 - Added persistence-neutral records for Department, Student, StudentProfile, Instructor, Course, and Enrollment.
 - Added student, course, and enrollment enums plus explicit course/enrollment transition rules.

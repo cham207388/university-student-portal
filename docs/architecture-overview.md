@@ -18,13 +18,15 @@ Controllers validate transport input and delegate. Application services coordina
 
 Repository abstractions cover genuinely common business operations. DynamoDB cursor queries, PostgreSQL pageable queries, migration source reads, and migration target writes use capability-specific interfaces. This prevents inefficient or impossible behavior from being disguised as portability.
 
-The planned top-level Java packages are `common`, `department`, `student`, `instructor`, `course`, `enrollment`, and `migration`. Each feature may contain `api`, `application`, `domain`, and `persistence` packages as needed. Profile behavior is owned by the student feature.
+The current top-level Java packages are `common`, `department`, `student`, `instructor`, `course`, and `enrollment`;
+`migration` is reserved for the later migration phase. Each implemented feature contains `api`, `application`, `domain`,
+and persistence packages as needed. Runtime profile configuration lives under `common.configuration`.
 
 The Phase 1 code establishes `domain` records, immutable nested API request/response records, explicit API mappers,
 filter objects, and repository ports. Common repository ports intentionally omit list pagination. DynamoDB cursor
 queries are now separate `Dynamo*Queries` capability interfaces, and PostgreSQL pageable queries will follow the same
-explicit-capability approach. Controllers and application-service implementations follow when a complete use case can be wired;
-the application is not populated with placeholder beans merely to make unfinished endpoints start.
+explicit-capability approach. DynamoDB-profile controllers and application services are implemented for all current
+resources and relationship routes; the application contains no placeholder runtime beans.
 
 Runtime profiles select explicit adapters:
 
@@ -32,7 +34,8 @@ Runtime profiles select explicit adapters:
 - `local-postgres` and `test-postgres`
 - `migration`, which intentionally connects source and target
 
-Phase 0 has no persistence profile. Profile-specific beans will be configured explicitly to avoid ambiguous injection.
+The default profile exposes the persistence-neutral application foundation and health endpoint. Profile-specific beans
+are configured explicitly to avoid ambiguous injection.
 
 ## Key decisions
 

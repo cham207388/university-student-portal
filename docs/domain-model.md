@@ -56,7 +56,9 @@ An active enrollment means `ENROLLED` or `WAITLISTED`. A student cannot have mor
 - A department, instructor, or course may be physically deleted only when no dependent records exist.
 - Enrollment `DELETE` is interpreted as dropping an active enrollment, preserving registration history. Already terminal enrollments cannot be deleted.
 
-These conservative policies work in both persistence models. DynamoDB enforces them with bounded relationship queries and transactional conditions where possible; PostgreSQL additionally uses foreign keys and constraints.
+These conservative policies work in both persistence models. DynamoDB uses relationship queries for preflight errors,
+but authoritative Student/Course enrollment-history counters and Department/Instructor dependency counters enforce
+deletion rules transactionally under concurrency. PostgreSQL will additionally use foreign keys and constraints.
 
 ## Capacity implementation
 

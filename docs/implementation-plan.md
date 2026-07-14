@@ -11,8 +11,8 @@ Document the domain, REST contracts, architecture, and roadmap. Configure Java 2
 Implement persistence-neutral domain behavior, API DTOs, validation, errors, application ports, and controller contracts. Use focused unit and MVC tests without selecting a database.
 
 Status: complete for domain behavior, DTO and error contracts, mapping, filters, and persistence ports. Concrete
-controllers are deferred until their application services can enforce repository-backed rules; no placeholder runtime
-implementation is used. MVC slice tests prove the validation and Problem Details contract independently.
+controllers were intentionally deferred at this checkpoint until repository-backed services existed; Phase 3 has since
+implemented them. MVC slice tests prove validation and the Problem Details contract independently.
 
 ## Phase 2 — DynamoDB infrastructure and access patterns
 
