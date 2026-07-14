@@ -10,14 +10,16 @@ import software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional;
 import java.util.function.Function;
 
 public final class DynamoCursorQueries {
-	private DynamoCursorQueries() { }
+	private DynamoCursorQueries() {
+	}
 
 	public static <R, D> CursorPage<D> query(DynamoDbIndex<R> index, QueryConditional conditional,
 			CursorRequest request, String queryIdentity, DynamoCursorCodec codec, Function<R, D> mapper) {
 		var startKey = codec.decode(queryIdentity, request.cursor());
 		var query = index.query(builder -> {
 			builder.queryConditional(conditional).limit(request.limit());
-			if (!startKey.isEmpty()) builder.exclusiveStartKey(startKey);
+			if (!startKey.isEmpty())
+				builder.exclusiveStartKey(startKey);
 		});
 		Page<R> page = query.iterator().next();
 		String nextCursor = codec.encode(queryIdentity, page.lastEvaluatedKey());
@@ -52,13 +54,17 @@ public final class DynamoCursorQueries {
 
 	public static String identity(String table, String index, String... parameters) {
 		StringBuilder identity = new StringBuilder();
-		append(identity, table); append(identity, index);
-		for (String parameter : parameters) append(identity, parameter);
+		append(identity, table);
+		append(identity, index);
+		for (String parameter : parameters)
+			append(identity, parameter);
 		return identity.toString();
 	}
 
 	private static void append(StringBuilder target, String value) {
-		if (value == null) target.append("-1:");
-		else target.append(value.length()).append(':').append(value);
+		if (value == null)
+			target.append("-1:");
+		else
+			target.append(value.length()).append(':').append(value);
 	}
 }

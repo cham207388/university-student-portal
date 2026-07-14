@@ -19,15 +19,31 @@ public class DynamoDependencyChecker implements DependencyChecker {
 
 	public DynamoDependencyChecker(DynamoStudentQueries students, DynamoInstructorQueries instructors,
 			DynamoCourseQueries courses, EnrollmentRepository enrollments) {
-		this.students = students; this.instructors = instructors; this.courses = courses; this.enrollments = enrollments;
+		this.students = students;
+		this.instructors = instructors;
+		this.courses = courses;
+		this.enrollments = enrollments;
 	}
 
-	@Override public boolean departmentHasDependents(UUID id) {
+	@Override
+	public boolean departmentHasDependents(UUID id) {
 		return !students.findByDepartment(id, null, ONE).content().isEmpty()
 				|| !instructors.findByDepartment(id, ONE).content().isEmpty()
 				|| !courses.findByDepartment(id, ONE).content().isEmpty();
 	}
-	@Override public boolean studentHasEnrollmentHistory(UUID id) { return enrollments.existsByStudentId(id); }
-	@Override public boolean instructorHasCourses(UUID id) { return !courses.findByInstructor(id, ONE).content().isEmpty(); }
-	@Override public boolean courseHasEnrollmentHistory(UUID id) { return enrollments.existsByCourseId(id); }
+
+	@Override
+	public boolean studentHasEnrollmentHistory(UUID id) {
+		return enrollments.existsByStudentId(id);
+	}
+
+	@Override
+	public boolean instructorHasCourses(UUID id) {
+		return !courses.findByInstructor(id, ONE).content().isEmpty();
+	}
+
+	@Override
+	public boolean courseHasEnrollmentHistory(UUID id) {
+		return enrollments.existsByCourseId(id);
+	}
 }

@@ -24,7 +24,7 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 
 @Configuration(proxyBeanMethods = false)
-@Profile({"local-dynamodb", "test-dynamodb", "migration"})
+@Profile({ "local-dynamodb", "test-dynamodb", "migration" })
 @EnableConfigurationProperties(DynamoDbProperties.class)
 public class DynamoDbConfiguration {
 

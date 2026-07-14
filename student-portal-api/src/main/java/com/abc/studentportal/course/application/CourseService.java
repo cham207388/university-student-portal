@@ -17,7 +17,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 @Service
-@Profile({"local-dynamodb", "test-dynamodb"})
+@Profile({ "local-dynamodb", "test-dynamodb" })
 public class CourseService {
 	private final CourseRepository courses;
 	private final DepartmentRepository departments;
@@ -27,23 +27,30 @@ public class CourseService {
 
 	public CourseService(CourseRepository courses, DepartmentRepository departments,
 			InstructorRepository instructors, Clock clock, DependencyChecker dependencies) {
-		this.courses = courses; this.departments = departments; this.instructors = instructors; this.clock = clock;
+		this.courses = courses;
+		this.departments = departments;
+		this.instructors = instructors;
+		this.clock = clock;
 		this.dependencies = dependencies;
 	}
 
 	public Course create(CreateCommand command) {
 		validateRelationships(command.departmentId(), command.instructorId());
 		Instant now = clock.instant();
-		return courses.create(new Course(UUID.randomUUID(), command.courseCode(), command.title(), command.description(),
+		return courses.create(new Course(UUID.randomUUID(), command.courseCode(), command.title(),
+				command.description(),
 				command.credits(), command.capacity(), command.status(), command.departmentId(), command.instructorId(),
 				now, now, 0));
 	}
 
 	public Course update(UUID id, UpdateCommand command) {
-		Course current = get(id); validateRelationships(command.departmentId(), command.instructorId());
-		return courses.update(new Course(id, command.courseCode(), command.title(), command.description(), command.credits(),
-				command.capacity(), current.status(), command.departmentId(), command.instructorId(), current.createdAt(),
-				clock.instant(), command.version()));
+		Course current = get(id);
+		validateRelationships(command.departmentId(), command.instructorId());
+		return courses
+				.update(new Course(id, command.courseCode(), command.title(), command.description(), command.credits(),
+						command.capacity(), current.status(), command.departmentId(), command.instructorId(),
+						current.createdAt(),
+						clock.instant(), command.version()));
 	}
 
 	public Course changeStatus(UUID id, CourseStatus status, long version) {
@@ -59,14 +66,18 @@ public class CourseService {
 
 	public void delete(UUID id, long version) {
 		Course current = get(id);
-		if (dependencies.courseHasEnrollmentHistory(id)) throw new ConflictException("Course has enrollment history");
-		courses.delete(new Course(current.id(), current.courseCode(), current.title(), current.description(), current.credits(),
-				current.capacity(), current.status(), current.departmentId(), current.instructorId(), current.createdAt(),
+		if (dependencies.courseHasEnrollmentHistory(id))
+			throw new ConflictException("Course has enrollment history");
+		courses.delete(new Course(current.id(), current.courseCode(), current.title(), current.description(),
+				current.credits(),
+				current.capacity(), current.status(), current.departmentId(), current.instructorId(),
+				current.createdAt(),
 				current.updatedAt(), version));
 	}
 
 	private void validateRelationships(UUID departmentId, UUID instructorId) {
-		if (departments.findById(departmentId).isEmpty()) throw new ResourceNotFoundException("Department", departmentId);
+		if (departments.findById(departmentId).isEmpty())
+			throw new ResourceNotFoundException("Department", departmentId);
 		Instructor instructor = instructors.findById(instructorId)
 				.orElseThrow(() -> new ResourceNotFoundException("Instructor", instructorId));
 		if (!instructor.departmentId().equals(departmentId)) {
@@ -75,7 +86,10 @@ public class CourseService {
 	}
 
 	public record CreateCommand(String courseCode, String title, String description, int credits, int capacity,
-			CourseStatus status, UUID departmentId, UUID instructorId) { }
+			CourseStatus status, UUID departmentId, UUID instructorId) {
+	}
+
 	public record UpdateCommand(String courseCode, String title, String description, int credits, int capacity,
-			UUID departmentId, UUID instructorId, long version) { }
+			UUID departmentId, UUID instructorId, long version) {
+	}
 }

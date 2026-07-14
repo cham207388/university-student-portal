@@ -28,17 +28,27 @@ public class DepartmentDynamoRecord implements com.abc.studentportal.common.pers
 	private Long version;
 
 	@DynamoDbPartitionKey
-	public String getId() { return id; }
+	public String getId() {
+		return id;
+	}
 
 	@DynamoDbSecondaryPartitionKey(indexNames = "departments-by-code")
-	public String getCode() { return code; }
+	public String getCode() {
+		return code;
+	}
 
 	@DynamoDbSecondaryPartitionKey(indexNames = "departments-catalog")
-	public String getEntityType() { return entityType; }
+	public String getEntityType() {
+		return entityType;
+	}
 
 	@DynamoDbSecondarySortKey(indexNames = "departments-catalog")
-	public String getCreatedAtId() { return createdAtId; }
+	public String getCreatedAtId() {
+		return createdAtId;
+	}
 
 	@DynamoDbVersionAttribute
-	public Long getVersion() { return version; }
+	public Long getVersion() {
+		return version;
+	}
 }

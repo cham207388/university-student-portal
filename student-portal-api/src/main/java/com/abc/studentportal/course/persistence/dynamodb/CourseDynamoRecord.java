@@ -33,14 +33,53 @@ public class CourseDynamoRecord implements com.abc.studentportal.common.persiste
 	private String courseCodeId;
 	private Long version;
 
-	@DynamoDbPartitionKey public String getId() { return id; }
-	@DynamoDbSecondaryPartitionKey(indexNames = "courses-by-code") public String getCourseCode() { return courseCode; }
-	@DynamoDbSecondaryPartitionKey(indexNames = "courses-by-department") public String getDepartmentId() { return departmentId; }
-	@DynamoDbSecondaryPartitionKey(indexNames = "courses-by-instructor") public String getInstructorId() { return instructorId; }
-	@DynamoDbSecondaryPartitionKey(indexNames = "courses-by-status") public String getStatus() { return status; }
-	@DynamoDbSecondaryPartitionKey(indexNames = "courses-catalog") public String getEntityType() { return entityType; }
-	@DynamoDbSecondarySortKey(indexNames = "courses-catalog") public String getCreatedAtId() { return createdAtId; }
-	@DynamoDbSecondarySortKey(indexNames = "courses-by-status") public String getUpdatedAtId() { return updatedAtId; }
-	@DynamoDbSecondarySortKey(indexNames = {"courses-by-department", "courses-by-instructor"}) public String getCourseCodeId() { return courseCodeId; }
-	@DynamoDbVersionAttribute public Long getVersion() { return version; }
+	@DynamoDbPartitionKey
+	public String getId() {
+		return id;
+	}
+
+	@DynamoDbSecondaryPartitionKey(indexNames = "courses-by-code")
+	public String getCourseCode() {
+		return courseCode;
+	}
+
+	@DynamoDbSecondaryPartitionKey(indexNames = "courses-by-department")
+	public String getDepartmentId() {
+		return departmentId;
+	}
+
+	@DynamoDbSecondaryPartitionKey(indexNames = "courses-by-instructor")
+	public String getInstructorId() {
+		return instructorId;
+	}
+
+	@DynamoDbSecondaryPartitionKey(indexNames = "courses-by-status")
+	public String getStatus() {
+		return status;
+	}
+
+	@DynamoDbSecondaryPartitionKey(indexNames = "courses-catalog")
+	public String getEntityType() {
+		return entityType;
+	}
+
+	@DynamoDbSecondarySortKey(indexNames = "courses-catalog")
+	public String getCreatedAtId() {
+		return createdAtId;
+	}
+
+	@DynamoDbSecondarySortKey(indexNames = "courses-by-status")
+	public String getUpdatedAtId() {
+		return updatedAtId;
+	}
+
+	@DynamoDbSecondarySortKey(indexNames = { "courses-by-department", "courses-by-instructor" })
+	public String getCourseCodeId() {
+		return courseCodeId;
+	}
+
+	@DynamoDbVersionAttribute
+	public Long getVersion() {
+		return version;
+	}
 }

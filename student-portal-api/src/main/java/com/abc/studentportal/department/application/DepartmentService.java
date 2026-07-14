@@ -12,20 +12,23 @@ import java.time.Instant;
 import java.util.UUID;
 
 @Service
-@Profile({"local-dynamodb", "test-dynamodb"})
+@Profile({ "local-dynamodb", "test-dynamodb" })
 public class DepartmentService {
 	private final DepartmentRepository repository;
 	private final Clock clock;
 	private final DependencyChecker dependencies;
 
 	public DepartmentService(DepartmentRepository repository, Clock clock, DependencyChecker dependencies) {
-		this.repository = repository; this.clock = clock; this.dependencies = dependencies;
+		this.repository = repository;
+		this.clock = clock;
+		this.dependencies = dependencies;
 	}
 
 	public Department create(CreateCommand command) {
 		Instant now = clock.instant();
-		return repository.create(new Department(UUID.randomUUID(), command.code(), command.name(), command.description(),
-				now, now, 0));
+		return repository
+				.create(new Department(UUID.randomUUID(), command.code(), command.name(), command.description(),
+						now, now, 0));
 	}
 
 	public Department update(UUID id, UpdateCommand command) {
@@ -40,11 +43,15 @@ public class DepartmentService {
 
 	public void delete(UUID id, long version) {
 		Department current = get(id);
-		if (dependencies.departmentHasDependents(id)) throw new ConflictException("Department still has dependent records");
+		if (dependencies.departmentHasDependents(id))
+			throw new ConflictException("Department still has dependent records");
 		repository.delete(new Department(current.id(), current.code(), current.name(), current.description(),
 				current.createdAt(), current.updatedAt(), version));
 	}
 
-	public record CreateCommand(String code, String name, String description) { }
-	public record UpdateCommand(String code, String name, String description, long version) { }
+	public record CreateCommand(String code, String name, String description) {
+	}
+
+	public record UpdateCommand(String code, String name, String description, long version) {
+	}
 }

@@ -47,7 +47,8 @@ public class GlobalExceptionHandler {
 
 	@ExceptionHandler(HttpMessageNotReadableException.class)
 	ResponseEntity<ProblemDetail> handleMalformedRequest() {
-		ProblemDetail problem = problem(HttpStatus.BAD_REQUEST, "malformed-request", "Request body is malformed or contains an unsupported value");
+		ProblemDetail problem = problem(HttpStatus.BAD_REQUEST, "malformed-request",
+				"Request body is malformed or contains an unsupported value");
 		return ResponseEntity.badRequest().body(problem);
 	}
 
@@ -57,7 +58,7 @@ public class GlobalExceptionHandler {
 		return ResponseEntity.badRequest().body(problem);
 	}
 
-	@ExceptionHandler({MissingServletRequestParameterException.class, MethodArgumentTypeMismatchException.class})
+	@ExceptionHandler({ MissingServletRequestParameterException.class, MethodArgumentTypeMismatchException.class })
 	ResponseEntity<ProblemDetail> handleInvalidRequestParameter(Exception exception) {
 		ProblemDetail problem = problem(HttpStatus.BAD_REQUEST, "invalid-request", exception.getMessage());
 		return ResponseEntity.badRequest().body(problem);

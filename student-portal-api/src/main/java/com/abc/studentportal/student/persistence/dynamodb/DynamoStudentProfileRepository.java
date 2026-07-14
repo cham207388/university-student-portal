@@ -13,11 +13,28 @@ import java.util.UUID;
 public class DynamoStudentProfileRepository extends AbstractDynamoRepository<StudentProfile, StudentProfileDynamoRecord>
 		implements StudentProfileRepository {
 	public DynamoStudentProfileRepository(DynamoDbTables tables) {
-		super(tables.studentProfiles(), "studentId", StudentProfileDynamoMapper::toRecord, StudentProfileDynamoMapper::toDomain,
+		super(tables.studentProfiles(), "studentId", StudentProfileDynamoMapper::toRecord,
+				StudentProfileDynamoMapper::toDomain,
 				value -> value.studentId().toString());
 	}
-	@Override public StudentProfile create(StudentProfile value) { return createItem(value); }
-	@Override public StudentProfile update(StudentProfile value) { return updateItem(value); }
-	@Override public Optional<StudentProfile> findByStudentId(UUID id) { return findItem(id.toString()); }
-	@Override public void delete(StudentProfile value) { deleteItem(value, value.version()); }
+
+	@Override
+	public StudentProfile create(StudentProfile value) {
+		return createItem(value);
+	}
+
+	@Override
+	public StudentProfile update(StudentProfile value) {
+		return updateItem(value);
+	}
+
+	@Override
+	public Optional<StudentProfile> findByStudentId(UUID id) {
+		return findItem(id.toString());
+	}
+
+	@Override
+	public void delete(StudentProfile value) {
+		deleteItem(value, value.version());
+	}
 }

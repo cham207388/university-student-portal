@@ -9,7 +9,9 @@ import java.util.Map;
 public final class DynamoRelationshipCounters {
 	private final DynamoDbTables tables;
 
-	public DynamoRelationshipCounters(DynamoDbTables tables) { this.tables = tables; }
+	public DynamoRelationshipCounters(DynamoDbTables tables) {
+		this.tables = tables;
+	}
 
 	public TransactWriteItem department(String departmentId, String counter, int delta) {
 		return update(tables.departments().tableName(), departmentId, counter, delta);
@@ -30,6 +32,11 @@ public final class DynamoRelationshipCounters {
 				.build()).build();
 	}
 
-	private static AttributeValue string(String value) { return AttributeValue.builder().s(value).build(); }
-	private static AttributeValue number(long value) { return AttributeValue.builder().n(Long.toString(value)).build(); }
+	private static AttributeValue string(String value) {
+		return AttributeValue.builder().s(value).build();
+	}
+
+	private static AttributeValue number(long value) {
+		return AttributeValue.builder().n(Long.toString(value)).build();
+	}
 }

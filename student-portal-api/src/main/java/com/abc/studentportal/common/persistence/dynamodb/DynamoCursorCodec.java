@@ -17,7 +17,8 @@ public final class DynamoCursorCodec {
 	private static final int MAX_CURSOR_LENGTH = 8_192;
 
 	public String encode(String queryIdentity, Map<String, AttributeValue> key) {
-		if (key == null || key.isEmpty()) return null;
+		if (key == null || key.isEmpty())
+			return null;
 		try {
 			ByteArrayOutputStream bytes = new ByteArrayOutputStream();
 			try (DataOutputStream output = new DataOutputStream(bytes)) {
@@ -36,19 +37,25 @@ public final class DynamoCursorCodec {
 	}
 
 	public Map<String, AttributeValue> decode(String queryIdentity, String cursor) {
-		if (cursor == null || cursor.isBlank()) return Map.of();
-		if (cursor.length() > MAX_CURSOR_LENGTH) throw invalidCursor();
+		if (cursor == null || cursor.isBlank())
+			return Map.of();
+		if (cursor.length() > MAX_CURSOR_LENGTH)
+			throw invalidCursor();
 		try {
 			byte[] bytes = Base64.getUrlDecoder().decode(cursor);
 			try (DataInputStream input = new DataInputStream(new ByteArrayInputStream(bytes))) {
-				if (input.readInt() != VERSION || !queryIdentity.equals(input.readUTF())) throw invalidCursor();
+				if (input.readInt() != VERSION || !queryIdentity.equals(input.readUTF()))
+					throw invalidCursor();
 				int size = input.readInt();
-				if (size < 1 || size > 16) throw invalidCursor();
+				if (size < 1 || size > 16)
+					throw invalidCursor();
 				Map<String, AttributeValue> key = new LinkedHashMap<>();
 				for (int index = 0; index < size; index++) {
-					if (key.put(input.readUTF(), readValue(input)) != null) throw invalidCursor();
+					if (key.put(input.readUTF(), readValue(input)) != null)
+						throw invalidCursor();
 				}
-				if (input.available() != 0) throw invalidCursor();
+				if (input.available() != 0)
+					throw invalidCursor();
 				return Map.copyOf(key);
 			}
 		} catch (IllegalArgumentException | IOException exception) {
@@ -58,11 +65,14 @@ public final class DynamoCursorCodec {
 
 	private static void writeValue(DataOutputStream output, AttributeValue value) throws IOException {
 		if (value.s() != null) {
-			output.writeByte('S'); output.writeUTF(value.s());
+			output.writeByte('S');
+			output.writeUTF(value.s());
 		} else if (value.n() != null) {
-			output.writeByte('N'); output.writeUTF(value.n());
+			output.writeByte('N');
+			output.writeUTF(value.n());
 		} else if (value.b() != null) {
-			output.writeByte('B'); output.writeUTF(Base64.getEncoder().encodeToString(value.b().asByteArray()));
+			output.writeByte('B');
+			output.writeUTF(Base64.getEncoder().encodeToString(value.b().asByteArray()));
 		} else {
 			throw new IllegalArgumentException("Cursor contains an unsupported key type");
 		}

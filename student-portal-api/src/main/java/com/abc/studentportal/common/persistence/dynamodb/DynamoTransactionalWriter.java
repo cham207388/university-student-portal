@@ -53,10 +53,12 @@ public final class DynamoTransactionalWriter {
 				.expressionAttributeNames(Map.of("#version", "version"))
 				.expressionAttributeValues(Map.of(":version", number(expectedVersion))).build()).build());
 		for (DynamoUniqueClaim previous : previousClaims) {
-			if (!nextClaims.contains(previous)) actions.add(deleteClaim(table.tableName(), partitionKey, previous));
+			if (!nextClaims.contains(previous))
+				actions.add(deleteClaim(table.tableName(), partitionKey, previous));
 		}
 		for (DynamoUniqueClaim next : nextClaims) {
-			if (!previousClaims.contains(next)) actions.add(putClaim(table.tableName(), partitionKey, next));
+			if (!previousClaims.contains(next))
+				actions.add(putClaim(table.tableName(), partitionKey, next));
 		}
 		actions.addAll(additionalActions);
 		execute(actions, "Resource was modified or an alternate key is already in use");
@@ -83,11 +85,15 @@ public final class DynamoTransactionalWriter {
 			List<DynamoUniqueClaim> claims, List<TransactWriteItem> additionalActions, List<String> zeroCounters) {
 		List<TransactWriteItem> actions = new ArrayList<>();
 		StringBuilder condition = new StringBuilder("#version = :version");
-		Map<String, String> names = new java.util.LinkedHashMap<>(); names.put("#version", "version");
-		Map<String, AttributeValue> values = new java.util.LinkedHashMap<>(); values.put(":version", number(expectedVersion));
-		if (!zeroCounters.isEmpty()) values.put(":zero", number(0));
+		Map<String, String> names = new java.util.LinkedHashMap<>();
+		names.put("#version", "version");
+		Map<String, AttributeValue> values = new java.util.LinkedHashMap<>();
+		values.put(":version", number(expectedVersion));
+		if (!zeroCounters.isEmpty())
+			values.put(":zero", number(0));
 		for (int index = 0; index < zeroCounters.size(); index++) {
-			String alias = "#counter" + index; names.put(alias, zeroCounters.get(index));
+			String alias = "#counter" + index;
+			names.put(alias, zeroCounters.get(index));
 			condition.append(" AND (attribute_not_exists(").append(alias).append(") OR ")
 					.append(alias).append(" = :zero)");
 		}
@@ -126,6 +132,11 @@ public final class DynamoTransactionalWriter {
 				.expressionAttributeValues(Map.of(":owner", string(claim.ownerId()))).build()).build();
 	}
 
-	private static AttributeValue string(String value) { return AttributeValue.builder().s(value).build(); }
-	private static AttributeValue number(long value) { return AttributeValue.builder().n(Long.toString(value)).build(); }
+	private static AttributeValue string(String value) {
+		return AttributeValue.builder().s(value).build();
+	}
+
+	private static AttributeValue number(long value) {
+		return AttributeValue.builder().n(Long.toString(value)).build();
+	}
 }

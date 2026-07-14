@@ -13,7 +13,7 @@ import java.time.Instant;
 import java.util.UUID;
 
 @Service
-@Profile({"local-dynamodb", "test-dynamodb"})
+@Profile({ "local-dynamodb", "test-dynamodb" })
 public class InstructorService {
 	private final InstructorRepository instructors;
 	private final DepartmentRepository departments;
@@ -22,7 +22,10 @@ public class InstructorService {
 
 	public InstructorService(InstructorRepository instructors, DepartmentRepository departments, Clock clock,
 			DependencyChecker dependencies) {
-		this.instructors = instructors; this.departments = departments; this.clock = clock; this.dependencies = dependencies;
+		this.instructors = instructors;
+		this.departments = departments;
+		this.clock = clock;
+		this.dependencies = dependencies;
 	}
 
 	public Instructor create(CreateCommand command) {
@@ -33,7 +36,8 @@ public class InstructorService {
 	}
 
 	public Instructor update(UUID id, UpdateCommand command) {
-		Instructor current = get(id); requireDepartment(command.departmentId());
+		Instructor current = get(id);
+		requireDepartment(command.departmentId());
 		if (!current.departmentId().equals(command.departmentId()) && dependencies.instructorHasCourses(id)) {
 			throw new ConflictException("Instructor with assigned courses cannot move departments");
 		}
@@ -47,17 +51,23 @@ public class InstructorService {
 
 	public void delete(UUID id, long version) {
 		Instructor current = get(id);
-		if (dependencies.instructorHasCourses(id)) throw new ConflictException("Instructor still has assigned courses");
-		instructors.delete(new Instructor(current.id(), current.employeeNumber(), current.firstName(), current.lastName(),
-				current.email(), current.departmentId(), current.createdAt(), current.updatedAt(), version));
+		if (dependencies.instructorHasCourses(id))
+			throw new ConflictException("Instructor still has assigned courses");
+		instructors
+				.delete(new Instructor(current.id(), current.employeeNumber(), current.firstName(), current.lastName(),
+						current.email(), current.departmentId(), current.createdAt(), current.updatedAt(), version));
 	}
 
 	private void requireDepartment(UUID id) {
-		if (departments.findById(id).isEmpty()) throw new ResourceNotFoundException("Department", id);
+		if (departments.findById(id).isEmpty())
+			throw new ResourceNotFoundException("Department", id);
 	}
 
 	public record CreateCommand(String employeeNumber, String firstName, String lastName, String email,
-			UUID departmentId) { }
+			UUID departmentId) {
+	}
+
 	public record UpdateCommand(String employeeNumber, String firstName, String lastName, String email,
-			UUID departmentId, long version) { }
+			UUID departmentId, long version) {
+	}
 }
