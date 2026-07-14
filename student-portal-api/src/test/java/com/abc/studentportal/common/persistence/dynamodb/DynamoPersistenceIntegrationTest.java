@@ -4,6 +4,7 @@ import com.abc.studentportal.common.exception.ConflictException;
 import com.abc.studentportal.common.exception.InvalidRequestException;
 import com.abc.studentportal.common.application.DependencyChecker;
 import com.abc.studentportal.common.pagination.CursorRequest;
+import com.abc.studentportal.common.seed.DynamoDevelopmentSeeder;
 import com.abc.studentportal.course.domain.Course;
 import com.abc.studentportal.course.domain.CourseStatus;
 import com.abc.studentportal.course.persistence.dynamodb.CourseDynamoRecord;
@@ -50,6 +51,7 @@ import software.amazon.awssdk.services.dynamodb.model.ScalarAttributeType;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -477,6 +479,26 @@ class DynamoPersistenceIntegrationTest {
 		assertEquals(1, instructorWins.get());
 	}
 
+	@Test
+	void developmentSeedIsCompleteAndIdempotent() {
+		DynamoDevelopmentSeeder seeder = new DynamoDevelopmentSeeder(departments, students, profiles, instructors, courses, enrollments);
+		seeder.seed();
+		seeder.seed();
+
+		assertEquals("CSE", departments.findById(seedId("department-computing")).orElseThrow().code());
+		for (int index = 1; index <= 10; index++) {
+			UUID studentId = seedId("student-" + index);
+			assertTrue(students.findById(studentId).isPresent());
+			assertTrue(profiles.findByStudentId(studentId).isPresent());
+			assertTrue(courses.findById(seedId("course-" + index)).isPresent());
+		}
+		for (int index = 1; index <= 5; index++) assertTrue(instructors.findById(seedId("instructor-" + index)).isPresent());
+		for (int index = 1; index <= 6; index++) assertTrue(enrollments.findById(seedId("enrollment-" + index)).isPresent());
+		assertEquals(2L, occupiedSeats(seedId("course-1")));
+		assertEquals(CourseStatus.CANCELLED, courses.findById(seedId("course-7")).orElseThrow().status());
+		assertEquals(StudentStatus.GRADUATED, students.findById(seedId("student-9")).orElseThrow().status());
+	}
+
 	private static AtomicInteger race(ThrowingAction first, ThrowingAction second) throws Exception {
 		CountDownLatch start = new CountDownLatch(1); AtomicInteger successes = new AtomicInteger();
 		try (var executor = Executors.newFixedThreadPool(2)) {
@@ -546,6 +568,10 @@ class DynamoPersistenceIntegrationTest {
 
 	private static software.amazon.awssdk.enhanced.dynamodb.Key key(UUID id) {
 		return software.amazon.awssdk.enhanced.dynamodb.Key.builder().partitionValue(id.toString()).build();
+	}
+
+	private static UUID seedId(String name) {
+		return UUID.nameUUIDFromBytes(("student-portal:" + name).getBytes(StandardCharsets.UTF_8));
 	}
 
 	private record TableSpec(String suffix, String partitionKey, List<IndexSpec> indexes) {

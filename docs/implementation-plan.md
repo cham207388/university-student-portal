@@ -31,8 +31,8 @@ uniqueness across create, update, and delete. Cross-table enrollment transaction
 active-pair uniqueness, transitions, and Student/Course history counters. Dependency-aware services guard deletion and
 atomically remove Student/Profile. Transactional parent dependency counters serialize Department/Instructor deletion
 against concurrent child creation, movement, and deletion. Concrete DynamoDB controllers now expose CRUD, status,
-profile, enrollment, cursor catalog, and direct relationship-index operations. Bounded Student/Course derived views,
-seed data, and full live API scenarios remain in this phase.
+profile, enrollment, cursor catalog, and direct relationship-index operations. Explicit idempotent development seeding
+and a live HTTP smoke workflow are implemented and verified. Bounded Student/Course derived views remain in this phase.
 
 ## Phase 4 — PostgreSQL infrastructure and model
 

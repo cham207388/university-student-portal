@@ -2,6 +2,29 @@
 
 ## Completed Tasks
 
+### DynamoDB development seeding and live HTTP workflow
+
+- Added an opt-in `local-dynamodb` seeder with deterministic UUIDs and idempotent strong-read guards.
+- Seed writes use normal repositories and transactions, preserving uniqueness claims, dependency/enrollment counters,
+  capacity, versions, and active locks instead of bypassing application persistence rules.
+- Added three Departments, ten Students and Profiles, five Instructors, ten Courses, and six Enrollments with varied
+  statuses and an authoritative full-course example.
+- Added Makefile run/seed/smoke commands, safe environment defaults, an executable HTTP smoke script, and a dedicated
+  developer workflow document.
+- Added LocalStack coverage that runs the seeder twice and verifies completeness, stable state, varied statuses, and full
+  capacity.
+- Applied Terraform to an existing healthy LocalStack Pro instance, launched the seeded application, and passed the live
+  ten-request HTTP workflow across health, resources, relationships, cursors, validation, unsupported filters, and 404s.
+
+Verification results:
+
+- `./gradlew clean check`: successful; 34 unit/MVC tests and 10 LocalStack integration tests passed.
+- `bash -n scripts/dynamodb-api-smoke.sh`: successful.
+- `make -n app-run-dynamodb-seeded api-smoke`: successful.
+- `terraform -chdir=infrastructure/local apply -auto-approve`: successful; six tables matched configuration.
+- `./scripts/dynamodb-api-smoke.sh`: successful against the seeded running application.
+- `git diff --check`: no whitespace errors.
+
 ### DynamoDB REST controllers
 
 - Added profile-scoped controllers for Departments, Students/Profiles, Instructors, Courses, and Enrollments.
@@ -269,13 +292,13 @@ Risks and follow-ups:
 
 ## In Progress
 
-- Add bounded Student/Course derived relationship views and runnable seed data for live HTTP scenarios.
+- Add bounded Student/Course derived relationship views.
 
 ## Blocked
 
 ## Next Tasks
 
-- Add bounded Student/Course derived relationship views, seed-data support, and live HTTP workflow tests.
+- Add bounded, deduplicated Student/Course derived relationship views and their cursor semantics.
 
 ### Six-table DynamoDB persistence foundation
 

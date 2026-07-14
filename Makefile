@@ -1,4 +1,5 @@
-.PHONY: localstack-up localstack-down terraform-init terraform-validate terraform-plan terraform-apply terraform-destroy check
+.PHONY: localstack-up localstack-down terraform-init terraform-validate terraform-plan terraform-apply terraform-destroy \
+	app-run-dynamodb app-run-dynamodb-seeded api-smoke check
 
 localstack-up:
 	docker compose up -d localstack
@@ -20,6 +21,15 @@ terraform-apply:
 
 terraform-destroy:
 	terraform -chdir=infrastructure/local destroy
+
+app-run-dynamodb:
+	cd student-portal-api && ./gradlew bootRun --args='--spring.profiles.active=local-dynamodb'
+
+app-run-dynamodb-seeded:
+	cd student-portal-api && STUDENT_PORTAL_SEED_ENABLED=true ./gradlew bootRun --args='--spring.profiles.active=local-dynamodb'
+
+api-smoke:
+	./scripts/dynamodb-api-smoke.sh
 
 check:
 	cd student-portal-api && ./gradlew clean check

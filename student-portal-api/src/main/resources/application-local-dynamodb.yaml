@@ -1,4 +1,6 @@
 student-portal:
+  seed:
+    enabled: ${STUDENT_PORTAL_SEED_ENABLED:false}
   dynamodb:
     region: ${AWS_REGION:us-east-1}
     endpoint: ${DYNAMODB_ENDPOINT:http://localhost:4566}

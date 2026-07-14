@@ -12,8 +12,8 @@ alternate-key claims and relationship-validating application services are now im
 Profiles, Instructors, and Courses. Cross-table enrollment/capacity transactions, active locks, history counters, and
 dependency-aware deletion are implemented. Authoritative parent counters now close Department/Instructor deletion races
 with concurrent relationship writes. DynamoDB-profile controllers now expose CRUD, status transitions, profiles,
-enrollment workflows, cursor catalogs, and direct relationship collections. Seed data, live HTTP scenarios, and the two
-derived Student/Course many-to-many views remain later checkpoints.
+enrollment workflows, cursor catalogs, and direct relationship collections. An explicitly enabled idempotent DynamoDB
+seeder and live HTTP smoke workflow are available. The two derived Student/Course many-to-many views remain pending.
 
 ## Repository layout
 
@@ -83,6 +83,19 @@ The profile reads `AWS_REGION`, `DYNAMODB_ENDPOINT`, and six table-name variable
 `.env.example`. The application does not create infrastructure on startup. The tables mirror domain boundaries for
 migration learning, but reference attributes are not foreign keys and DynamoDB performs no joins.
 
+To load deterministic development data and test the running API:
+
+```shell
+make app-run-dynamodb-seeded
+# In another terminal:
+make api-smoke
+```
+
+The seeder runs only with the `local-dynamodb` profile and `STUDENT_PORTAL_SEED_ENABLED=true`. It is disabled by default,
+safe to rerun, and creates three Departments, ten Students with Profiles, five Instructors, ten Courses, and six
+Enrollments. The data includes multiple statuses and a full two-seat Course. See
+[DynamoDB development data](docs/dynamodb-development-data.md) for its behavior and stable smoke-test identifiers.
+
 To remove the local tables and services:
 
 ```shell
@@ -103,6 +116,7 @@ LocalStack instance can be used by Terraform at the same endpoint; do not stop u
 - [DynamoDB table design](docs/dynamodb-table-design.md)
 - [DynamoDB relationships](docs/dynamodb-relationships.md)
 - [DynamoDB transactions](docs/dynamodb-transactions.md)
+- [DynamoDB development data](docs/dynamodb-development-data.md)
 
-Seed data, Swagger UI, PostgreSQL profiles, migration commands, and reconciliation instructions will be added and
+PostgreSQL seed data, Swagger UI, PostgreSQL profiles, migration commands, and reconciliation instructions will be added and
 verified in their corresponding phases.
