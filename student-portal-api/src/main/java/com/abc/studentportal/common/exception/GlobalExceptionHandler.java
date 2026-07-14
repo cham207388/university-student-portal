@@ -7,8 +7,10 @@ import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,6 +53,12 @@ public class GlobalExceptionHandler {
 
 	@ExceptionHandler(IllegalArgumentException.class)
 	ResponseEntity<ProblemDetail> handleIllegalArgument(IllegalArgumentException exception) {
+		ProblemDetail problem = problem(HttpStatus.BAD_REQUEST, "invalid-request", exception.getMessage());
+		return ResponseEntity.badRequest().body(problem);
+	}
+
+	@ExceptionHandler({MissingServletRequestParameterException.class, MethodArgumentTypeMismatchException.class})
+	ResponseEntity<ProblemDetail> handleInvalidRequestParameter(Exception exception) {
 		ProblemDetail problem = problem(HttpStatus.BAD_REQUEST, "invalid-request", exception.getMessage());
 		return ResponseEntity.badRequest().body(problem);
 	}

@@ -50,6 +50,16 @@ with different filters, or supplying malformed cursor data, returns a `400` inva
 
 Because offsets, arbitrary sorting, and exact totals are not efficient DynamoDB access patterns, these variants are explicit database capabilities. Contract parity tests will verify shared resource semantics and separately verify the pagination differences.
 
+## DynamoDB controller implementation
+
+The DynamoDB profile currently exposes all resource create/get/update/status/delete operations, Student Profile
+operations, Enrollment operations, catalogs, Department child collections, Instructor Courses, and Student/Course
+Enrollment collections. Physical deletes carry the expected version as a required `version` query parameter.
+
+`GET /students/{id}/courses` and `GET /courses/{id}/students` remain intentionally unexposed until a bounded batch-read
+composition port defines deduplication and cursor behavior across enrollment history. Exact alternate-key collection
+filters are likewise deferred to their dedicated lookup capability; no controller substitutes a scan.
+
 ## Delete semantics
 
 Department, student, profile, instructor, and course deletion is physical only when the domain deletion policy permits it. Deleting an enrollment performs a domain-level transition to `DROPPED` and returns the updated enrollment representation, because history is retained.

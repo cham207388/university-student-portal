@@ -11,7 +11,9 @@ documented catalog and relationship GSI is also implemented through database-spe
 alternate-key claims and relationship-validating application services are now implemented for Departments, Students,
 Profiles, Instructors, and Courses. Cross-table enrollment/capacity transactions, active locks, history counters, and
 dependency-aware deletion are implemented. Authoritative parent counters now close Department/Instructor deletion races
-with concurrent relationship writes. Controllers, seed data, and PostgreSQL remain later checkpoints.
+with concurrent relationship writes. DynamoDB-profile controllers now expose CRUD, status transitions, profiles,
+enrollment workflows, cursor catalogs, and direct relationship collections. Seed data, live HTTP scenarios, and the two
+derived Student/Course many-to-many views remain later checkpoints.
 
 ## Repository layout
 

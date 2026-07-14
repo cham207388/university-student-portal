@@ -30,8 +30,9 @@ Application services strongly validate entity relationships, and transactional s
 uniqueness across create, update, and delete. Cross-table enrollment transactions now enforce eligibility, capacity,
 active-pair uniqueness, transitions, and Student/Course history counters. Dependency-aware services guard deletion and
 atomically remove Student/Profile. Transactional parent dependency counters serialize Department/Instructor deletion
-against concurrent child creation, movement, and deletion. Controllers, seed data, and full API scenarios remain in this
-phase.
+against concurrent child creation, movement, and deletion. Concrete DynamoDB controllers now expose CRUD, status,
+profile, enrollment, cursor catalog, and direct relationship-index operations. Bounded Student/Course derived views,
+seed data, and full live API scenarios remain in this phase.
 
 ## Phase 4 — PostgreSQL infrastructure and model
 

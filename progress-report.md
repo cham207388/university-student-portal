@@ -2,6 +2,22 @@
 
 ## Completed Tasks
 
+### DynamoDB REST controllers
+
+- Added profile-scoped controllers for Departments, Students/Profiles, Instructors, Courses, and Enrollments.
+- Exposed create/get/update/status/delete workflows with validated DTOs, `Location` headers, optimistic versions, and
+  the documented Enrollment DELETE-as-drop behavior.
+- Exposed opaque cursor catalogs and direct relationship-index collections, with explicit rejection of unsupported
+  DynamoDB filter combinations instead of scans or unbounded in-memory filtering.
+- Added request-parameter Problem Details handling for missing versions, malformed UUIDs, and invalid enum/query values.
+- Added MVC coverage for creation, response mapping, cursor envelopes, validation, filter rejection, and versioned delete.
+- Kept Student-to-Courses and Course-to-Students unexposed pending a bounded, deduplicated batch-composition capability.
+
+Verification results:
+
+- `./gradlew clean check`: successful; 34 unit/MVC tests and 9 LocalStack integration tests passed.
+- `git diff --check`: no whitespace errors.
+
 ### Authoritative parent dependency counters
 
 - Added Department Student/Instructor/Course counters and an Instructor Course counter, initialized on entity creation
@@ -253,13 +269,13 @@ Risks and follow-ups:
 
 ## In Progress
 
-- Add concrete REST controllers backed by the completed DynamoDB application services.
+- Add bounded Student/Course derived relationship views and runnable seed data for live HTTP scenarios.
 
 ## Blocked
 
 ## Next Tasks
 
-- Add concrete REST controllers backed by those services and seed-data support.
+- Add bounded Student/Course derived relationship views, seed-data support, and live HTTP workflow tests.
 
 ### Six-table DynamoDB persistence foundation
 

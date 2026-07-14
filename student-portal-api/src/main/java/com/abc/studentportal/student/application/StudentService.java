@@ -62,6 +62,12 @@ public class StudentService {
 		return students.findById(id).orElseThrow(() -> new ResourceNotFoundException("Student", id));
 	}
 
+	public StudentProfile getProfile(UUID studentId) {
+		get(studentId);
+		return profiles.findByStudentId(studentId)
+				.orElseThrow(() -> new ResourceNotFoundException("Student profile", studentId));
+	}
+
 	public void delete(UUID id, long version) {
 		Student current = get(id);
 		if (dependencies.studentHasEnrollmentHistory(id)) throw new ConflictException("Student has enrollment history");

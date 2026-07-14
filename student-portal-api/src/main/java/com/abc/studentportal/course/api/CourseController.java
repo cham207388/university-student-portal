@@ -1,0 +1,66 @@
+package com.abc.studentportal.course.api;
+
+import com.abc.studentportal.common.api.CursorPageResponse;
+import com.abc.studentportal.common.exception.InvalidRequestException;
+import com.abc.studentportal.common.pagination.CursorPage;
+import com.abc.studentportal.common.pagination.CursorRequest;
+import com.abc.studentportal.course.application.CourseService;
+import com.abc.studentportal.course.application.DynamoCourseQueries;
+import com.abc.studentportal.course.domain.CourseStatus;
+import com.abc.studentportal.enrollment.api.EnrollmentApi;
+import com.abc.studentportal.enrollment.api.EnrollmentMapper;
+import com.abc.studentportal.enrollment.application.DynamoEnrollmentQueries;
+import jakarta.validation.Valid;
+import org.springframework.context.annotation.Profile;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.net.URI;
+import java.time.Instant;
+import java.util.UUID;
+import java.util.function.Function;
+
+@RestController
+@Profile({"local-dynamodb", "test-dynamodb"})
+@RequestMapping("/api/v1/courses")
+public class CourseController {
+	private final CourseService service; private final DynamoCourseQueries queries; private final DynamoEnrollmentQueries enrollments;
+	public CourseController(CourseService service, DynamoCourseQueries queries, DynamoEnrollmentQueries enrollments) {
+		this.service = service; this.queries = queries; this.enrollments = enrollments;
+	}
+	@PostMapping ResponseEntity<CourseApi.Response> create(@Valid @RequestBody CourseApi.CreateRequest request) {
+		var value = service.create(new CourseService.CreateCommand(request.courseCode(), request.title(), request.description(),
+				request.credits(), request.capacity(), request.status(), request.departmentId(), request.instructorId()));
+		return ResponseEntity.created(URI.create("/api/v1/courses/" + value.id())).body(CourseMapper.toResponse(value));
+	}
+	@GetMapping("/{id}") CourseApi.Response get(@PathVariable UUID id) { return CourseMapper.toResponse(service.get(id)); }
+	@GetMapping CursorPageResponse<CourseApi.Response> list(@RequestParam(required = false) UUID departmentId,
+			@RequestParam(required = false) UUID instructorId, @RequestParam(required = false) CourseStatus status,
+			@RequestParam(defaultValue = "20") int limit, @RequestParam(required = false) String cursor) {
+		int filters = (departmentId == null ? 0 : 1) + (instructorId == null ? 0 : 1) + (status == null ? 0 : 1);
+		if (filters > 1) throw new InvalidRequestException("DynamoDB course lists support one filter at a time");
+		var request = new CursorRequest(limit, cursor);
+		CursorPage<com.abc.studentportal.course.domain.Course> page = departmentId != null ? queries.findByDepartment(departmentId, request)
+				: instructorId != null ? queries.findByInstructor(instructorId, request)
+				: status != null ? queries.findByStatus(status, request) : queries.findAll(request);
+		return page(page, CourseMapper::toResponse);
+	}
+	@PutMapping("/{id}") CourseApi.Response update(@PathVariable UUID id, @Valid @RequestBody CourseApi.UpdateRequest request) {
+		return CourseMapper.toResponse(service.update(id, new CourseService.UpdateCommand(request.courseCode(), request.title(),
+				request.description(), request.credits(), request.capacity(), request.departmentId(), request.instructorId(), request.version())));
+	}
+	@PatchMapping("/{id}/status") CourseApi.Response status(@PathVariable UUID id, @Valid @RequestBody CourseApi.StatusRequest request) {
+		return CourseMapper.toResponse(service.changeStatus(id, request.status(), request.version()));
+	}
+	@DeleteMapping("/{id}") ResponseEntity<Void> delete(@PathVariable UUID id, @RequestParam long version) {
+		service.delete(id, version); return ResponseEntity.noContent().build();
+	}
+	@GetMapping("/{id}/enrollments") CursorPageResponse<EnrollmentApi.Response> enrollments(@PathVariable UUID id,
+			@RequestParam(required = false) Instant from, @RequestParam(required = false) Instant to,
+			@RequestParam(defaultValue = "20") int limit, @RequestParam(required = false) String cursor) {
+		service.get(id); return page(enrollments.findByCourse(id, from, to, new CursorRequest(limit, cursor)), EnrollmentMapper::toResponse);
+	}
+	private static <D, R> CursorPageResponse<R> page(CursorPage<D> page, Function<D, R> mapper) {
+		return new CursorPageResponse<>(page.content().stream().map(mapper).toList(), page.limit(), page.nextCursor(), page.hasNext());
+	}
+}
