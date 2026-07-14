@@ -1,0 +1,3 @@
+aws_region   = "us-east-1"
+aws_endpoint = "http://localhost:4566"
+table_name   = "student-portal"

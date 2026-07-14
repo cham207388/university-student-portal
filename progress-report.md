@@ -2,6 +2,36 @@
 
 ## Completed Tasks
 
+### DynamoDB infrastructure and access-pattern design
+
+- Inventoried entity, relationship, enrollment, integrity, deletion, filtering, ordering, consistency, and transaction access patterns before selecting keys.
+- Selected and documented a single-table design with authoritative items, unique claims, enrollment copies, an active-pair claim, and course capacity state.
+- Defined four sparse GSIs for entity catalogs, department membership, status, and instructor courses.
+- Explicitly documented unsupported DynamoDB filters/sorts and the intentional migration-only scan exception.
+- Added LocalStack Pro Compose configuration with a required external token, health check, persistence, named volume, and dedicated network.
+- Added profile-scoped, validated `DynamoDbProperties` and `local-dynamodb` configuration.
+- Added a reusable Terraform DynamoDB module and local root configuration with Terraform 1.14 and AWS provider 6 constraints.
+- Generated and committed the provider lock selection for HashiCorp AWS provider 6.54.0.
+- Replaced deprecated GSI hash/range arguments with current `key_schema` blocks.
+- Applied Terraform to LocalStack Pro and verified the table plus all four GSIs are active.
+
+Verification results:
+
+- `docker compose config --quiet`: successful.
+- `terraform init -backend=false`: successful; AWS provider 6.54.0 installed.
+- `terraform validate`: successful with no warnings after the GSI syntax correction.
+- Initial no-refresh plan: one table to add, no other actions.
+- `terraform apply -auto-approve`: successful; one resource added.
+- Post-apply plan: no changes.
+- Live `describe-table`: table `ACTIVE`; composite `PK`/`SK` and four expected GSIs all `ACTIVE`.
+- `./gradlew clean check`: successful, 17 tests passed.
+
+Operational findings:
+
+- The first project container startup found host ports `4510` and then `4566` already allocated by an existing healthy LocalStack Pro container.
+- The optional external-service port range was removed because DynamoDB needs only port `4566`.
+- The existing user-managed LocalStack container was preserved and used for verification; the failed project-owned container was removed.
+
 ### Phase 1 — core domain and REST contracts
 
 - Added persistence-neutral records for Department, Student, StudentProfile, Instructor, Course, and Enrollment.
@@ -86,8 +116,8 @@ Risks and follow-ups:
 
 ## Next Tasks
 
-- Create `docs/dynamodb-access-patterns.md` before choosing any DynamoDB keys.
-- Decide and document the DynamoDB table, item ownership, denormalization, and GSI design.
-- Add LocalStack Pro Compose configuration and typed `local-dynamodb` properties.
-- Provision the approved table design with the required Terraform module and local stack.
-- Validate Terraform and create the `infra: provision LocalStack DynamoDB with Terraform` checkpoint.
+- Add AWS SDK for Java 2.x and DynamoDB Enhanced Client dependencies.
+- Implement explicit table schemas, key factories, DynamoDB records, and domain mapping.
+- Implement conditional unique claims and optimistic concurrency in database-specific adapters.
+- Implement repository capability interfaces for each supported GSI/cursor query.
+- Add focused LocalStack Testcontainers coverage for CRUD and key/index behavior.

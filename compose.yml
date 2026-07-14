@@ -1,0 +1,31 @@
+name: student-portal
+
+services:
+  localstack:
+    image: localstack/localstack-pro:4.14.0
+    container_name: student-portal-localstack
+    ports:
+      - "127.0.0.1:4566:4566"
+    environment:
+      LOCALSTACK_AUTH_TOKEN: ${LOCALSTACK_AUTH_TOKEN:?Set LOCALSTACK_AUTH_TOKEN in your shell}
+      SERVICES: dynamodb
+      DEBUG: ${LOCALSTACK_DEBUG:-0}
+      PERSISTENCE: "1"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:4566/_localstack/health"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 10s
+    volumes:
+      - localstack-data:/var/lib/localstack
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - student-portal-network
+
+volumes:
+  localstack-data:
+
+networks:
+  student-portal-network:
+    name: student-portal-network
