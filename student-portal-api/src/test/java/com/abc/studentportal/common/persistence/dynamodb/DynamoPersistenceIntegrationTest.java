@@ -86,6 +86,8 @@ class DynamoPersistenceIntegrationTest {
 	private static DynamoInstructorRepository instructors;
 	private static DynamoCourseRepository courses;
 	private static DynamoEnrollmentRepository enrollments;
+	private static com.abc.studentportal.enrollment.persistence.dynamodb.DynamoEnrollmentTransactionWriter enrollmentWriter;
+	private static DynamoStudentCourseQueryService relationships;
 	private static DependencyChecker dependencies;
 
 	@BeforeAll
@@ -114,8 +116,9 @@ class DynamoPersistenceIntegrationTest {
 		profiles = new DynamoStudentProfileRepository(tables);
 		instructors = new DynamoInstructorRepository(tables, cursorCodec, writer, relationshipCounters);
 		courses = new DynamoCourseRepository(tables, cursorCodec, writer, relationshipCounters);
-		enrollments = new DynamoEnrollmentRepository(tables, cursorCodec,
-				new com.abc.studentportal.enrollment.persistence.dynamodb.DynamoEnrollmentTransactionWriter(client, tables));
+		enrollmentWriter = new com.abc.studentportal.enrollment.persistence.dynamodb.DynamoEnrollmentTransactionWriter(client, tables);
+		enrollments = new DynamoEnrollmentRepository(tables, cursorCodec, enrollmentWriter);
+		relationships = new DynamoStudentCourseQueryService(client, tables, cursorCodec);
 		dependencies = new DynamoDependencyChecker(students, instructors, courses, enrollments);
 	}
 
@@ -481,7 +484,8 @@ class DynamoPersistenceIntegrationTest {
 
 	@Test
 	void developmentSeedIsCompleteAndIdempotent() {
-		DynamoDevelopmentSeeder seeder = new DynamoDevelopmentSeeder(departments, students, profiles, instructors, courses, enrollments);
+		DynamoDevelopmentSeeder seeder = new DynamoDevelopmentSeeder(departments, students, profiles, instructors, courses,
+				enrollments, enrollmentWriter);
 		seeder.seed();
 		seeder.seed();
 
@@ -497,6 +501,45 @@ class DynamoPersistenceIntegrationTest {
 		assertEquals(2L, occupiedSeats(seedId("course-1")));
 		assertEquals(CourseStatus.CANCELLED, courses.findById(seedId("course-7")).orElseThrow().status());
 		assertEquals(StudentStatus.GRADUATED, students.findById(seedId("student-9")).orElseThrow().status());
+	}
+
+	@Test
+	void materializesDeduplicatedStudentCourseRelationshipsWithStableCursors() {
+		Instant now = Instant.parse("2026-10-01T00:00:00Z");
+		String suffix = UUID.randomUUID().toString().substring(0, 6).toUpperCase(java.util.Locale.ROOT);
+		Department department = departments.create(new Department(UUID.randomUUID(), "ER" + suffix, "Edge relationships", null,
+				now, now, 0));
+		Instructor instructor = instructors.create(new Instructor(UUID.randomUUID(), "EI" + suffix, "Edge", "Teacher",
+				"edge-" + suffix.toLowerCase(java.util.Locale.ROOT) + "@example.com", department.id(), now, now, 0));
+		Student first = createStudent("ES" + suffix + "A", department.id(), now);
+		Student second = createStudent("ES" + suffix + "B", department.id(), now);
+		Course firstCourse = courses.create(new Course(UUID.randomUUID(), "EC" + suffix + "A", "Edge A", null, 3, 5,
+				CourseStatus.OPEN, department.id(), instructor.id(), now, now, 0));
+		Course secondCourse = courses.create(new Course(UUID.randomUUID(), "EC" + suffix + "B", "Edge B", null, 3, 5,
+				CourseStatus.OPEN, department.id(), instructor.id(), now, now, 0));
+		Enrollment original = enrollments.create(new Enrollment(UUID.randomUUID(), first.id(), firstCourse.id(),
+				EnrollmentStatus.ENROLLED, now, null, null, now, now, 0));
+		enrollments.update(original.transitionTo(EnrollmentStatus.DROPPED, null, now.plusSeconds(1)));
+		enrollments.create(new Enrollment(UUID.randomUUID(), first.id(), firstCourse.id(), EnrollmentStatus.ENROLLED,
+				now.plusSeconds(2), null, null, now.plusSeconds(2), now.plusSeconds(2), 0));
+		enrollments.create(new Enrollment(UUID.randomUUID(), first.id(), secondCourse.id(), EnrollmentStatus.WAITLISTED,
+				now.plusSeconds(3), null, null, now.plusSeconds(3), now.plusSeconds(3), 0));
+		enrollments.create(new Enrollment(UUID.randomUUID(), second.id(), firstCourse.id(), EnrollmentStatus.WAITLISTED,
+				now.plusSeconds(4), null, null, now.plusSeconds(4), now.plusSeconds(4), 0));
+
+		var firstPage = relationships.findCoursesByStudent(first.id(), new CursorRequest(1, null));
+		List<Course> relatedCourses = new ArrayList<>(firstPage.content()); String cursor = firstPage.nextCursor();
+		while (cursor != null) {
+			var page = relationships.findCoursesByStudent(first.id(), new CursorRequest(1, cursor));
+			relatedCourses.addAll(page.content()); cursor = page.nextCursor();
+		}
+		assertTrue(firstPage.hasNext());
+		assertEquals(Set.of(firstCourse.id(), secondCourse.id()), relatedCourses.stream().map(Course::id).collect(Collectors.toSet()));
+		assertEquals(2, relatedCourses.size());
+		assertEquals(Set.of(first.id(), second.id()), relationships.findStudentsByCourse(firstCourse.id(),
+				new CursorRequest(10, null)).content().stream().map(Student::id).collect(Collectors.toSet()));
+		assertThrows(InvalidRequestException.class, () -> relationships.findCoursesByStudent(second.id(),
+				new CursorRequest(1, firstPage.nextCursor())));
 	}
 
 	private static AtomicInteger race(ThrowingAction first, ThrowingAction second) throws Exception {
@@ -598,5 +641,7 @@ class DynamoPersistenceIntegrationTest {
 					new IndexSpec("courses-by-status", "status", "updatedAtId"), new IndexSpec("courses-catalog", "entityType", "createdAtId")),
 			new TableSpec("enrollments", new IndexSpec("enrollments-by-student", "studentId", "enrolledAtId"),
 					new IndexSpec("enrollments-by-course", "courseId", "enrolledAtId"), new IndexSpec("enrollments-by-status", "status", "enrolledAtId"),
-					new IndexSpec("enrollments-catalog", "entityType", "enrolledAtId")));
+					new IndexSpec("enrollments-catalog", "entityType", "enrolledAtId"),
+					new IndexSpec("enrollment-relationships-by-student", "relationshipStudentId", "relationshipCourseId"),
+					new IndexSpec("enrollment-relationships-by-course", "relationshipCourseId", "relationshipStudentId")));
 }

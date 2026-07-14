@@ -26,6 +26,8 @@ public class EnrollmentDynamoRecord implements com.abc.studentportal.common.pers
 	private String updatedAt;
 	private String entityType;
 	private String enrolledAtId;
+	private String relationshipStudentId;
+	private String relationshipCourseId;
 	private Long version;
 
 	@DynamoDbPartitionKey public String getId() { return id; }
@@ -35,5 +37,11 @@ public class EnrollmentDynamoRecord implements com.abc.studentportal.common.pers
 	@DynamoDbSecondaryPartitionKey(indexNames = "enrollments-catalog") public String getEntityType() { return entityType; }
 	@DynamoDbSecondarySortKey(indexNames = {"enrollments-by-student", "enrollments-by-course", "enrollments-by-status", "enrollments-catalog"})
 	public String getEnrolledAtId() { return enrolledAtId; }
+	@DynamoDbSecondaryPartitionKey(indexNames = "enrollment-relationships-by-student")
+	@DynamoDbSecondarySortKey(indexNames = "enrollment-relationships-by-course")
+	public String getRelationshipStudentId() { return relationshipStudentId; }
+	@DynamoDbSecondaryPartitionKey(indexNames = "enrollment-relationships-by-course")
+	@DynamoDbSecondarySortKey(indexNames = "enrollment-relationships-by-student")
+	public String getRelationshipCourseId() { return relationshipCourseId; }
 	@DynamoDbVersionAttribute public Long getVersion() { return version; }
 }

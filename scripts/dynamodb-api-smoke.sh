@@ -33,6 +33,8 @@ request 200 GET "/api/v1/departments/$department_id"
 request 200 GET "/api/v1/students/$student_id/profile"
 request 200 GET "/api/v1/instructors/$instructor_id/courses?limit=5"
 request 200 GET "/api/v1/courses/$course_id/enrollments?limit=5"
+request 200 GET "/api/v1/students/$student_id/courses?limit=5"
+request 200 GET "/api/v1/courses/$course_id/students?limit=5"
 request 200 GET "/api/v1/enrollments/$enrollment_id"
 request 200 GET '/api/v1/departments?limit=2'
 request 400 GET '/api/v1/courses?status=OPEN&departmentId=b6206ea3-c883-3635-8eda-bac4f678ff66'

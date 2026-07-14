@@ -50,8 +50,8 @@ the partition key required for an ordered, cursor-paginated `Query`.
 ## Records and authority
 
 Each table has one authoritative record per logical entity. Records use UUID strings, ISO-8601 timestamps, and an
-explicit numeric `version`. No enrollment relationship copies are required because the student/course GSIs index the
-authoritative enrollment record.
+explicit numeric `version`. Enrollment history remains authoritative; compact relationship edges provide distinct
+Student/Course navigation without copying domain entities.
 
 Department, Student, Instructor, and Course tables also contain sparse `UNIQUE_CLAIM` records with deterministic
 partition keys and an `ownerId`. They have no GSI key attributes and are therefore excluded from normal catalogs.
@@ -60,6 +60,12 @@ The enrollment table also contains short-lived/active integrity records with IDs
 `ACTIVE#<studentId>#<courseId>`. A transaction conditionally creates this lock beside the authoritative enrollment and
 deletes it when the enrollment becomes terminal. These records have `recordType=ACTIVE_ENROLLMENT_LOCK` and are absent
 from catalog/status indexes, so migration readers ignore them.
+
+The table also contains one durable `STUDENT_COURSE_RELATIONSHIP` edge per distinct pair, keyed as
+`RELATIONSHIP#<studentId>#<courseId>`. Enrollment creation unconditionally puts this deterministic edge in the same
+transaction, so re-enrollment refreshes rather than duplicates it. `enrollment-relationships-by-student` orders Course
+IDs for a Student and `enrollment-relationships-by-course` orders Student IDs for a Course. Each edge page supplies IDs
+for a bounded strongly consistent batch read from the target domain table; migration readers ignore edge records.
 
 The Course record owns `occupiedSeats` and an enrollment-history count; Student records also own an enrollment-history
 count. Department records own Student, Instructor, and Course dependency counts, and Instructor records own a Course

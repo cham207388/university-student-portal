@@ -42,6 +42,8 @@ bounded and cursor-paginated.
 | List enrollments | cursor, limit | Many by enrollment time/ID | Eventual | `enrollments-catalog` | No |
 | List by student/course | ID, optional date range | Many by enrollment time/ID | Eventual | student/course index | No |
 | List by status | status | Many by enrollment time/ID | Eventual | `enrollments-by-status` | No |
+| List distinct courses by student | student ID, cursor | Many by course ID | Eventual edge query, strong entity batch read | `enrollment-relationships-by-student` plus Courses `BatchGetItem` | Edge maintained on enrollment create |
+| List distinct students by course | course ID, cursor | Many by student ID | Eventual edge query, strong entity batch read | `enrollment-relationships-by-course` plus Students `BatchGetItem` | Edge maintained on enrollment create |
 | Determine active duplicate | student ID, course ID | Zero/one lock | Strong | Enrollments `id=ACTIVE#student#course` | Conditional create/delete |
 | Enroll without overbooking | student ID, course ID | Enrollment | Strong transaction semantics for touched records | Student, Course, Enrollment tables | Yes |
 | Drop/complete enrollment | ID, version, target state | Updated enrollment/counter/lock | Strong | Enrollment and Course tables | Yes |
@@ -83,6 +85,7 @@ efficient query shapes:
 - Instructor catalog and department.
 - Course catalog, department, instructor, and status.
 - Enrollment catalog, student/course with optional inclusive date range, and status.
+- Deduplicated Student/Course relationship edges followed by bounded, strongly consistent entity batch reads.
 
 Each method requires a bounded `CursorRequest` and returns a domain-level `CursorPage`. The cursor identity includes the
 physical table, GSI, partition value, and normalized prefix/range bounds, preventing accidental cursor reuse across

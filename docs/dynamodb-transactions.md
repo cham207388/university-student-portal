@@ -32,10 +32,14 @@ Enrollment creation is one four-action transaction:
 2. Update the Course only when it exists and is `OPEN`; increment its history count/version and, for an enrolled seat,
    increment `occupiedSeats` only when it remains below `capacity`.
 3. Condition-put the authoritative Enrollment.
-4. Condition-put `ACTIVE#<studentId>#<courseId>` with the Enrollment as owner.
+4. Put the deterministic durable Student/Course relationship edge.
+5. For an active state, condition-put `ACTIVE#<studentId>#<courseId>` with the Enrollment as owner.
 
 The deterministic lock makes concurrent duplicate active enrollment attempts single-winner. The conditional Course
-update makes concurrent last-seat attempts single-winner. A failure cancels Student/Course counters, Enrollment, and lock.
+update makes concurrent last-seat attempts single-winner. A failure cancels Student/Course counters, Enrollment, edge,
+and lock.
+The relationship edge uses one deterministic key per pair, so later re-enrollment refreshes it without duplicating
+derived relationship pages.
 
 Status transitions condition-put the Enrollment at its expected version. `WAITLISTED → ENROLLED` conditionally consumes
 capacity; a capacity-consuming transition to `DROPPED` decrements it; `ENROLLED → COMPLETED` retains the historical seat

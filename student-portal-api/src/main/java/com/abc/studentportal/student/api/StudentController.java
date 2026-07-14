@@ -1,12 +1,15 @@
 package com.abc.studentportal.student.api;
 
 import com.abc.studentportal.common.api.CursorPageResponse;
+import com.abc.studentportal.common.application.DynamoStudentCourseQueries;
 import com.abc.studentportal.common.exception.InvalidRequestException;
 import com.abc.studentportal.common.pagination.CursorPage;
 import com.abc.studentportal.common.pagination.CursorRequest;
 import com.abc.studentportal.enrollment.api.EnrollmentApi;
 import com.abc.studentportal.enrollment.api.EnrollmentMapper;
 import com.abc.studentportal.enrollment.application.DynamoEnrollmentQueries;
+import com.abc.studentportal.course.api.CourseApi;
+import com.abc.studentportal.course.api.CourseMapper;
 import com.abc.studentportal.student.application.DynamoStudentQueries;
 import com.abc.studentportal.student.application.StudentService;
 import com.abc.studentportal.student.domain.StudentStatus;
@@ -25,8 +28,10 @@ import java.util.function.Function;
 @RequestMapping("/api/v1/students")
 public class StudentController {
 	private final StudentService service; private final DynamoStudentQueries queries; private final DynamoEnrollmentQueries enrollments;
-	public StudentController(StudentService service, DynamoStudentQueries queries, DynamoEnrollmentQueries enrollments) {
-		this.service = service; this.queries = queries; this.enrollments = enrollments;
+	private final DynamoStudentCourseQueries relationships;
+	public StudentController(StudentService service, DynamoStudentQueries queries, DynamoEnrollmentQueries enrollments,
+			DynamoStudentCourseQueries relationships) {
+		this.service = service; this.queries = queries; this.enrollments = enrollments; this.relationships = relationships;
 	}
 	@PostMapping ResponseEntity<StudentApi.Response> create(@Valid @RequestBody StudentApi.CreateRequest request) {
 		var value = service.create(new StudentService.CreateCommand(request.studentNumber(), request.firstName(), request.lastName(),
@@ -72,6 +77,10 @@ public class StudentController {
 			@RequestParam(required = false) Instant from, @RequestParam(required = false) Instant to,
 			@RequestParam(defaultValue = "20") int limit, @RequestParam(required = false) String cursor) {
 		service.get(id); return page(enrollments.findByStudent(id, from, to, new CursorRequest(limit, cursor)), EnrollmentMapper::toResponse);
+	}
+	@GetMapping("/{id}/courses") CursorPageResponse<CourseApi.Response> courses(@PathVariable UUID id,
+			@RequestParam(defaultValue = "20") int limit, @RequestParam(required = false) String cursor) {
+		service.get(id); return page(relationships.findCoursesByStudent(id, new CursorRequest(limit, cursor)), CourseMapper::toResponse);
 	}
 	private static <D, R> CursorPageResponse<R> page(CursorPage<D> page, Function<D, R> mapper) {
 		return new CursorPageResponse<>(page.content().stream().map(mapper).toList(), page.limit(), page.nextCursor(), page.hasNext());

@@ -53,6 +53,8 @@ locals {
         { name = "enrollments-by-course", partition_key = { name = "courseId", type = "S" }, sort_key = { name = "enrolledAtId", type = "S" } },
         { name = "enrollments-by-status", partition_key = { name = "status", type = "S" }, sort_key = { name = "enrolledAtId", type = "S" } },
         { name = "enrollments-catalog", partition_key = { name = "entityType", type = "S" }, sort_key = { name = "enrolledAtId", type = "S" } }
+        , { name = "enrollment-relationships-by-student", partition_key = { name = "relationshipStudentId", type = "S" }, sort_key = { name = "relationshipCourseId", type = "S" } }
+        , { name = "enrollment-relationships-by-course", partition_key = { name = "relationshipCourseId", type = "S" }, sort_key = { name = "relationshipStudentId", type = "S" } }
       ]
     }
   }

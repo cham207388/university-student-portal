@@ -52,13 +52,14 @@ Because offsets, arbitrary sorting, and exact totals are not efficient DynamoDB 
 
 ## DynamoDB controller implementation
 
-The DynamoDB profile currently exposes all resource create/get/update/status/delete operations, Student Profile
-operations, Enrollment operations, catalogs, Department child collections, Instructor Courses, and Student/Course
-Enrollment collections. Physical deletes carry the expected version as a required `version` query parameter.
+The DynamoDB profile exposes all resource create/get/update/status/delete operations, Student Profile operations,
+Enrollment operations, catalogs, Department child collections, Instructor Courses, Student/Course Enrollment collections,
+and the derived Student/Course many-to-many views. Physical deletes carry the expected version as a required `version`
+query parameter.
 
-`GET /students/{id}/courses` and `GET /courses/{id}/students` remain intentionally unexposed until a bounded batch-read
-composition port defines deduplication and cursor behavior across enrollment history. Exact alternate-key collection
-filters are likewise deferred to their dedicated lookup capability; no controller substitutes a scan.
+Derived views page deterministic relationship-edge GSIs and hydrate each bounded page with strongly consistent
+`BatchGetItem` calls. Re-enrollment does not duplicate a Student or Course in these views. Exact alternate-key collection
+filters remain deferred to their dedicated lookup capability; no controller substitutes a scan.
 
 ## Delete semantics
 

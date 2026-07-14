@@ -36,8 +36,8 @@ Keep the application running and execute this in another terminal:
 make api-smoke
 ```
 
-The smoke script checks health, strongly consistent resource/profile reads, relationship collections, pagination,
-Enrollment reads, validation errors, unsupported-filter errors, and not-found Problem Details. Set
+The smoke script checks health, strongly consistent resource/profile reads, direct and derived relationship collections,
+pagination, Enrollment reads, validation errors, unsupported-filter errors, and not-found Problem Details. Set
 `STUDENT_PORTAL_API_URL` to test a non-default base URL.
 
 The script uses these stable seed IDs:

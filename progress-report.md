@@ -2,6 +2,30 @@
 
 ## Completed Tasks
 
+### Deduplicated Student/Course relationship views
+
+- Added a deterministic durable relationship edge per Student/Course pair to the Enrollments table. Enrollment creation
+  maintains the edge in the same transaction, and re-enrollment overwrites the same edge instead of creating duplicates.
+- Added two sparse edge GSIs and opaque cursor queries for Student-to-Courses and Course-to-Students.
+- Added bounded, strongly consistent `BatchGetItem` hydration that preserves edge order and retries unprocessed keys.
+- Exposed `GET /students/{id}/courses` and `GET /courses/{id}/students` with parent existence validation and normal cursor
+  response DTOs.
+- Made the development seeder repair deterministic edges for seed Enrollments created before this checkpoint.
+- Added MVC coverage and LocalStack coverage for re-enrollment deduplication, multi-page traversal, reverse lookup, and
+  query-bound cursor rejection.
+
+Verification results:
+
+- `./gradlew clean check`: successful; 35 unit/MVC tests and 11 LocalStack integration tests passed.
+- `terraform fmt -check -recursive infrastructure`: successful.
+- `terraform -chdir=infrastructure/local validate`: successful; all six configured Enrollment GSIs report `ACTIVE` in
+  LocalStack. LocalStack 4.14 timed out the AWS provider waiter after creating the first new GSI, so the second configured
+  GSI was applied through the emulator's DynamoDB API and then verified directly. The AWS provider continues to show a
+  computed-throughput set diff against LocalStack despite identical index names and keys; this emulator-only drift must
+  be re-audited before the final DynamoDB tag.
+- Expanded 12-request live HTTP smoke workflow: successful, including both derived routes.
+- `git diff --check`: no whitespace errors.
+
 ### DynamoDB development seeding and live HTTP workflow
 
 - Added an opt-in `local-dynamodb` seeder with deterministic UUIDs and idempotent strong-read guards.
@@ -292,13 +316,14 @@ Risks and follow-ups:
 
 ## In Progress
 
-- Add bounded Student/Course derived relationship views.
+- Verify the complete DynamoDB API checkpoint and prepare the `dynamodb-complete` tag.
 
 ## Blocked
 
 ## Next Tasks
 
-- Add bounded, deduplicated Student/Course derived relationship views and their cursor semantics.
+- Perform the final DynamoDB phase audit, close any remaining operational/documentation gaps, and create the
+  `dynamodb-complete` tag only after all checks pass.
 
 ### Six-table DynamoDB persistence foundation
 

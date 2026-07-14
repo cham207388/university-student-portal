@@ -24,3 +24,8 @@ the affected parent counters; parent deletion requires zero counters in its tran
 and deletion therefore write the same parent item and cannot both commit. GSI probes remain eventual-consistency read
 paths for friendly errors, not integrity authorities. Reconciliation reports legacy or externally introduced orphans
 rather than silently deleting them.
+
+Each first or repeated Enrollment also transactionally writes the deterministic durable edge
+`RELATIONSHIP#<studentId>#<courseId>`. Two sparse edge GSIs support distinct Student-to-Courses and Course-to-Students
+pages. Edge cursors are query-bound, and each at-most-100-ID page is hydrated from the target table with a strongly
+consistent `BatchGetItem`; repeated enrollment history never duplicates the related entity.

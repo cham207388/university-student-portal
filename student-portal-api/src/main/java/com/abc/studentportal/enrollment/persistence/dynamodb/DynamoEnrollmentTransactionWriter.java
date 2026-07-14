@@ -30,6 +30,7 @@ public final class DynamoEnrollmentTransactionWriter {
 		actions.add(addStudentEnrollment(value));
 		actions.add(addCourseEnrollment(value.courseId().toString(), value.consumesCapacity()));
 		actions.add(putEnrollment(record, "attribute_not_exists(id)", Map.of()));
+		actions.add(putRelationship(value));
 		if (value.isActive()) actions.add(putActiveLock(value));
 		execute(actions, "Enrollment could not be created because a reference, capacity, or active enrollment changed");
 		return EnrollmentDynamoMapper.toDomain(record);
@@ -46,6 +47,11 @@ public final class DynamoEnrollmentTransactionWriter {
 		else if (!previous.isActive() && next.isActive()) actions.add(putActiveLock(next));
 		execute(actions, "Enrollment was modified or its course capacity/active lock changed");
 		return EnrollmentDynamoMapper.toDomain(record);
+	}
+
+	public void ensureRelationship(Enrollment value) {
+		client.putItem(request -> request.tableName(tables.enrollments().tableName())
+				.item(putRelationship(value).put().item()));
 	}
 
 	private TransactWriteItem addStudentEnrollment(Enrollment value) {
@@ -104,6 +110,15 @@ public final class DynamoEnrollmentTransactionWriter {
 				string("ACTIVE_ENROLLMENT_LOCK"), "ownerId", string(value.id().toString()));
 		return TransactWriteItem.builder().put(Put.builder().tableName(tables.enrollments().tableName()).item(item)
 				.conditionExpression("attribute_not_exists(id)").build()).build();
+	}
+
+	private TransactWriteItem putRelationship(Enrollment value) {
+		Map<String, AttributeValue> item = Map.of(
+				"id", string("RELATIONSHIP#" + value.studentId() + "#" + value.courseId()),
+				"recordType", string("STUDENT_COURSE_RELATIONSHIP"),
+				"relationshipStudentId", string(value.studentId().toString()),
+				"relationshipCourseId", string(value.courseId().toString()));
+		return TransactWriteItem.builder().put(Put.builder().tableName(tables.enrollments().tableName()).item(item).build()).build();
 	}
 
 	private TransactWriteItem deleteActiveLock(Enrollment value) {

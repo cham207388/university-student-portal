@@ -13,7 +13,8 @@ Profiles, Instructors, and Courses. Cross-table enrollment/capacity transactions
 dependency-aware deletion are implemented. Authoritative parent counters now close Department/Instructor deletion races
 with concurrent relationship writes. DynamoDB-profile controllers now expose CRUD, status transitions, profiles,
 enrollment workflows, cursor catalogs, and direct relationship collections. An explicitly enabled idempotent DynamoDB
-seeder and live HTTP smoke workflow are available. The two derived Student/Course many-to-many views remain pending.
+seeder and live HTTP smoke workflow are available. Deduplicated Student/Course many-to-many views are implemented with
+transactional relationship edges and bounded batch hydration.
 
 ## Repository layout
 

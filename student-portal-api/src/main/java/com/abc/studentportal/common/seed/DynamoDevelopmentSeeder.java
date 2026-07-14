@@ -8,6 +8,7 @@ import com.abc.studentportal.department.domain.Department;
 import com.abc.studentportal.enrollment.application.EnrollmentRepository;
 import com.abc.studentportal.enrollment.domain.Enrollment;
 import com.abc.studentportal.enrollment.domain.EnrollmentStatus;
+import com.abc.studentportal.enrollment.persistence.dynamodb.DynamoEnrollmentTransactionWriter;
 import com.abc.studentportal.instructor.application.InstructorRepository;
 import com.abc.studentportal.instructor.domain.Instructor;
 import com.abc.studentportal.student.application.StudentProfileRepository;
@@ -38,12 +39,14 @@ public class DynamoDevelopmentSeeder implements ApplicationRunner {
 	private final DepartmentRepository departments; private final StudentRepository students;
 	private final StudentProfileRepository profiles; private final InstructorRepository instructors;
 	private final CourseRepository courses; private final EnrollmentRepository enrollments;
+	private final DynamoEnrollmentTransactionWriter enrollmentWriter;
 
 	public DynamoDevelopmentSeeder(DepartmentRepository departments, StudentRepository students,
 			StudentProfileRepository profiles, InstructorRepository instructors, CourseRepository courses,
-			EnrollmentRepository enrollments) {
+			EnrollmentRepository enrollments, DynamoEnrollmentTransactionWriter enrollmentWriter) {
 		this.departments = departments; this.students = students; this.profiles = profiles;
 		this.instructors = instructors; this.courses = courses; this.enrollments = enrollments;
+		this.enrollmentWriter = enrollmentWriter;
 	}
 
 	@Override public void run(ApplicationArguments args) { seed(); }
@@ -112,8 +115,9 @@ public class DynamoDevelopmentSeeder implements ApplicationRunner {
 		if (current.status() != target) {
 			Enrollment changed = current.transitionTo(target, target == EnrollmentStatus.COMPLETED ? "A" : null,
 					CREATED.plusSeconds(200 + number));
-			enrollments.update(changed);
+			current = enrollments.update(changed);
 		}
+		enrollmentWriter.ensureRelationship(current);
 	}
 
 	private void setCourseStatus(UUID id, CourseStatus status) {

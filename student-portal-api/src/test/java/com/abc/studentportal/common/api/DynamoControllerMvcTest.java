@@ -1,10 +1,13 @@
 package com.abc.studentportal.common.api;
 
 import com.abc.studentportal.common.exception.GlobalExceptionHandler;
+import com.abc.studentportal.common.application.DynamoStudentCourseQueries;
 import com.abc.studentportal.common.pagination.CursorPage;
 import com.abc.studentportal.course.api.CourseController;
 import com.abc.studentportal.course.application.CourseService;
 import com.abc.studentportal.course.application.DynamoCourseQueries;
+import com.abc.studentportal.course.domain.Course;
+import com.abc.studentportal.course.domain.CourseStatus;
 import com.abc.studentportal.department.api.DepartmentController;
 import com.abc.studentportal.department.application.DepartmentService;
 import com.abc.studentportal.department.application.DynamoDepartmentQueries;
@@ -18,6 +21,8 @@ import com.abc.studentportal.instructor.application.InstructorService;
 import com.abc.studentportal.student.api.StudentController;
 import com.abc.studentportal.student.application.DynamoStudentQueries;
 import com.abc.studentportal.student.application.StudentService;
+import com.abc.studentportal.student.domain.Student;
+import com.abc.studentportal.student.domain.StudentStatus;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
@@ -53,6 +58,7 @@ class DynamoControllerMvcTest {
 	@MockitoBean DynamoInstructorQueries instructorQueries;
 	@MockitoBean DynamoCourseQueries courseQueries;
 	@MockitoBean DynamoEnrollmentQueries enrollmentQueries;
+	@MockitoBean DynamoStudentCourseQueries relationshipQueries;
 
 	@Test
 	void createsDepartmentWithLocationAndResponseDto() throws Exception {
@@ -95,5 +101,25 @@ class DynamoControllerMvcTest {
 	void rejectsMissingVersionsAndMalformedPathIdsAsBadRequests() throws Exception {
 		mvc.perform(delete("/api/v1/departments/" + UUID.randomUUID())).andExpect(status().isBadRequest());
 		mvc.perform(get("/api/v1/students/not-a-uuid")).andExpect(status().isBadRequest());
+	}
+
+	@Test
+	void exposesDerivedStudentCourseRelationshipPages() throws Exception {
+		Instant now = Instant.parse("2026-07-14T00:00:00Z"); UUID studentId = UUID.randomUUID(); UUID courseId = UUID.randomUUID();
+		UUID departmentId = UUID.randomUUID(); UUID instructorId = UUID.randomUUID();
+		when(students.get(studentId)).thenReturn(new Student(studentId, "S1", "Avery", "Morgan", "avery@example.com",
+				StudentStatus.ACTIVE, departmentId, now, now, 1));
+		when(courses.get(courseId)).thenReturn(new Course(courseId, "CS1", "Computing", null, 3, 20, CourseStatus.OPEN,
+				departmentId, instructorId, now, now, 1));
+		when(relationshipQueries.findCoursesByStudent(any(), any())).thenReturn(new CursorPage<>(List.of(
+				new Course(courseId, "CS1", "Computing", null, 3, 20, CourseStatus.OPEN, departmentId, instructorId, now, now, 1)), 20, null, false));
+		when(relationshipQueries.findStudentsByCourse(any(), any())).thenReturn(new CursorPage<>(List.of(
+				new Student(studentId, "S1", "Avery", "Morgan", "avery@example.com", StudentStatus.ACTIVE,
+						departmentId, now, now, 1)), 20, null, false));
+
+		mvc.perform(get("/api/v1/students/" + studentId + "/courses"))
+				.andExpect(status().isOk()).andExpect(jsonPath("$.content[0].id").value(courseId.toString()));
+		mvc.perform(get("/api/v1/courses/" + courseId + "/students"))
+				.andExpect(status().isOk()).andExpect(jsonPath("$.content[0].id").value(studentId.toString()));
 	}
 }
