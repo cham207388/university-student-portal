@@ -4,7 +4,9 @@ A learning-oriented backend that first implements a university course registrati
 
 ## Current checkpoint
 
-Phase 0 establishes the Java 25 and Spring Boot 4 foundation. It contains no DynamoDB or PostgreSQL persistence code.
+Phase 1 provides the persistence-neutral domain and REST contract foundation. It includes domain invariants,
+validated immutable DTOs, response mapping, RFC 9457 Problem Details, pagination contracts, and repository ports.
+It contains no DynamoDB or PostgreSQL persistence code.
 
 ## Repository layout
 

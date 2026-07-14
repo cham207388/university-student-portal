@@ -20,6 +20,12 @@ Repository abstractions cover genuinely common business operations. DynamoDB cur
 
 The planned top-level Java packages are `common`, `department`, `student`, `instructor`, `course`, `enrollment`, and `migration`. Each feature may contain `api`, `application`, `domain`, and `persistence` packages as needed. Profile behavior is owned by the student feature.
 
+The Phase 1 code establishes `domain` records, immutable nested API request/response records, explicit API mappers,
+filter objects, and repository ports. Repository ports intentionally omit list pagination: DynamoDB cursor queries and
+PostgreSQL pageable queries will be introduced as separate capability interfaces after the DynamoDB access patterns
+are designed. Controllers and application-service implementations follow when a complete use case can be wired;
+the application is not populated with placeholder beans merely to make unfinished endpoints start.
+
 Runtime profiles select explicit adapters:
 
 - `local-dynamodb` and `test-dynamodb`
