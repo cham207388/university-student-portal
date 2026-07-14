@@ -133,5 +133,19 @@ LocalStack instance can be used by Terraform at the same endpoint; do not stop u
 - [DynamoDB development data](docs/dynamodb-development-data.md)
 - [DynamoDB limitations](docs/dynamodb-limitations.md)
 
-PostgreSQL seed data, PostgreSQL profiles, migration commands, and reconciliation instructions will be added and verified
-in their corresponding phases.
+## LocalStack RDS PostgreSQL
+
+PostgreSQL development uses the LocalStack Pro RDS service, provisioned by the
+same Terraform workflow as DynamoDB. Export `LOCALSTACK_AUTH_TOKEN`, start
+LocalStack with RDS and Secrets Manager enabled, then apply the local module:
+
+```shell
+export LOCALSTACK_AUTH_TOKEN="<your-token>"
+docker compose up -d localstack
+terraform -chdir=infrastructure/local apply
+```
+
+Use the Terraform endpoint and secret outputs to configure the `local-postgres`
+Spring profile. Flyway applies the schema when the application starts. The
+standalone `postgres` Compose service is intentionally not used; PostgreSQL
+Testcontainers remains available for isolated automated tests.

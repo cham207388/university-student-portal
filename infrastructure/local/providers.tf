@@ -4,7 +4,9 @@ provider "aws" {
   secret_key = "test"
 
   endpoints {
-    dynamodb = var.aws_endpoint
+    dynamodb       = var.aws_endpoint
+    rds            = var.aws_endpoint
+    secretsmanager = var.aws_endpoint
   }
 
   skip_credentials_validation = true

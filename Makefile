@@ -3,13 +3,13 @@
 	app-run-dynamodb app-run-dynamodb-seeded api-smoke check
 
 localstack-up:
-	docker compose up -d localstack
+	docker compose up -d --remove-orphans localstack
 
 localstack-down:
 	docker compose down
 
 postgres-up:
-	docker compose up -d localstack
+	docker compose up -d --remove-orphans localstack
 	terraform -chdir=infrastructure/local apply -auto-approve
 
 postgres-down:

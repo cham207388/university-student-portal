@@ -2,6 +2,15 @@
 
 ## Completed Tasks
 
+### LocalStack RDS PostgreSQL foundation revision
+
+- Documented LocalStack Pro RDS as the supported local PostgreSQL engine, with
+  Terraform-provisioned instance and Secrets Manager credentials.
+- Removed the standalone-Compose assumption from the PostgreSQL schema and
+  implementation plan; Testcontainers remains the isolated test database.
+- Added a LocalStack RDS PostgreSQL runbook, startup timing caveats, and
+  Flyway/profile guidance to `README.md` and `docs/postgresql-schema.md`.
+
 ### DynamoDB datasource complete
 
 - Closed every blocker from the final DynamoDB audit: OpenAPI/Swagger, DynamoDB health, correlation-aware safe request

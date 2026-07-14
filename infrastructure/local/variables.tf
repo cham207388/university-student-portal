@@ -15,3 +15,28 @@ variable "table_prefix" {
   type        = string
   default     = "student-portal"
 }
+
+variable "postgres_identifier" {
+  description = "Identifier for the LocalStack RDS PostgreSQL instance."
+  type        = string
+  default     = "student-portal-postgres"
+}
+
+variable "postgres_database" {
+  description = "Initial PostgreSQL database name."
+  type        = string
+  default     = "student_portal"
+}
+
+variable "postgres_username" {
+  description = "PostgreSQL master username."
+  type        = string
+  default     = "student_portal"
+}
+
+variable "postgres_password" {
+  description = "PostgreSQL master password for local development."
+  type        = string
+  sensitive   = true
+  default     = "student_portal_local"
+}

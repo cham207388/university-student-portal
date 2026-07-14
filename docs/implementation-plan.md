@@ -40,7 +40,11 @@ architecture and limitations checkpoint is recorded in `architecture-dynamodb.md
 
 ## Phase 4 — PostgreSQL infrastructure and model
 
-Add PostgreSQL Compose support, Flyway migrations, separate JPA entities, repositories, filtering, page pagination, and relational transaction enforcement.
+Provision a real PostgreSQL engine through LocalStack Pro RDS and Terraform (with
+Secrets Manager credentials), rather than a second standalone Compose database.
+Add Flyway migrations, separate JPA entities, repositories, filtering, page
+pagination, and relational transaction enforcement. Testcontainers PostgreSQL
+remains the isolated automated-test dependency.
 
 ## Phase 5 — persistence switch and migration
 
