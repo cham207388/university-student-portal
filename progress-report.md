@@ -2,6 +2,30 @@
 
 ## Completed Tasks
 
+### DynamoDB datasource complete
+
+- Closed every blocker from the final DynamoDB audit: OpenAPI/Swagger, DynamoDB health, correlation-aware safe request
+  logging, safe startup configuration reporting, controller-to-LocalStack integration coverage, and consolidated
+  architecture/limitations documentation.
+- Generated a 22-resource-path OpenAPI contract with RFC 9457 errors, validation metadata, pagination parameters, and
+  explicit opaque DynamoDB cursor semantics; Swagger UI is available at `/swagger-ui.html`.
+- Added a six-table health contributor, inbound/generated `X-Correlation-ID` propagation with MDC, structured request
+  completion logs that exclude bodies and query values, and startup output that excludes credentials.
+- Added full-context REST integration coverage backed by Testcontainers LocalStack, while retaining focused domain,
+  MVC, persistence, concurrency, transaction, cursor, and seed tests.
+- Completed `docs/architecture-dynamodb.md` and `docs/dynamodb-limitations.md` with item/access-path/enrollment diagrams,
+  transaction and consistency limits, operational risks, repair concerns, and PostgreSQL migration implications.
+
+Verification results:
+
+- `./gradlew clean check`: successful; 39 unit/MVC tests and 12 LocalStack integration tests passed.
+- Terraform format/validate and the real-state plan passed; a disposable six-table create, immediate no-change plan,
+  and destroy cycle passed, leaving only the six intended tables.
+- The seeded 14-request live HTTP smoke workflow passed; `/v3/api-docs` returned 200, `/swagger-ui.html` redirected to
+  the UI, actuator health returned `UP`, and both health/OpenAPI responses carried correlation IDs.
+- Compose configuration, shell syntax, Postman JSON, whitespace, and secret audits passed.
+- Final decision recorded in `docs/dynamodb-phase-audit.md`: no DynamoDB-phase blocker remains.
+
 ### Exact alternate-key reads and strict query contracts
 
 - Added zero-or-one repository reads for Department code, Student number/email, Instructor number/email, and Course
@@ -396,14 +420,15 @@ Risks and follow-ups:
 
 ## In Progress
 
-- Remediate the release blockers recorded in `docs/dynamodb-phase-audit.md`; the tag is intentionally withheld.
+- No DynamoDB implementation blockers remain. The `dynamodb-complete` tag should be created after the final
+  verification run succeeds in the developer's Docker environment.
 
 ## Blocked
 
 ## Next Tasks
 
-- Resolve Terraform convergence first, then implement the API-query, OpenAPI, observability, automated HTTP integration,
-  and documentation blockers in the audit's required order.
+- Create the required `dynamodb-complete` release tag, then begin the PostgreSQL/Flyway phase while retaining the
+  DynamoDB adapter as the migration source and comparison baseline.
 
 ### Six-table DynamoDB persistence foundation
 

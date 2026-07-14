@@ -1,5 +1,6 @@
 package com.abc.studentportal.common.persistence.dynamodb;
 
+import com.abc.studentportal.StudentPortalApiApplication;
 import com.abc.studentportal.common.exception.ConflictException;
 import com.abc.studentportal.common.exception.InvalidRequestException;
 import com.abc.studentportal.common.application.DependencyChecker;
@@ -30,6 +31,12 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.WebApplicationType;
+import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.web.context.WebApplicationContext;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.localstack.LocalStackContainer;
@@ -68,6 +75,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @Tag("dynamodb-integration")
 @Testcontainers
@@ -89,6 +101,8 @@ class DynamoPersistenceIntegrationTest {
 	private static com.abc.studentportal.enrollment.persistence.dynamodb.DynamoEnrollmentTransactionWriter enrollmentWriter;
 	private static DynamoStudentCourseQueryService relationships;
 	private static DependencyChecker dependencies;
+	private static ConfigurableApplicationContext application;
+	private static MockMvc mvc;
 
 	@BeforeAll
 	static void setUp() {
@@ -120,11 +134,54 @@ class DynamoPersistenceIntegrationTest {
 		enrollments = new DynamoEnrollmentRepository(tables, cursorCodec, enrollmentWriter);
 		relationships = new DynamoStudentCourseQueryService(client, tables, cursorCodec);
 		dependencies = new DynamoDependencyChecker(students, instructors, courses, enrollments);
+		application = new SpringApplicationBuilder(StudentPortalApiApplication.class)
+				.profiles("test-dynamodb").web(WebApplicationType.SERVLET)
+				.properties(Map.ofEntries(
+						Map.entry("server.port", "0"), Map.entry("spring.main.banner-mode", "off"),
+						Map.entry("logging.level.root", "WARN"),
+						Map.entry("student-portal.seed.enabled", "false"),
+						Map.entry("student-portal.dynamodb.region", LOCALSTACK.getRegion()),
+						Map.entry("student-portal.dynamodb.endpoint", LOCALSTACK.getEndpoint().toString()),
+						Map.entry("student-portal.dynamodb.tables.departments", name("departments")),
+						Map.entry("student-portal.dynamodb.tables.students", name("students")),
+						Map.entry("student-portal.dynamodb.tables.student-profiles", name("student-profiles")),
+						Map.entry("student-portal.dynamodb.tables.instructors", name("instructors")),
+						Map.entry("student-portal.dynamodb.tables.courses", name("courses")),
+						Map.entry("student-portal.dynamodb.tables.enrollments", name("enrollments"))))
+				.run();
+		mvc = MockMvcBuilders.webAppContextSetup((WebApplicationContext) application)
+				.addFilters(application.getBean(com.abc.studentportal.common.observability.CorrelationIdFilter.class))
+				.build();
 	}
 
 	@AfterAll
 	static void tearDown() {
+		if (application != null) application.close();
 		if (client != null) client.close();
+	}
+
+	@Test
+	void exercisesRestEndpointsOpenApiAndHealthAgainstLocalStack() throws Exception {
+		String code = "API" + UUID.randomUUID().toString().substring(0, 8).toUpperCase(java.util.Locale.ROOT);
+		mvc.perform(post("/api/v1/departments").contentType("application/json")
+				.content("{\"code\":\"" + code + "\",\"name\":\"HTTP Integration\"}"))
+				.andExpect(status().isCreated()).andExpect(header().exists("Location"))
+				.andExpect(header().exists("X-Correlation-ID"));
+		mvc.perform(get("/api/v1/departments").param("code", code).header("X-Correlation-ID", "integration-1"))
+				.andExpect(status().isOk()).andExpect(header().string("X-Correlation-ID", "integration-1"))
+				.andExpect(jsonPath("$.content[0].code").value(code));
+		mvc.perform(get("/api/v1/courses").param("title", "ignored"))
+				.andExpect(status().isBadRequest()).andExpect(jsonPath("$.correlationId").exists());
+		mvc.perform(get("/actuator/health")).andExpect(status().isOk())
+				.andExpect(jsonPath("$.status").value("UP"));
+		mvc.perform(get("/v3/api-docs")).andExpect(status().isOk())
+				.andExpect(jsonPath("$.info.title").value("University Student Portal API"))
+				.andExpect(jsonPath("$.paths['/api/v1/students'].get.description").isNotEmpty())
+				.andExpect(jsonPath("$.paths['/api/v1/students'].get.parameters[?(@.name == 'cursor')].description")
+						.isNotEmpty())
+				.andExpect(jsonPath("$.paths['/api/v1/students'].get.responses['400'].content['application/problem+json'].schema['$ref']")
+						.value("#/components/schemas/ProblemDetail"))
+				.andExpect(jsonPath("$.components.schemas.ProblemDetail.properties.fieldErrors").exists());
 	}
 
 	@Test

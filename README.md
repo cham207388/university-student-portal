@@ -15,6 +15,8 @@ with concurrent relationship writes. DynamoDB-profile controllers now expose CRU
 enrollment workflows, cursor catalogs, and direct relationship collections. An explicitly enabled idempotent DynamoDB
 seeder and live HTTP smoke workflow are available. Deduplicated Student/Course many-to-many views are implemented with
 transactional relationship edges and bounded batch hydration.
+Exact alternate-key collection reads, strict query-parameter rejection, Swagger/OpenAPI, correlation IDs, contextual
+request logs, DynamoDB health, safe startup summaries, and full MVC-to-LocalStack integration coverage are also complete.
 
 ## Repository layout
 
@@ -103,6 +105,10 @@ For interactive testing, import [postman.json](postman.json) into Postman. The c
 examples, and an ordered Department → Instructor → Student/Profile → Course → Enrollment workflow that captures generated
 IDs and optimistic versions automatically. Keep `make app-run-dynamodb-seeded` running while using the collection.
 
+Swagger UI is available at `http://localhost:8080/swagger-ui.html`; the generated OpenAPI JSON is available at
+`http://localhost:8080/v3/api-docs`. The contract documents validation constraints, RFC 9457 errors, exact alternate-key
+filters, and DynamoDB opaque cursor behavior.
+
 To remove the local tables and services:
 
 ```shell
@@ -120,10 +126,12 @@ LocalStack instance can be used by Terraform at the same endpoint; do not stop u
 - [REST API contracts](docs/rest-api-contracts.md)
 - [Implementation plan](docs/implementation-plan.md)
 - [DynamoDB access patterns](docs/dynamodb-access-patterns.md)
+- [DynamoDB application architecture](docs/architecture-dynamodb.md)
 - [DynamoDB table design](docs/dynamodb-table-design.md)
 - [DynamoDB relationships](docs/dynamodb-relationships.md)
 - [DynamoDB transactions](docs/dynamodb-transactions.md)
 - [DynamoDB development data](docs/dynamodb-development-data.md)
+- [DynamoDB limitations](docs/dynamodb-limitations.md)
 
-PostgreSQL seed data, Swagger UI, PostgreSQL profiles, migration commands, and reconciliation instructions will be added and
-verified in their corresponding phases.
+PostgreSQL seed data, PostgreSQL profiles, migration commands, and reconciliation instructions will be added and verified
+in their corresponding phases.

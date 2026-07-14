@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.util.List;
+import org.slf4j.MDC;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -26,6 +27,7 @@ public class GlobalExceptionHandler {
 		ProblemDetail problem = ProblemDetail.forStatusAndDetail(exception.status(), exception.getMessage());
 		problem.setTitle(exception.status().getReasonPhrase());
 		problem.setType(exception.type());
+		addCorrelationId(problem);
 		return ResponseEntity.status(exception.status()).body(problem);
 	}
 
@@ -76,6 +78,13 @@ public class GlobalExceptionHandler {
 		ProblemDetail problem = ProblemDetail.forStatusAndDetail(status, detail);
 		problem.setTitle(status.getReasonPhrase());
 		problem.setType(URI.create("https://student-portal.example/problems/" + type));
+		addCorrelationId(problem);
 		return problem;
+	}
+
+	private static void addCorrelationId(ProblemDetail problem) {
+		String correlationId = MDC.get(com.abc.studentportal.common.observability.CorrelationIdFilter.MDC_KEY);
+		if (correlationId != null)
+			problem.setProperty("correlationId", correlationId);
 	}
 }

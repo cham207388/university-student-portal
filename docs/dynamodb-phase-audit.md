@@ -4,67 +4,55 @@ Audit date: 2026-07-14
 
 ## Decision
 
-The DynamoDB implementation is functional but is **not ready** for the `dynamodb-complete` tag. Core domain,
-persistence, concurrency, API, seed, live LocalStack, and Terraform convergence workflows pass. The tag remains blocked
-by explicit prompt requirements that are not implemented.
+The DynamoDB datasource checkpoint is **complete and ready** for the `dynamodb-complete` tag. The implementation,
+automated tests, live LocalStack workflow, Terraform convergence, API contract, observability, and documentation gates
+all pass. No known DynamoDB-phase blocker remains.
 
 ## Passing gates
 
 | Gate | Evidence |
 | --- | --- |
 | Java/Gradle build | `./gradlew clean check` passed on Java 25 / Gradle 9.5.1 |
-| Automated tests | 35 unit/MVC tests and 11 LocalStack integration tests passed |
-| DynamoDB persistence | Six domain tables, explicit Enhanced Client records, conditional writes, versions, transactions, and typed internal records |
-| Query behavior | Cursor-bound GSI queries; no core endpoint scan calls found |
-| Enrollment concurrency | Duplicate-active, rollback, capacity, transition, and concurrent last-seat tests pass |
-| Referential deletion | Authoritative dependency/enrollment counters and concurrent create/delete tests pass |
-| Derived relationships | Deduplicated edges, bounded batch hydration, reverse lookup, and cursor tests pass |
-| Seed workflow | Explicit, disabled-by-default, idempotent seed with required cardinalities/statuses/full course |
-| Live API | 12-request `scripts/dynamodb-api-smoke.sh` workflow passed against port 8080 |
-| Compose and artifacts | `docker compose config --quiet`, `bash -n`, `jq empty postman.json`, and `git diff --check` passed |
-| Terraform syntax | Recursive formatting and `terraform validate` passed |
-| Terraform convergence | Clean-state reproduction and recovered real state both produced exit `0` no-change plans |
-| Secrets | No committed LocalStack token value found; documented placeholders only |
+| Automated tests | 39 unit/MVC tests and 12 LocalStack integration tests passed |
+| DynamoDB persistence | Six domain tables, explicit Enhanced Client records, conditional writes, optimistic versions, transactional uniqueness claims, counters, locks, and relationship edges |
+| Query behavior | Exact alternate-key GSI reads, cursor-bound collection GSI queries, strict unknown-parameter rejection, and no core endpoint scans |
+| Enrollment concurrency | Duplicate-active, rollback, capacity, transition, lock lifecycle, and concurrent last-seat tests pass |
+| Referential deletion | Authoritative dependency and enrollment-history counters close concurrent create/delete races |
+| Derived relationships | Deduplicated edges, bounded strong-consistency batch hydration, reverse lookup, and opaque cursor tests pass |
+| OpenAPI | Swagger UI at `/swagger-ui.html`; JSON at `/v3/api-docs`; 22 resource paths document schemas, errors, validation, and DynamoDB cursor semantics |
+| Observability | Correlation-ID propagation/MDC, safe structured request logs, safe startup summary, and six-table DynamoDB health contributor |
+| REST-to-DynamoDB test | Full Spring web context creates and reads data through controllers against Testcontainers LocalStack and checks health/OpenAPI |
+| Seed and live API | Idempotent transactional seed plus the 14-request `scripts/dynamodb-api-smoke.sh` workflow passed on port 8080 |
+| Compose and artifacts | `docker compose config --quiet`, shell syntax, `jq empty postman.json`, and `git diff --check` passed |
+| Terraform | Recursive formatting, validation, real-state no-change plan, disposable six-table create/no-change/destroy cycle all passed |
+| Secrets | No committed LocalStack token value found; logs and health failures omit credentials and raw exception details |
+| Documentation | Architecture, item/access-path/enrollment diagrams, limitations, migration impacts, operations, README, and progress records are current |
 
-## Tag blockers
+## Closed blockers
 
-### 1. OpenAPI is absent
+The previous audit's four blockers are resolved:
 
-The prompt requires Swagger UI, OpenAPI JSON, endpoint descriptions, schemas, validation constraints, errors,
-pagination documentation, examples, and DynamoDB cursor guidance. No OpenAPI dependency, configuration, annotations, or
-generated-document tests exist.
+1. Springdoc generates the OpenAPI contract and Swagger UI, with automated contract assertions.
+2. DynamoDB health, correlation IDs, MDC propagation, safe request logging, and a safe startup summary are implemented.
+3. A full application-context integration test exercises the REST boundary against LocalStack-backed tables.
+4. `architecture-dynamodb.md` and `dynamodb-limitations.md` consolidate the required diagrams, limits, operational
+   tradeoffs, reconciliation concerns, and PostgreSQL migration implications.
 
-### 2. Required DynamoDB observability is incomplete
+## Accepted implementation characteristics
 
-Actuator health exists, but there is no DynamoDB-specific health contributor, correlation-ID filter/MDC propagation,
-or safe startup configuration summary. The prompt explicitly requires these capabilities.
+- DynamoDB cannot enforce foreign keys natively. Application transactions, uniqueness claims, dependency counters,
+  history counters, and active-enrollment locks provide the required integrity within DynamoDB transaction limits.
+- Collection GSIs are eventually consistent. Authoritative parent counters and transactional writes protect destructive
+  invariants; read views may briefly lag after a write.
+- Opaque cursors are deliberately bound to their table, index, partition, and filters and are not portable between
+  queries or storage engines.
+- The Testcontainers schema mirrors Terraform and asserts table/index parity. It remains maintenance-sensitive, so a
+  schema change must update both Terraform and the integration fixture in the same checkpoint.
+- LocalStack is a development emulator, not evidence of identical production latency, throttling, IAM, backup, or
+  failure behavior. These limits are explicit in `dynamodb-limitations.md`.
 
-### 3. Automated REST-to-DynamoDB coverage is missing
+## Release result
 
-MVC slices use mocked services and persistence tests call adapters directly. The live shell workflow passes, but the
-prompt requires REST endpoints in the automated LocalStack integration suite. Add a Spring Boot HTTP/MockMvc integration
-test backed by the Testcontainers table set.
-
-### 4. DynamoDB documentation checkpoint is incomplete
-
-The required `architecture-dynamodb.md` and `dynamodb-limitations.md` files do not exist. Existing documents lack the
-required Mermaid diagrams for item layout, main access patterns, and transactional enrollment flow. Transaction limits,
-repair/reconciliation behavior, operational tradeoffs, and migration changes need one consolidated checkpoint.
-
-## Additional quality gaps
-
-- The fallback `Exception` handler is appropriate as a last boundary, but structured contextual request logging is not
-  implemented.
-- The Testcontainers schema is manually mirrored rather than derived from Terraform; parity is tested by assertions but
-  remains maintenance-sensitive.
-- The root README intentionally defers PostgreSQL/migration sections, but the DynamoDB checkpoint must link the new
-  OpenAPI and limitations material once implemented.
-
-## Required remediation order
-
-1. Add OpenAPI/Swagger and contract tests.
-2. Add correlation IDs, DynamoDB health, and safe startup logging with focused tests.
-3. Add automated controller-to-LocalStack workflow coverage.
-4. Complete the DynamoDB architecture/limitations documents and required Mermaid diagrams.
-5. Rerun all automated, Terraform, clean-deploy, live HTTP, documentation, and secret gates.
-6. Commit the completed checkpoint and create `dynamodb-complete` only if every blocker is closed.
+The six intended LocalStack tables remain after the disposable audit tables were destroyed. The real Terraform state
+has no drift. The checkpoint may be committed and tagged `dynamodb-complete`; PostgreSQL implementation and migration
+work can begin from this stable boundary.

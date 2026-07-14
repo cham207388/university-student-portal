@@ -34,6 +34,9 @@ against concurrent child creation, movement, and deletion. Concrete DynamoDB con
 profile, enrollment, cursor catalog, and direct relationship-index operations. Explicit idempotent development seeding
 and a live HTTP smoke workflow are implemented and verified. Bounded, deduplicated Student/Course derived views now use
 transactional relationship edges, sparse GSIs, and strongly consistent batch hydration.
+Exact alternate-key reads, strict query contracts, OpenAPI/Swagger, DynamoDB health, correlation logging, secret-free
+startup summaries, and real MVC-to-LocalStack integration coverage complete the datasource release gates. The final
+architecture and limitations checkpoint is recorded in `architecture-dynamodb.md` and `dynamodb-limitations.md`.
 
 ## Phase 4 — PostgreSQL infrastructure and model
 

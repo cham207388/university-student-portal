@@ -23,6 +23,7 @@ dependencies {
 	implementation(libs.spring.boot.starter.actuator)
 	implementation(libs.spring.boot.starter.validation)
 	implementation(libs.spring.boot.starter.webmvc)
+	implementation(libs.springdoc.openapi.webmvc.ui)
 
 	compileOnly(libs.lombok)
 	annotationProcessor(libs.lombok)

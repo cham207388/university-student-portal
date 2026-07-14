@@ -134,6 +134,16 @@ class DynamoControllerMvcTest {
 	}
 
 	@Test
+	void propagatesSafeCorrelationIdsIntoHeadersAndProblems() throws Exception {
+		mvc.perform(get("/api/v1/courses?title=ignored").header("X-Correlation-ID", "request-123"))
+				.andExpect(status().isBadRequest()).andExpect(header().string("X-Correlation-ID", "request-123"))
+				.andExpect(jsonPath("$.correlationId").value("request-123"));
+		mvc.perform(get("/api/v1/departments").header("X-Correlation-ID", "unsafe value\n"))
+				.andExpect(header().exists("X-Correlation-ID"))
+				.andExpect(header().string("X-Correlation-ID", org.hamcrest.Matchers.not("unsafe value\n")));
+	}
+
+	@Test
 	void forwardsOptimisticVersionOnPhysicalDelete() throws Exception {
 		UUID id = UUID.randomUUID();
 		mvc.perform(delete("/api/v1/instructors/" + id + "?version=7")).andExpect(status().isNoContent());
