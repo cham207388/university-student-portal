@@ -142,14 +142,32 @@ Risks and follow-ups:
 
 ## In Progress
 
-- None.
+- Implement DynamoDB cursor query capabilities and application services on top of the completed persistence foundation.
 
 ## Blocked
 
 ## Next Tasks
 
-- Add AWS SDK for Java 2.x and DynamoDB Enhanced Client dependencies.
-- Implement explicit table schemas, key factories, DynamoDB records, and domain mapping.
-- Implement conditional unique claims and optimistic concurrency in database-specific adapters.
-- Implement repository capability interfaces for each supported GSI/cursor query.
-- Add focused LocalStack Testcontainers coverage for CRUD and key/index behavior.
+- Add repository capability interfaces and opaque cursor encoding for the documented catalog and relationship GSIs.
+- Implement application services with relationship validation and transactional alternate-key uniqueness claims.
+- Implement the cross-table enrollment/capacity transaction and active-enrollment lock protocol.
+- Add concrete REST controllers backed by those services and seed-data support.
+
+### Six-table DynamoDB persistence foundation
+
+- Added AWS SDK 2 DynamoDB/Enhanced Client and Testcontainers LocalStack dependencies through the version catalog.
+- Added separate annotated records and explicit domain mappings for all six source tables; API/domain/JPA concerns remain separate.
+- Added profile-scoped low-level and Enhanced clients plus typed bindings for every configured table.
+- Added conditional create, strongly consistent primary-key reads, version-conditioned delete, and Enhanced Client optimistic updates.
+- Added concrete adapters for all repository ports and exact alternate-key existence checks through the documented GSIs.
+- Preserved the internal course occupied-seat counter during ordinary domain updates so later enrollment transactions own it.
+- Added `dynamodbIntegrationTest`; its isolated LocalStack container provisions all six tables and every expected GSI.
+- Verified schema parity, CRUD, GSI lookup, duplicate primary-key rejection, version increments, stale-write rejection, and delete.
+
+Verification results:
+
+- `./gradlew testClasses`: successful.
+- `./gradlew dynamodbIntegrationTest`: successful, 2 integration tests passed.
+- `./gradlew clean check`: successful; unit/MVC and LocalStack integration suites all passed.
+- `git diff --check`: no whitespace errors.
+- LocalStack integration tests require Docker only and do not depend on the project Compose stack or Pro token.

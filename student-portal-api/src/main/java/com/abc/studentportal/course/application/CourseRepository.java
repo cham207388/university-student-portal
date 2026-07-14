@@ -7,7 +7,9 @@ import java.util.UUID;
 
 public interface CourseRepository {
 
-	Course save(Course course);
+	Course create(Course course);
+
+	Course update(Course course);
 
 	Optional<Course> findById(UUID id);
 

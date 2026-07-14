@@ -7,7 +7,9 @@ import java.util.UUID;
 
 public interface StudentRepository {
 
-	Student save(Student student);
+	Student create(Student student);
+
+	Student update(Student student);
 
 	Optional<Student> findById(UUID id);
 

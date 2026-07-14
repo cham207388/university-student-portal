@@ -7,7 +7,9 @@ import java.util.UUID;
 
 public interface InstructorRepository {
 
-	Instructor save(Instructor instructor);
+	Instructor create(Instructor instructor);
+
+	Instructor update(Instructor instructor);
 
 	Optional<Instructor> findById(UUID id);
 

@@ -1,6 +1,8 @@
 [versions]
 spring-boot = "4.1.0"
 spring-dependency-management = "1.1.7"
+aws-sdk = "2.46.18"
+testcontainers = "2.0.5"
 
 [libraries]
 spring-boot-starter-actuator = { module = "org.springframework.boot:spring-boot-starter-actuator" }
@@ -9,6 +11,14 @@ spring-boot-starter-webmvc = { module = "org.springframework.boot:spring-boot-st
 spring-boot-starter-webmvc-test = { module = "org.springframework.boot:spring-boot-starter-webmvc-test" }
 lombok = { module = "org.projectlombok:lombok" }
 junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher" }
+aws-dynamodb = { module = "software.amazon.awssdk:dynamodb" }
+aws-dynamodb-enhanced = { module = "software.amazon.awssdk:dynamodb-enhanced" }
+aws-url-connection-client = { module = "software.amazon.awssdk:url-connection-client" }
+testcontainers-junit-jupiter = { module = "org.testcontainers:testcontainers-junit-jupiter", version.ref = "testcontainers" }
+testcontainers-localstack = { module = "org.testcontainers:testcontainers-localstack", version.ref = "testcontainers" }
+
+[bundles]
+aws-dynamodb = ["aws-dynamodb", "aws-dynamodb-enhanced", "aws-url-connection-client"]
 
 [plugins]
 spring-boot = { id = "org.springframework.boot", version.ref = "spring-boot" }

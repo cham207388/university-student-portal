@@ -6,6 +6,9 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface EnrollmentRepository {
+	Enrollment create(Enrollment enrollment);
+
+	Enrollment update(Enrollment enrollment);
 
 	Optional<Enrollment> findById(UUID id);
 
@@ -14,4 +17,6 @@ public interface EnrollmentRepository {
 	boolean existsByStudentId(UUID studentId);
 
 	boolean existsByCourseId(UUID courseId);
+
+	void delete(Enrollment enrollment);
 }

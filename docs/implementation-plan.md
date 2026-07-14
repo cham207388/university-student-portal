@@ -22,6 +22,11 @@ Document every access pattern first, select and justify the table design, then p
 
 Implement Enhanced Client records and adapters, indexed queries, cursor pagination, conditional writes, transactional enrollment, integration tests, seed support, and DynamoDB documentation. Commit and tag `dynamodb-complete` only after verification.
 
+Status: persistence foundation complete. Six distinct record schemas and domain mappings, profile-scoped client/table
+configuration, primary-key CRUD adapters, optimistic locking, exact alternate-key GSI checks, and LocalStack
+Testcontainers coverage are implemented. Cursor query capabilities, transactional uniqueness/capacity, services,
+controllers, seed data, and full API scenarios remain in this phase.
+
 ## Phase 4 — PostgreSQL infrastructure and model
 
 Add PostgreSQL Compose support, Flyway migrations, separate JPA entities, repositories, filtering, page pagination, and relational transaction enforcement.

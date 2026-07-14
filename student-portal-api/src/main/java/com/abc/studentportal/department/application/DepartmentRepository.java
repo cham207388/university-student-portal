@@ -7,7 +7,9 @@ import java.util.UUID;
 
 public interface DepartmentRepository {
 
-	Department save(Department department);
+	Department create(Department department);
+
+	Department update(Department department);
 
 	Optional<Department> findById(UUID id);
 

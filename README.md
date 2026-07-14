@@ -4,9 +4,10 @@ A learning-oriented backend that first implements a university course registrati
 
 ## Current checkpoint
 
-The DynamoDB infrastructure checkpoint now provisions six domain-oriented source tables. The persistence-neutral domain,
-validated REST contracts, table-specific access patterns, typed configuration, Terraform, and LocalStack infrastructure
-are complete. DynamoDB persistence adapters and PostgreSQL code have not yet been implemented.
+The DynamoDB foundation now provisions six domain-oriented source tables and maps persistence-neutral domain objects to
+separate Enhanced Client records. Profile-scoped clients and table bindings, conditional CRUD adapters, optimistic
+locking, exact GSI lookups, and isolated LocalStack integration tests are in place. Cursor collections, transactional
+uniqueness/enrollment workflows, application services, and PostgreSQL remain later checkpoints.
 
 ## Repository layout
 
@@ -34,6 +35,9 @@ The Gradle 9 wrapper is included; a system Gradle installation is not required.
 cd student-portal-api
 ./gradlew clean check
 ```
+
+`check` includes the isolated LocalStack/Testcontainers persistence suite. It requires a running Docker engine but does
+not require the project Compose stack or a LocalStack token. Run only that suite with `./gradlew dynamodbIntegrationTest`.
 
 ## Run the foundation application
 
