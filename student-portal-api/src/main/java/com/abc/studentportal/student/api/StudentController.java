@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 import java.net.URI;
 import java.time.Instant;
 import java.util.UUID;
+import java.util.List;
 import java.util.function.Function;
 
 @RestController
@@ -57,11 +58,20 @@ public class StudentController {
 	@GetMapping
 	CursorPageResponse<StudentApi.Response> list(@RequestParam(required = false) UUID departmentId,
 			@RequestParam(required = false) StudentStatus status, @RequestParam(required = false) String lastName,
+			@RequestParam(required = false) String studentNumber, @RequestParam(required = false) String email,
 			@RequestParam(defaultValue = "20") int limit, @RequestParam(required = false) String cursor) {
-		if (departmentId != null && status != null)
+		int filters = (departmentId == null ? 0 : 1) + (status == null ? 0 : 1)
+				+ (studentNumber == null ? 0 : 1) + (email == null ? 0 : 1);
+		if (filters > 1)
 			throw new InvalidRequestException("DynamoDB student lists support one filter at a time");
 		if (lastName != null && departmentId == null)
 			throw new InvalidRequestException("lastName requires departmentId in DynamoDB mode");
+		if (studentNumber != null || email != null) {
+			if (cursor != null)
+				throw new InvalidRequestException("cursor cannot be combined with an exact student lookup");
+			var value = studentNumber != null ? service.findByStudentNumber(studentNumber) : service.findByEmail(email);
+			return exact(value.map(StudentMapper::toResponse).stream().toList());
+		}
 		var request = new CursorRequest(limit, cursor);
 		CursorPage<com.abc.studentportal.student.domain.Student> page = departmentId != null
 				? queries.findByDepartment(departmentId, lastName, request)
@@ -126,5 +136,9 @@ public class StudentController {
 	private static <D, R> CursorPageResponse<R> page(CursorPage<D> page, Function<D, R> mapper) {
 		return new CursorPageResponse<>(page.content().stream().map(mapper).toList(), page.limit(), page.nextCursor(),
 				page.hasNext());
+	}
+
+	private static <R> CursorPageResponse<R> exact(List<R> content) {
+		return new CursorPageResponse<>(content, 1, null, false);
 	}
 }

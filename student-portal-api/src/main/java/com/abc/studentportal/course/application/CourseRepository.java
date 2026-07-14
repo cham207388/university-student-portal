@@ -13,6 +13,8 @@ public interface CourseRepository {
 
 	Optional<Course> findById(UUID id);
 
+	Optional<Course> findByCourseCode(String courseCode);
+
 	boolean existsByCourseCode(String courseCode);
 
 	void delete(Course course);

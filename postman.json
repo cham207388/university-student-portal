@@ -39,6 +39,16 @@
           "event": [{ "listen": "test", "script": { "exec": ["pm.test('Cursor page returned', () => { pm.response.to.have.status(200); pm.expect(pm.response.json().content).to.be.an('array'); });"] } }]
         },
         {
+          "name": "Find Seed Student by Email",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/v1/students?email=student1%40example.edu" },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Exact alternate key returned one student', () => { pm.response.to.have.status(200); const body = pm.response.json(); pm.expect(body.content).to.have.length(1); pm.expect(body.limit).to.eql(1); });"] } }]
+        },
+        {
+          "name": "Reject Unsupported Course Filter",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/v1/courses?title=ignored" },
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Unknown query parameter is rejected', () => { pm.response.to.have.status(400); pm.expect(pm.response.json().type).to.include('invalid-request'); });"] } }]
+        },
+        {
           "name": "Get Seed Student Profile",
           "request": { "method": "GET", "url": "{{baseUrl}}/api/v1/students/{{seedStudentId}}/profile" }
         },

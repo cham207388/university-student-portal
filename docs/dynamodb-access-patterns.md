@@ -66,6 +66,7 @@ the enrollment, counter when capacity consumption changes, and active lock atomi
 
 - Course-title substring search, global last-name substring search, credit ranges, arbitrary multi-filter combinations,
   arbitrary sorting, offsets, exact totals, and total pages.
+- Every undeclared query parameter is rejected before controller execution instead of being silently ignored.
 - Unsupported requests return an RFC 9457 problem rather than scanning or sorting unbounded data in memory.
 - PostgreSQL will support a broader validated filter/sort set, documented in the API compatibility matrix.
 
@@ -89,5 +90,6 @@ efficient query shapes:
 
 Each method requires a bounded `CursorRequest` and returns a domain-level `CursorPage`. The cursor identity includes the
 physical table, GSI, partition value, and normalized prefix/range bounds, preventing accidental cursor reuse across
-different filters. Exact alternate-key lookups remain separate common repository operations; unsupported filter
-combinations never fall back to `Scan`.
+different filters. Exact alternate-key repository lookups are exposed as zero-or-one collection filters: Department
+`code`, Student `studentNumber`/`email`, Instructor `employeeNumber`/`email`, and Course `courseCode`. They cannot be
+combined with another filter or cursor. Unsupported and unknown parameters never fall back to `Scan`.

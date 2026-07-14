@@ -149,6 +149,7 @@ class DynamoPersistenceIntegrationTest {
 		assertEquals(1, created.version());
 		assertEquals(created, departments.findById(id).orElseThrow());
 		assertTrue(departments.existsByCode("CS"));
+		assertEquals(created, departments.findByCode("CS").orElseThrow());
 		assertThrows(ConflictException.class, () -> departments.create(candidate));
 
 		Department changed = new Department(id, "CS", "Computing", null, createdAt, createdAt.plusSeconds(1), created.version());
@@ -201,6 +202,11 @@ class DynamoPersistenceIntegrationTest {
 		assertTrue(instructors.existsByEmployeeNumber("E-200"));
 		assertTrue(instructors.existsByEmail("alan@example.com"));
 		assertTrue(courses.existsByCourseCode("MATH-101"));
+		assertEquals(student, students.findByStudentNumber("S-200").orElseThrow());
+		assertEquals(student, students.findByEmail("katherine@example.com").orElseThrow());
+		assertEquals(instructor, instructors.findByEmployeeNumber("E-200").orElseThrow());
+		assertEquals(instructor, instructors.findByEmail("alan@example.com").orElseThrow());
+		assertEquals(course.id(), courses.findByCourseCode("MATH-101").orElseThrow().id());
 		assertTrue(enrollments.existsByStudentId(studentId));
 		assertTrue(enrollments.existsByCourseId(courseId));
 		assertTrue(enrollments.existsActiveByStudentIdAndCourseId(studentId, courseId));

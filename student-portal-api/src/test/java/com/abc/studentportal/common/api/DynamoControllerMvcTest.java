@@ -18,6 +18,7 @@ import com.abc.studentportal.enrollment.application.EnrollmentService;
 import com.abc.studentportal.instructor.api.InstructorController;
 import com.abc.studentportal.instructor.application.DynamoInstructorQueries;
 import com.abc.studentportal.instructor.application.InstructorService;
+import com.abc.studentportal.instructor.domain.Instructor;
 import com.abc.studentportal.student.api.StudentController;
 import com.abc.studentportal.student.application.DynamoStudentQueries;
 import com.abc.studentportal.student.application.StudentService;
@@ -34,9 +35,11 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -88,6 +91,46 @@ class DynamoControllerMvcTest {
 		mvc.perform(get("/api/v1/courses?departmentId=" + UUID.randomUUID() + "&status=OPEN"))
 				.andExpect(status().isBadRequest()).andExpect(jsonPath("$.type")
 						.value("https://student-portal.example/problems/invalid-request"));
+	}
+
+	@Test
+	void exposesNormalizedExactAlternateKeyFilters() throws Exception {
+		Instant now = Instant.parse("2026-07-14T00:00:00Z");
+		UUID departmentId = UUID.randomUUID(); UUID instructorId = UUID.randomUUID();
+		Department department = new Department(departmentId, "CS", "Computing", null, now, now, 1);
+		Student student = new Student(UUID.randomUUID(), "S1", "Avery", "Morgan", "avery@example.com",
+				StudentStatus.ACTIVE, departmentId, now, now, 1);
+		Instructor instructor = new Instructor(instructorId, "E1", "Mira", "Chen", "mira@example.com",
+				departmentId, now, now, 1);
+		Course course = new Course(UUID.randomUUID(), "CS101", "Computing", null, 3, 20, CourseStatus.OPEN,
+				departmentId, instructorId, now, now, 1);
+		when(departments.findByCode("cs")).thenReturn(Optional.of(department));
+		when(students.findByEmail(anyString())).thenReturn(Optional.of(student));
+		when(instructors.findByEmployeeNumber("E1")).thenReturn(Optional.of(instructor));
+		when(courses.findByCourseCode("cs101")).thenReturn(Optional.of(course));
+
+		mvc.perform(get("/api/v1/departments?code=cs")).andExpect(status().isOk())
+				.andExpect(jsonPath("$.content[0].code").value("CS")).andExpect(jsonPath("$.limit").value(1));
+		mvc.perform(get("/api/v1/students?email=AVERY%40EXAMPLE.COM")).andExpect(status().isOk())
+				.andExpect(jsonPath("$.content[0].studentNumber").value("S1"));
+		mvc.perform(get("/api/v1/instructors?employeeNumber=E1")).andExpect(status().isOk())
+				.andExpect(jsonPath("$.content[0].employeeNumber").value("E1"));
+		mvc.perform(get("/api/v1/courses?courseCode=cs101")).andExpect(status().isOk())
+				.andExpect(jsonPath("$.content[0].courseCode").value("CS101"));
+	}
+
+	@Test
+	void returnsEmptyExactResultAndRejectsUnknownOrIncompatibleParameters() throws Exception {
+		when(students.findByStudentNumber("missing")).thenReturn(Optional.empty());
+		mvc.perform(get("/api/v1/students?studentNumber=missing")).andExpect(status().isOk())
+				.andExpect(jsonPath("$.content.length()").value(0));
+		mvc.perform(get("/api/v1/courses?title=ignored")).andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.detail").value("Unsupported query parameter(s): title"));
+		mvc.perform(get("/api/v1/students?sort=lastName&minimumCredits=2")).andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.type").value("https://student-portal.example/problems/invalid-request"));
+		mvc.perform(get("/api/v1/students?email=a%40example.com&status=ACTIVE"))
+				.andExpect(status().isBadRequest());
+		mvc.perform(get("/api/v1/departments?code=CS&cursor=opaque")).andExpect(status().isBadRequest());
 	}
 
 	@Test

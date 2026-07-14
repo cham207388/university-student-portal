@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
 import java.util.UUID;
+import java.util.List;
 import java.util.function.Function;
 
 @RestController
@@ -56,8 +57,13 @@ public class DepartmentController {
 	}
 
 	@GetMapping
-	CursorPageResponse<DepartmentApi.Response> list(@RequestParam(defaultValue = "20") int limit,
+	CursorPageResponse<DepartmentApi.Response> list(@RequestParam(required = false) String code,
+			@RequestParam(defaultValue = "20") int limit,
 			@RequestParam(required = false) String cursor) {
+		if (code != null) {
+			requireNoCursor(cursor, "code");
+			return exact(service.findByCode(code).map(DepartmentMapper::toResponse).stream().toList());
+		}
 		return page(departments.findAll(new CursorRequest(limit, cursor)), DepartmentMapper::toResponse);
 	}
 
@@ -101,5 +107,15 @@ public class DepartmentController {
 	private static <D, R> CursorPageResponse<R> page(CursorPage<D> page, Function<D, R> mapper) {
 		return new CursorPageResponse<>(page.content().stream().map(mapper).toList(), page.limit(), page.nextCursor(),
 				page.hasNext());
+	}
+
+	private static <R> CursorPageResponse<R> exact(List<R> content) {
+		return new CursorPageResponse<>(content, 1, null, false);
+	}
+
+	private static void requireNoCursor(String cursor, String filter) {
+		if (cursor != null)
+			throw new com.abc.studentportal.common.exception.InvalidRequestException(
+					"cursor cannot be combined with exact " + filter + " lookup");
 	}
 }

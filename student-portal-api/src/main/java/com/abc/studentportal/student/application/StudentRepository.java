@@ -13,6 +13,10 @@ public interface StudentRepository {
 
 	Optional<Student> findById(UUID id);
 
+	Optional<Student> findByStudentNumber(String studentNumber);
+
+	Optional<Student> findByEmail(String email);
+
 	boolean existsByStudentNumber(String studentNumber);
 
 	boolean existsByEmail(String email);

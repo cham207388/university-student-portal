@@ -75,8 +75,18 @@ public class DynamoStudentRepository extends AbstractDynamoRepository<Student, S
 	}
 
 	@Override
+	public Optional<Student> findByStudentNumber(String value) {
+		return DynamoQueries.findOne(table().index("students-by-number"), value).map(StudentDynamoMapper::toDomain);
+	}
+
+	@Override
 	public boolean existsByEmail(String value) {
 		return DynamoQueries.exists(table().index("students-by-email"), value);
+	}
+
+	@Override
+	public Optional<Student> findByEmail(String value) {
+		return DynamoQueries.findOne(table().index("students-by-email"), value).map(StudentDynamoMapper::toDomain);
 	}
 
 	@Override

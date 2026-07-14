@@ -71,8 +71,20 @@ public class DynamoInstructorRepository extends AbstractDynamoRepository<Instruc
 	}
 
 	@Override
+	public Optional<Instructor> findByEmployeeNumber(String value) {
+		return DynamoQueries.findOne(table().index("instructors-by-number"), value)
+				.map(InstructorDynamoMapper::toDomain);
+	}
+
+	@Override
 	public boolean existsByEmail(String value) {
 		return DynamoQueries.exists(table().index("instructors-by-email"), value);
+	}
+
+	@Override
+	public Optional<Instructor> findByEmail(String value) {
+		return DynamoQueries.findOne(table().index("instructors-by-email"), value)
+				.map(InstructorDynamoMapper::toDomain);
 	}
 
 	@Override

@@ -35,14 +35,22 @@ Response DTOs contain the resource ID, business fields, audit timestamps, and ve
 
 ## Filtering
 
-- Students in DynamoDB mode: unfiltered catalog, `departmentId` with optional `lastName` prefix, or `status`. A request
-  cannot combine department and status; `lastName` requires `departmentId`.
-- Instructors in DynamoDB mode: unfiltered catalog or `departmentId`.
-- Courses in DynamoDB mode: unfiltered catalog or exactly one of `departmentId`, `instructorId`, and `status`.
+- Departments in DynamoDB mode: unfiltered catalog or exact `code`.
+- Students in DynamoDB mode: unfiltered catalog, `departmentId` with optional `lastName` prefix, `status`, exact
+  `studentNumber`, or exact `email`.
+- Instructors in DynamoDB mode: unfiltered catalog, `departmentId`, exact `employeeNumber`, or exact `email`.
+- Courses in DynamoDB mode: unfiltered catalog or exactly one of `departmentId`, `instructorId`, `status`, and exact
+  `courseCode`.
 - Enrollments in DynamoDB mode: unfiltered catalog or exactly one of `studentId`, `courseId`, and `status`.
   `enrolledFrom` and `enrolledTo` are supported only with `studentId` or `courseId`.
 
-Unsupported filter combinations or sorting return a clear `400` Problem Detail. The application will not hide a DynamoDB scan or unbounded in-memory sort behind these contracts.
+Exact alternate-key filters return the normal cursor-page envelope with zero or one item, `limit: 1`, and no cursor.
+They cannot be combined with another filter or a cursor. Alternate-key GSIs are eventually consistent read paths;
+transactional claim records remain the uniqueness authority.
+
+Every `/api/v1/**` handler rejects undeclared query parameters before controller execution. Unsupported filter
+combinations, unknown filters, and sorting return a clear `400` Problem Detail. The application will not hide a
+DynamoDB scan or unbounded in-memory sort behind these contracts.
 
 ## Pagination variants
 
@@ -61,10 +69,9 @@ and the derived Student/Course many-to-many views. Physical deletes carry the ex
 query parameter.
 
 Derived views page deterministic relationship-edge GSIs and hydrate each bounded page with strongly consistent
-`BatchGetItem` calls. Re-enrollment does not duplicate a Student or Course in these views. Exact alternate-key collection
-Exact alternate-key reads by email, student/employee number, or department/course code remain repository capabilities
-but are not exposed as collection filters. Title search and credit ranges are also not exposed in DynamoDB mode. No
-controller substitutes a scan.
+`BatchGetItem` calls. Re-enrollment does not duplicate a Student or Course in these views. Exact alternate-key reads by
+email, student/employee number, or department/course code are exposed as the collection filters described above. Title
+search and credit ranges are not exposed in DynamoDB mode and are rejected explicitly. No controller substitutes a scan.
 
 ## Delete semantics
 

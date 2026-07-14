@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 import java.net.URI;
 import java.time.Instant;
 import java.util.UUID;
+import java.util.List;
 import java.util.function.Function;
 
 @RestController
@@ -57,10 +58,17 @@ public class CourseController {
 	@GetMapping
 	CursorPageResponse<CourseApi.Response> list(@RequestParam(required = false) UUID departmentId,
 			@RequestParam(required = false) UUID instructorId, @RequestParam(required = false) CourseStatus status,
+			@RequestParam(required = false) String courseCode,
 			@RequestParam(defaultValue = "20") int limit, @RequestParam(required = false) String cursor) {
-		int filters = (departmentId == null ? 0 : 1) + (instructorId == null ? 0 : 1) + (status == null ? 0 : 1);
+		int filters = (departmentId == null ? 0 : 1) + (instructorId == null ? 0 : 1) + (status == null ? 0 : 1)
+				+ (courseCode == null ? 0 : 1);
 		if (filters > 1)
 			throw new InvalidRequestException("DynamoDB course lists support one filter at a time");
+		if (courseCode != null) {
+			if (cursor != null)
+				throw new InvalidRequestException("cursor cannot be combined with exact courseCode lookup");
+			return exact(service.findByCourseCode(courseCode).map(CourseMapper::toResponse).stream().toList());
+		}
 		var request = new CursorRequest(limit, cursor);
 		CursorPage<com.abc.studentportal.course.domain.Course> page = departmentId != null
 				? queries.findByDepartment(departmentId, request)
@@ -108,5 +116,9 @@ public class CourseController {
 	private static <D, R> CursorPageResponse<R> page(CursorPage<D> page, Function<D, R> mapper) {
 		return new CursorPageResponse<>(page.content().stream().map(mapper).toList(), page.limit(), page.nextCursor(),
 				page.hasNext());
+	}
+
+	private static <R> CursorPageResponse<R> exact(List<R> content) {
+		return new CursorPageResponse<>(content, 1, null, false);
 	}
 }

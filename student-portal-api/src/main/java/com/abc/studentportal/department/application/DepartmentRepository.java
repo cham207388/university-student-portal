@@ -13,6 +13,8 @@ public interface DepartmentRepository {
 
 	Optional<Department> findById(UUID id);
 
+	Optional<Department> findByCode(String code);
+
 	boolean existsByCode(String code);
 
 	void delete(Department department);

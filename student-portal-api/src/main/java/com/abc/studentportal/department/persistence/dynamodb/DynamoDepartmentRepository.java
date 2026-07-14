@@ -64,6 +64,12 @@ public class DynamoDepartmentRepository extends AbstractDynamoRepository<Departm
 	}
 
 	@Override
+	public Optional<Department> findByCode(String code) {
+		return DynamoQueries.findOne(table().index("departments-by-code"), code)
+				.map(DepartmentDynamoMapper::toDomain);
+	}
+
+	@Override
 	public void delete(Department value) {
 		Department current = findById(value.id())
 				.orElseThrow(() -> new com.abc.studentportal.common.exception.ConflictException(

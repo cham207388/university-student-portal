@@ -11,6 +11,8 @@ import org.springframework.stereotype.Service;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.UUID;
+import java.util.Locale;
+import java.util.Optional;
 
 @Service
 @Profile({ "local-dynamodb", "test-dynamodb" })
@@ -47,6 +49,16 @@ public class InstructorService {
 
 	public Instructor get(UUID id) {
 		return instructors.findById(id).orElseThrow(() -> new ResourceNotFoundException("Instructor", id));
+	}
+
+	public Optional<Instructor> findByEmployeeNumber(String employeeNumber) {
+		return instructors.findByEmployeeNumber(
+				com.abc.studentportal.common.domain.DomainChecks.requiredText(employeeNumber, "employeeNumber"));
+	}
+
+	public Optional<Instructor> findByEmail(String email) {
+		return instructors.findByEmail(com.abc.studentportal.common.domain.DomainChecks.requiredText(email, "email")
+				.toLowerCase(Locale.ROOT));
 	}
 
 	public void delete(UUID id, long version) {

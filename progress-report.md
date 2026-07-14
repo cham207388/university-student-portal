@@ -2,6 +2,25 @@
 
 ## Completed Tasks
 
+### Exact alternate-key reads and strict query contracts
+
+- Added zero-or-one repository reads for Department code, Student number/email, Instructor number/email, and Course
+  code using their existing GSIs with a one-item query bound.
+- Exposed exact alternate keys as mutually exclusive collection filters with normalized inputs and the existing response
+  envelope (`limit: 1`, no next cursor).
+- Added a profile-scoped MVC interceptor that derives allowed query parameters from each handler and rejects unknown
+  parameters before controller execution.
+- Explicitly reject exact-key/cursor combinations and exact-key combinations with relationship or status filters.
+- Updated API, access-pattern, audit, and progress documentation.
+
+Verification results:
+
+- `./gradlew clean check`: successful; 37 unit/MVC tests and 11 LocalStack integration tests passed.
+- MVC coverage verifies successful/empty exact reads plus unknown, conflicting, and cursor-incompatible parameters.
+- LocalStack coverage verifies entity-returning reads through all seven alternate-key GSIs.
+- The expanded 14-request live HTTP smoke workflow passed, including exact email lookup and unknown-filter rejection.
+- `git diff --check`: successful.
+
 ### Terraform convergence recovery
 
 - Reproduced the six-table configuration with an isolated state and unique table prefix; the immediate refreshed second

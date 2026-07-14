@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.UUID;
+import java.util.Optional;
 
 @Service
 @Profile({ "local-dynamodb", "test-dynamodb" })
@@ -62,6 +63,11 @@ public class CourseService {
 
 	public Course get(UUID id) {
 		return courses.findById(id).orElseThrow(() -> new ResourceNotFoundException("Course", id));
+	}
+
+	public Optional<Course> findByCourseCode(String courseCode) {
+		return courses.findByCourseCode(
+				com.abc.studentportal.common.domain.DomainChecks.uppercaseCode(courseCode, "courseCode"));
 	}
 
 	public void delete(UUID id, long version) {

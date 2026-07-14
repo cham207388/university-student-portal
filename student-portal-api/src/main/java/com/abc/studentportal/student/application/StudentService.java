@@ -14,6 +14,8 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.UUID;
+import java.util.Locale;
+import java.util.Optional;
 
 @Service
 @Profile({ "local-dynamodb", "test-dynamodb" })
@@ -68,6 +70,16 @@ public class StudentService {
 
 	public Student get(UUID id) {
 		return students.findById(id).orElseThrow(() -> new ResourceNotFoundException("Student", id));
+	}
+
+	public Optional<Student> findByStudentNumber(String studentNumber) {
+		return students.findByStudentNumber(
+				com.abc.studentportal.common.domain.DomainChecks.requiredText(studentNumber, "studentNumber"));
+	}
+
+	public Optional<Student> findByEmail(String email) {
+		return students.findByEmail(com.abc.studentportal.common.domain.DomainChecks.requiredText(email, "email")
+				.toLowerCase(Locale.ROOT));
 	}
 
 	public StudentProfile getProfile(UUID studentId) {

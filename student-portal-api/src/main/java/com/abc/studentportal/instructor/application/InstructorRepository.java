@@ -13,6 +13,10 @@ public interface InstructorRepository {
 
 	Optional<Instructor> findById(UUID id);
 
+	Optional<Instructor> findByEmployeeNumber(String employeeNumber);
+
+	Optional<Instructor> findByEmail(String email);
+
 	boolean existsByEmployeeNumber(String employeeNumber);
 
 	boolean existsByEmail(String email);

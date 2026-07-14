@@ -79,6 +79,11 @@ public class DynamoCourseRepository extends AbstractDynamoRepository<Course, Cou
 	}
 
 	@Override
+	public Optional<Course> findByCourseCode(String value) {
+		return DynamoQueries.findOne(table().index("courses-by-code"), value).map(CourseDynamoMapper::toDomain);
+	}
+
+	@Override
 	public void delete(Course value) {
 		Course current = findById(value.id()).orElseThrow(() -> new ConflictException(
 				"Resource does not exist or was modified by another request"));

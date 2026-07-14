@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
 import java.util.UUID;
+import java.util.List;
 import java.util.function.Function;
 
 @RestController
@@ -47,7 +48,19 @@ public class InstructorController {
 
 	@GetMapping
 	CursorPageResponse<InstructorApi.Response> list(@RequestParam(required = false) UUID departmentId,
+			@RequestParam(required = false) String employeeNumber, @RequestParam(required = false) String email,
 			@RequestParam(defaultValue = "20") int limit, @RequestParam(required = false) String cursor) {
+		int filters = (departmentId == null ? 0 : 1) + (employeeNumber == null ? 0 : 1) + (email == null ? 0 : 1);
+		if (filters > 1)
+			throw new com.abc.studentportal.common.exception.InvalidRequestException(
+					"DynamoDB instructor lists support one filter at a time");
+		if (employeeNumber != null || email != null) {
+			if (cursor != null)
+				throw new com.abc.studentportal.common.exception.InvalidRequestException(
+						"cursor cannot be combined with an exact instructor lookup");
+			var value = employeeNumber != null ? service.findByEmployeeNumber(employeeNumber) : service.findByEmail(email);
+			return exact(value.map(InstructorMapper::toResponse).stream().toList());
+		}
 		var request = new CursorRequest(limit, cursor);
 		return page(departmentId == null ? queries.findAll(request) : queries.findByDepartment(departmentId, request),
 				InstructorMapper::toResponse);
@@ -77,5 +90,9 @@ public class InstructorController {
 	private static <D, R> CursorPageResponse<R> page(CursorPage<D> page, Function<D, R> mapper) {
 		return new CursorPageResponse<>(page.content().stream().map(mapper).toList(), page.limit(), page.nextCursor(),
 				page.hasNext());
+	}
+
+	private static <R> CursorPageResponse<R> exact(List<R> content) {
+		return new CursorPageResponse<>(content, 1, null, false);
 	}
 }

@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.UUID;
+import java.util.Optional;
 
 @Service
 @Profile({ "local-dynamodb", "test-dynamodb" })
@@ -39,6 +40,10 @@ public class DepartmentService {
 
 	public Department get(UUID id) {
 		return repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Department", id));
+	}
+
+	public Optional<Department> findByCode(String code) {
+		return repository.findByCode(com.abc.studentportal.common.domain.DomainChecks.uppercaseCode(code, "code"));
 	}
 
 	public void delete(UUID id, long version) {

@@ -39,25 +39,13 @@ generated-document tests exist.
 Actuator health exists, but there is no DynamoDB-specific health contributor, correlation-ID filter/MDC propagation,
 or safe startup configuration summary. The prompt explicitly requires these capabilities.
 
-### 3. Exact alternate-key read access patterns are incomplete
-
-Indexes and uniqueness claims exist for Department code, Student number/email, Instructor number/email, and Course code,
-but repository methods expose only `exists` checks and controllers do not expose exact reads. The documented access
-patterns require zero-or-one entity retrieval, not merely duplicate detection.
-
-### 4. Unsupported query parameters can be silently ignored
-
-Known unsupported combinations are rejected, but undeclared parameters such as `sort`, `title`, or `minimumCredits` can
-be ignored by Spring MVC instead of returning the required unsupported-filter/sort Problem Detail. A strict query
-contract or explicit parameter handling is required.
-
-### 5. Automated REST-to-DynamoDB coverage is missing
+### 3. Automated REST-to-DynamoDB coverage is missing
 
 MVC slices use mocked services and persistence tests call adapters directly. The live shell workflow passes, but the
 prompt requires REST endpoints in the automated LocalStack integration suite. Add a Spring Boot HTTP/MockMvc integration
 test backed by the Testcontainers table set.
 
-### 6. DynamoDB documentation checkpoint is incomplete
+### 4. DynamoDB documentation checkpoint is incomplete
 
 The required `architecture-dynamodb.md` and `dynamodb-limitations.md` files do not exist. Existing documents lack the
 required Mermaid diagrams for item layout, main access patterns, and transactional enrollment flow. Transaction limits,
@@ -74,10 +62,9 @@ repair/reconciliation behavior, operational tradeoffs, and migration changes nee
 
 ## Required remediation order
 
-1. Add exact alternate-key query capabilities and strict unsupported-query handling.
-2. Add OpenAPI/Swagger and contract tests.
-3. Add correlation IDs, DynamoDB health, and safe startup logging with focused tests.
-4. Add automated controller-to-LocalStack workflow coverage.
-5. Complete the DynamoDB architecture/limitations documents and required Mermaid diagrams.
-6. Rerun all automated, Terraform, clean-deploy, live HTTP, documentation, and secret gates.
-7. Commit the completed checkpoint and create `dynamodb-complete` only if every blocker is closed.
+1. Add OpenAPI/Swagger and contract tests.
+2. Add correlation IDs, DynamoDB health, and safe startup logging with focused tests.
+3. Add automated controller-to-LocalStack workflow coverage.
+4. Complete the DynamoDB architecture/limitations documents and required Mermaid diagrams.
+5. Rerun all automated, Terraform, clean-deploy, live HTTP, documentation, and secret gates.
+6. Commit the completed checkpoint and create `dynamodb-complete` only if every blocker is closed.
