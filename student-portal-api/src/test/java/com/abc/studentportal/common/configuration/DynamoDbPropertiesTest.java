@@ -1,11 +1,15 @@
 package com.abc.studentportal.common.configuration;
 
 import com.abc.studentportal.course.application.CourseRepository;
+import com.abc.studentportal.course.application.CourseService;
 import com.abc.studentportal.department.application.DepartmentRepository;
+import com.abc.studentportal.department.application.DepartmentService;
 import com.abc.studentportal.enrollment.application.EnrollmentRepository;
 import com.abc.studentportal.instructor.application.InstructorRepository;
+import com.abc.studentportal.instructor.application.InstructorService;
 import com.abc.studentportal.student.application.StudentProfileRepository;
 import com.abc.studentportal.student.application.StudentRepository;
+import com.abc.studentportal.student.application.StudentService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -33,6 +37,14 @@ class DynamoDbPropertiesTest {
 	private CourseRepository courses;
 	@Autowired
 	private EnrollmentRepository enrollments;
+	@Autowired
+	private DepartmentService departmentService;
+	@Autowired
+	private StudentService studentService;
+	@Autowired
+	private InstructorService instructorService;
+	@Autowired
+	private CourseService courseService;
 
 	@Test
 	void bindsLocalDynamoDbDefaults() {
@@ -50,5 +62,9 @@ class DynamoDbPropertiesTest {
 		assertThat(instructors).isNotNull();
 		assertThat(courses).isNotNull();
 		assertThat(enrollments).isNotNull();
+		assertThat(departmentService).isNotNull();
+		assertThat(studentService).isNotNull();
+		assertThat(instructorService).isNotNull();
+		assertThat(courseService).isNotNull();
 	}
 }

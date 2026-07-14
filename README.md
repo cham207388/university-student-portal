@@ -8,7 +8,8 @@ The DynamoDB foundation now provisions six domain-oriented source tables and map
 separate Enhanced Client records. Profile-scoped clients and table bindings, conditional CRUD adapters, optimistic
 locking, exact GSI lookups, and isolated LocalStack integration tests are in place. Cursor pagination over every
 documented catalog and relationship GSI is also implemented through database-specific capability ports. Transactional
-uniqueness/enrollment workflows, application services, and PostgreSQL remain later checkpoints.
+alternate-key claims and relationship-validating application services are now implemented for Departments, Students,
+Profiles, Instructors, and Courses. Enrollment/capacity workflows, controllers, and PostgreSQL remain later checkpoints.
 
 ## Repository layout
 
@@ -96,6 +97,8 @@ LocalStack instance can be used by Terraform at the same endpoint; do not stop u
 - [Implementation plan](docs/implementation-plan.md)
 - [DynamoDB access patterns](docs/dynamodb-access-patterns.md)
 - [DynamoDB table design](docs/dynamodb-table-design.md)
+- [DynamoDB relationships](docs/dynamodb-relationships.md)
+- [DynamoDB transactions](docs/dynamodb-transactions.md)
 
 Seed data, Swagger UI, PostgreSQL profiles, migration commands, and reconciliation instructions will be added and
 verified in their corresponding phases.

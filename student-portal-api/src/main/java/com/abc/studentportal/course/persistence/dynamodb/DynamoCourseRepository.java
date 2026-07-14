@@ -9,6 +9,8 @@ import com.abc.studentportal.common.persistence.dynamodb.AbstractDynamoRepositor
 import com.abc.studentportal.common.persistence.dynamodb.DynamoDbTables;
 import com.abc.studentportal.common.persistence.dynamodb.DynamoPersistenceAdapter;
 import com.abc.studentportal.common.persistence.dynamodb.DynamoQueries;
+import com.abc.studentportal.common.persistence.dynamodb.DynamoTransactionalWriter;
+import com.abc.studentportal.common.persistence.dynamodb.DynamoUniqueClaim;
 import com.abc.studentportal.course.application.CourseRepository;
 import com.abc.studentportal.course.application.DynamoCourseQueries;
 import com.abc.studentportal.course.domain.Course;
@@ -21,12 +23,18 @@ import java.util.UUID;
 public class DynamoCourseRepository extends AbstractDynamoRepository<Course, CourseDynamoRecord>
 		implements CourseRepository, DynamoCourseQueries {
 	private final DynamoCursorCodec cursorCodec;
-	public DynamoCourseRepository(DynamoDbTables tables, DynamoCursorCodec cursorCodec) {
+	private final DynamoTransactionalWriter writer;
+	public DynamoCourseRepository(DynamoDbTables tables, DynamoCursorCodec cursorCodec,
+			DynamoTransactionalWriter writer) {
 		super(tables.courses(), "id", CourseDynamoMapper::toRecord, CourseDynamoMapper::toDomain,
 				value -> value.id().toString());
 		this.cursorCodec = cursorCodec;
+		this.writer = writer;
 	}
-	@Override public Course create(Course value) { return createItem(value); }
+	@Override public Course create(Course value) {
+		return CourseDynamoMapper.toDomain(writer.create(table(), "id", CourseDynamoMapper.toRecord(value),
+				java.util.List.of(claim(value))));
+	}
 	@Override
 	public Course update(Course value) {
 		CourseDynamoRecord current = table().getItem(request -> request.key(key(value.id().toString())).consistentRead(true));
@@ -35,11 +43,17 @@ public class DynamoCourseRepository extends AbstractDynamoRepository<Course, Cou
 		}
 		CourseDynamoRecord record = CourseDynamoMapper.toRecord(value);
 		record.setOccupiedSeats(current.getOccupiedSeats());
-		return updateRecord(record);
+		Course old = CourseDynamoMapper.toDomain(current);
+		return CourseDynamoMapper.toDomain(writer.update(table(), "id", record, value.version(),
+				java.util.List.of(claim(old)), java.util.List.of(claim(value))));
 	}
 	@Override public Optional<Course> findById(UUID id) { return findItem(id.toString()); }
 	@Override public boolean existsByCourseCode(String value) { return DynamoQueries.exists(table().index("courses-by-code"), value); }
-	@Override public void delete(Course value) { deleteItem(value, value.version()); }
+	@Override public void delete(Course value) {
+		Course current = findById(value.id()).orElseThrow(() -> new ConflictException(
+				"Resource does not exist or was modified by another request"));
+		writer.delete(table().tableName(), "id", value.id().toString(), value.version(), java.util.List.of(claim(current)));
+	}
 	@Override public CursorPage<Course> findAll(CursorRequest request) { return query("courses-catalog", "COURSE", request); }
 	@Override public CursorPage<Course> findByDepartment(UUID id, CursorRequest request) {
 		return query("courses-by-department", id.toString(), request);
@@ -54,5 +68,8 @@ public class DynamoCourseRepository extends AbstractDynamoRepository<Course, Cou
 		return DynamoCursorQueries.query(table().index(index), DynamoCursorQueries.equalTo(partition), request,
 				DynamoCursorQueries.identity(table().tableName(), index, partition), cursorCodec,
 				CourseDynamoMapper::toDomain);
+	}
+	private static DynamoUniqueClaim claim(Course value) {
+		return new DynamoUniqueClaim("UNIQUE#COURSE_CODE#" + value.courseCode(), value.id().toString());
 	}
 }

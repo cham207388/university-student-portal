@@ -2,6 +2,29 @@
 
 ## Completed Tasks
 
+### Relationship-validating services and transactional uniqueness
+
+- Added profile-scoped application services for Department, Student/Profile, Instructor, and Course create/update/status
+  use cases with an injectable UTC Clock.
+- Added strong reference validation for Student/Instructor departments, StudentProfile ownership, and Course department
+  and instructor references; Courses also enforce that their instructor belongs to the same department.
+- Added deterministic sparse claim records for department codes, student numbers/emails, employee numbers/emails, and
+  course codes. Normal GSIs remain read paths and never act as uniqueness authorities.
+- Made entity and claim creation atomic, made key-changing updates atomically release/acquire claims under optimistic
+  version conditions, and made physical deletes atomically release owned claims.
+- Translated transaction cancellation to the existing conflict contract; failed multi-claim and conflicting-update
+  transactions leave both authoritative records and prior claims unchanged.
+- Added service unit coverage plus LocalStack rollback, key reuse, deletion release, and simultaneous-writer race coverage.
+- Added dedicated DynamoDB relationship and transaction documentation, including the remaining cross-table deletion race
+  that dependency-aware transaction checks must close before destructive endpoints are exposed.
+
+Verification results:
+
+- `./gradlew clean check`: successful; 28 unit/MVC tests and 5 LocalStack integration tests passed.
+- `terraform fmt -check -recursive infrastructure`: successful.
+- `terraform -chdir=infrastructure/local validate`: successful.
+- `git diff --check`: no whitespace errors.
+
 ### DynamoDB cursor pagination and query capabilities
 
 - Added a domain-level immutable `CursorPage` and database-specific capability ports without adding DynamoDB pagination
@@ -186,13 +209,12 @@ Risks and follow-ups:
 
 ## In Progress
 
-- Implement DynamoDB application services with relationship validation and transactional alternate-key uniqueness.
+- Implement the cross-table enrollment/capacity transaction and dependency-aware delete services.
 
 ## Blocked
 
 ## Next Tasks
 
-- Implement application services with relationship validation and transactional alternate-key uniqueness claims.
 - Implement the cross-table enrollment/capacity transaction and active-enrollment lock protocol.
 - Add concrete REST controllers backed by those services and seed-data support.
 

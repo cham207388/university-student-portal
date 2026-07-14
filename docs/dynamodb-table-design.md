@@ -53,6 +53,9 @@ Each table has one authoritative record per logical entity. Records use UUID str
 explicit numeric `version`. No enrollment relationship copies are required because the student/course GSIs index the
 authoritative enrollment record.
 
+Department, Student, Instructor, and Course tables also contain sparse `UNIQUE_CLAIM` records with deterministic
+partition keys and an `ownerId`. They have no GSI key attributes and are therefore excluded from normal catalogs.
+
 The enrollment table also contains short-lived/active integrity records with IDs shaped as
 `ACTIVE#<studentId>#<courseId>`. A transaction conditionally creates this lock beside the authoritative enrollment and
 deletes it when the enrollment becomes terminal. These records have `recordType=ACTIVE_ENROLLMENT_LOCK` and are absent
@@ -65,7 +68,8 @@ changing enrollment state. This intentionally demonstrates a DynamoDB transactio
 
 - Primary-key creation uses a conditional put. GSIs cannot be read strongly and therefore cannot enforce alternate-key
   uniqueness; student numbers, emails, employee numbers, department/course codes use deterministic claim records in
-  the same table, written transactionally with the authoritative record in the application-service checkpoint.
+  the same table, written transactionally with the authoritative record. Claim creation, replacement, and release are
+  atomic with entity create, update, and delete respectively.
 - Student, instructor, course, and enrollment services strongly read referenced records before writes and include
   transaction conditions where a create/delete race would violate integrity.
 - Updates condition on `version` and increment it through the Enhanced Client version extension.

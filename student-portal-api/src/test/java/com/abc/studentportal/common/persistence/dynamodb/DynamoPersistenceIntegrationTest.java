@@ -56,6 +56,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -100,11 +103,12 @@ class DynamoPersistenceIntegrationTest {
 				enhanced.table(name("courses"), TableSchema.fromBean(CourseDynamoRecord.class)),
 				enhanced.table(name("enrollments"), TableSchema.fromBean(EnrollmentDynamoRecord.class)));
 		DynamoCursorCodec cursorCodec = new DynamoCursorCodec();
-		departments = new DynamoDepartmentRepository(tables, cursorCodec);
-		students = new DynamoStudentRepository(tables, cursorCodec);
+		DynamoTransactionalWriter writer = new DynamoTransactionalWriter(client);
+		departments = new DynamoDepartmentRepository(tables, cursorCodec, writer);
+		students = new DynamoStudentRepository(tables, cursorCodec, writer);
 		profiles = new DynamoStudentProfileRepository(tables);
-		instructors = new DynamoInstructorRepository(tables, cursorCodec);
-		courses = new DynamoCourseRepository(tables, cursorCodec);
+		instructors = new DynamoInstructorRepository(tables, cursorCodec, writer);
+		courses = new DynamoCourseRepository(tables, cursorCodec, writer);
 		enrollments = new DynamoEnrollmentRepository(tables, cursorCodec);
 	}
 
@@ -273,6 +277,51 @@ class DynamoPersistenceIntegrationTest {
 		String departmentCursor = departments.findAll(new CursorRequest(1, null)).nextCursor();
 		assertThrows(InvalidRequestException.class,
 				() -> students.findAll(new CursorRequest(1, departmentCursor)));
+	}
+
+	@Test
+	void enforcesAndReleasesAlternateKeysAtomicallyIncludingConcurrentRaces() throws Exception {
+		Instant now = Instant.parse("2026-04-01T00:00:00Z");
+		Department first = departments.create(new Department(UUID.randomUUID(), "UQ1", "First", null, now, now, 0));
+		Department duplicate = new Department(UUID.randomUUID(), "UQ1", "Duplicate", null, now, now, 0);
+		assertThrows(ConflictException.class, () -> departments.create(duplicate));
+		assertTrue(departments.findById(duplicate.id()).isEmpty());
+
+		Department second = departments.create(new Department(UUID.randomUUID(), "UQ2", "Second", null, now, now, 0));
+		Department conflictingUpdate = new Department(first.id(), "UQ2", "Changed", null, now, now.plusSeconds(1),
+				first.version());
+		assertThrows(ConflictException.class, () -> departments.update(conflictingUpdate));
+		assertEquals("UQ1", departments.findById(first.id()).orElseThrow().code());
+
+		Department moved = departments.update(new Department(first.id(), "UQ3", "Moved", null, now,
+				now.plusSeconds(2), first.version()));
+		Department reusedOld = departments.create(new Department(UUID.randomUUID(), "UQ1", "Reused", null, now, now, 0));
+		assertEquals("UQ1", reusedOld.code());
+		departments.delete(new Department(moved.id(), "CALLER-VALUE-IS-NOT-AUTHORITY", moved.name(), null,
+				moved.createdAt(), moved.updatedAt(), moved.version()));
+		assertEquals("UQ3", departments.create(new Department(UUID.randomUUID(), "UQ3", "After delete", null,
+				now, now, 0)).code());
+		assertEquals("UQ2", second.code());
+
+		CountDownLatch start = new CountDownLatch(1);
+		AtomicInteger successes = new AtomicInteger();
+		AtomicInteger conflicts = new AtomicInteger();
+		try (var executor = Executors.newFixedThreadPool(2)) {
+			var tasks = java.util.stream.IntStream.range(0, 2).mapToObj(index -> executor.submit(() -> {
+				start.await();
+				try {
+					departments.create(new Department(UUID.randomUUID(), "RACE", "Race " + index, null, now, now, 0));
+					successes.incrementAndGet();
+				} catch (ConflictException exception) {
+					conflicts.incrementAndGet();
+				}
+				return null;
+			})).toList();
+			start.countDown();
+			for (var task : tasks) task.get();
+		}
+		assertEquals(1, successes.get());
+		assertEquals(1, conflicts.get());
 	}
 
 	private static void createTable(TableSpec spec) {

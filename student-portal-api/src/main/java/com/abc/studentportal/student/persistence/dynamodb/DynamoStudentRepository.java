@@ -6,6 +6,8 @@ import com.abc.studentportal.common.persistence.dynamodb.DynamoPersistenceAdapte
 import com.abc.studentportal.common.persistence.dynamodb.DynamoQueries;
 import com.abc.studentportal.common.persistence.dynamodb.DynamoCursorCodec;
 import com.abc.studentportal.common.persistence.dynamodb.DynamoCursorQueries;
+import com.abc.studentportal.common.persistence.dynamodb.DynamoTransactionalWriter;
+import com.abc.studentportal.common.persistence.dynamodb.DynamoUniqueClaim;
 import com.abc.studentportal.common.pagination.CursorPage;
 import com.abc.studentportal.common.pagination.CursorRequest;
 import com.abc.studentportal.student.application.DynamoStudentQueries;
@@ -20,17 +22,31 @@ import java.util.UUID;
 public class DynamoStudentRepository extends AbstractDynamoRepository<Student, StudentDynamoRecord>
 		implements StudentRepository, DynamoStudentQueries {
 	private final DynamoCursorCodec cursorCodec;
-	public DynamoStudentRepository(DynamoDbTables tables, DynamoCursorCodec cursorCodec) {
+	private final DynamoTransactionalWriter writer;
+	public DynamoStudentRepository(DynamoDbTables tables, DynamoCursorCodec cursorCodec,
+			DynamoTransactionalWriter writer) {
 		super(tables.students(), "id", StudentDynamoMapper::toRecord, StudentDynamoMapper::toDomain,
 				value -> value.id().toString());
 		this.cursorCodec = cursorCodec;
+		this.writer = writer;
 	}
-	@Override public Student create(Student value) { return createItem(value); }
-	@Override public Student update(Student value) { return updateItem(value); }
+	@Override public Student create(Student value) {
+		return StudentDynamoMapper.toDomain(writer.create(table(), "id", StudentDynamoMapper.toRecord(value), claims(value)));
+	}
+	@Override public Student update(Student value) {
+		Student current = findById(value.id()).orElseThrow(() -> new com.abc.studentportal.common.exception.ConflictException(
+				"Resource does not exist or was modified by another request"));
+		return StudentDynamoMapper.toDomain(writer.update(table(), "id", StudentDynamoMapper.toRecord(value), value.version(),
+				claims(current), claims(value)));
+	}
 	@Override public Optional<Student> findById(UUID id) { return findItem(id.toString()); }
 	@Override public boolean existsByStudentNumber(String value) { return DynamoQueries.exists(table().index("students-by-number"), value); }
 	@Override public boolean existsByEmail(String value) { return DynamoQueries.exists(table().index("students-by-email"), value); }
-	@Override public void delete(Student value) { deleteItem(value, value.version()); }
+	@Override public void delete(Student value) {
+		Student current = findById(value.id()).orElseThrow(() -> new com.abc.studentportal.common.exception.ConflictException(
+				"Resource does not exist or was modified by another request"));
+		writer.delete(table().tableName(), "id", value.id().toString(), value.version(), claims(current));
+	}
 	@Override public CursorPage<Student> findAll(CursorRequest request) {
 		return query("students-catalog", DynamoCursorQueries.equalTo("STUDENT"), request, "STUDENT");
 	}
@@ -50,5 +66,10 @@ public class DynamoStudentRepository extends AbstractDynamoRepository<Student, S
 		return DynamoCursorQueries.query(table().index(index), condition, request,
 				DynamoCursorQueries.identity(table().tableName(), index, parameters), cursorCodec,
 				StudentDynamoMapper::toDomain);
+	}
+	private static java.util.List<DynamoUniqueClaim> claims(Student value) {
+		String owner = value.id().toString();
+		return java.util.List.of(new DynamoUniqueClaim("UNIQUE#STUDENT_NUMBER#" + value.studentNumber(), owner),
+				new DynamoUniqueClaim("UNIQUE#EMAIL#" + value.email(), owner));
 	}
 }

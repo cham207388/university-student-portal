@@ -8,6 +8,7 @@ import com.abc.studentportal.student.persistence.dynamodb.StudentDynamoRecord;
 import com.abc.studentportal.student.persistence.dynamodb.StudentProfileDynamoRecord;
 import com.abc.studentportal.common.persistence.dynamodb.DynamoDbTables;
 import com.abc.studentportal.common.persistence.dynamodb.DynamoCursorCodec;
+import com.abc.studentportal.common.persistence.dynamodb.DynamoTransactionalWriter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
@@ -43,6 +44,11 @@ public class DynamoDbConfiguration {
 	@Bean
 	DynamoCursorCodec dynamoCursorCodec() {
 		return new DynamoCursorCodec();
+	}
+
+	@Bean
+	DynamoTransactionalWriter dynamoTransactionalWriter(DynamoDbClient client) {
+		return new DynamoTransactionalWriter(client);
 	}
 
 	@Bean

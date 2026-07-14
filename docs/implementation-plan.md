@@ -26,7 +26,9 @@ Status: persistence foundation complete. Six distinct record schemas and domain 
 configuration, primary-key CRUD adapters, optimistic locking, exact alternate-key GSI checks, and LocalStack
 Testcontainers coverage are implemented. Database-specific capability ports now provide bounded, opaque cursor queries
 for every documented catalog and relationship GSI, including student last-name prefixes and enrollment date ranges.
-Transactional uniqueness/capacity, services, controllers, seed data, and full API scenarios remain in this phase.
+Application services now strongly validate entity relationships, and transactional sparse claims enforce alternate-key
+uniqueness across create, update, and delete. Enrollment/capacity transactions, dependency-aware deletes, controllers,
+seed data, and full API scenarios remain in this phase.
 
 ## Phase 4 — PostgreSQL infrastructure and model
 
