@@ -174,7 +174,7 @@ and `8082` must be available.
 **Remove the project LocalStack container, its named persistent volume, and orphaned Compose services:**
 
 ```shell
-make local-reset
+make compose-down
 ```
 
 This is destructive for the project-local DynamoDB and RDS data. It does not prune unrelated Docker volumes.
@@ -183,10 +183,20 @@ This is destructive for the project-local DynamoDB and RDS data. It does not pru
 
 ```shell
 make compose-up
+```
+
+```shell
 make tf-apply
+```
+
+```shell
 make dynamodb-health
+```
+
+```shell
 make postgres-health
 ```
+
 
 `make dynamodb-health` must report all six tables as `ACTIVE`. Wait until `make postgres-health` returns `available`
 before continuing.
@@ -213,6 +223,9 @@ make app-run-postgres
 
 ```shell
 curl 'http://127.0.0.1:8081/api/v1/departments?limit=20'
+```
+
+```shell
 curl 'http://127.0.0.1:8082/api/v1/departments?limit=20'
 ```
 
