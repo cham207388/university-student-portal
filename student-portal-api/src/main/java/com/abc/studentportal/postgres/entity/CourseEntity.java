@@ -62,4 +62,11 @@ public class CourseEntity extends BaseEntity {
         this.instructor = new InstructorEntity(instructorId, null, null, null, null, departmentId);
     }
 
+    public void updateDetails(String courseCode, String title, String description, int credits, int capacity, CourseStatus status,
+            DepartmentEntity department, InstructorEntity instructor) {
+        this.courseCode = courseCode; this.title = title; this.description = description;
+        this.credits = credits; this.capacity = capacity; this.status = status;
+        this.department = department; this.instructor = instructor;
+    }
+
 }

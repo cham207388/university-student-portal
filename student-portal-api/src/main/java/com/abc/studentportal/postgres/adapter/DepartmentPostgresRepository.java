@@ -25,7 +25,9 @@ public class DepartmentPostgresRepository implements DepartmentRepository {
     }
 
     public Department update(Department department) {
-        return toDomain(delegate.save(toEntity(department)));
+        DepartmentEntity existing = delegate.findById(department.id()).orElseThrow();
+        existing.updateDetails(department.code(), department.name(), department.description());
+        return toDomain(delegate.save(existing));
     }
 
     public Optional<Department> findById(UUID id) {

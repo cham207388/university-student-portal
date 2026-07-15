@@ -28,7 +28,9 @@ public class StudentProfilePostgresRepository implements StudentProfileRepositor
     }
 
     public StudentProfile update(StudentProfile studentProfile) {
-        return toDomain(studentProfileJpaRepository.save(toEntity(studentProfile)));
+        StudentProfileEntity existing = studentProfileJpaRepository.findById(studentProfile.id()).orElseThrow();
+        existing.updateDetails(studentProfile.dateOfBirth(), studentProfile.phoneNumber(), studentProfile.addressLine1());
+        return toDomain(studentProfileJpaRepository.save(existing));
     }
 
     public Optional<StudentProfile> findByStudentId(UUID id) {

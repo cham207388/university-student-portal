@@ -49,6 +49,10 @@ public class StudentProfileEntity extends BaseEntity {
         this.id = student.getId();
     }
 
+    public void updateDetails(LocalDate dateOfBirth, String phoneNumber, String addressLine1) {
+        this.dateOfBirth = dateOfBirth; this.phoneNumber = phoneNumber; this.addressLine1 = addressLine1;
+    }
+
     public UUID getId() {
         return id;
     }

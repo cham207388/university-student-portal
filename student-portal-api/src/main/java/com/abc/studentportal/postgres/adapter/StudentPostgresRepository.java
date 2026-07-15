@@ -4,6 +4,7 @@ import com.abc.studentportal.student.application.StudentRepository;
 import com.abc.studentportal.student.domain.Student;
 import com.abc.studentportal.postgres.entity.StudentEntity;
 import com.abc.studentportal.postgres.repository.StudentJpaRepository;
+import com.abc.studentportal.postgres.repository.DepartmentJpaRepository;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
@@ -14,9 +15,11 @@ import java.util.*;
 public class StudentPostgresRepository implements StudentRepository {
 
     private final StudentJpaRepository delegate;
+    private final DepartmentJpaRepository departmentRepository;
 
-    public StudentPostgresRepository(StudentJpaRepository studentJpaRepository) {
+    public StudentPostgresRepository(StudentJpaRepository studentJpaRepository, DepartmentJpaRepository departmentRepository) {
         delegate = studentJpaRepository;
+        this.departmentRepository = departmentRepository;
     }
 
     public Student create(Student student) {
@@ -24,7 +27,10 @@ public class StudentPostgresRepository implements StudentRepository {
     }
 
     public Student update(Student student) {
-        return toDomain(delegate.save(toEntity(student)));
+        StudentEntity existing = delegate.findById(student.id()).orElseThrow();
+        existing.updateDetails(student.studentNumber(), student.firstName(), student.lastName(), student.email(), student.status(),
+                departmentRepository.getReferenceById(student.departmentId()));
+        return toDomain(delegate.save(existing));
     }
 
     public Optional<Student> findById(UUID id) {
@@ -52,7 +58,9 @@ public class StudentPostgresRepository implements StudentRepository {
     }
 
     private StudentEntity toEntity(Student student) {
-        return new StudentEntity(student.id(), student.studentNumber(), student.firstName(), student.lastName(), student.email(), student.status(), student.departmentId());
+        StudentEntity studentEntity = new StudentEntity(student.id(), student.studentNumber(), student.firstName(), student.lastName(), student.email(), student.status(), student.departmentId());
+        studentEntity.setDepartment(departmentRepository.getReferenceById(student.departmentId()));
+        return studentEntity;
     }
 
     private Student toDomain(StudentEntity studentEntity) {

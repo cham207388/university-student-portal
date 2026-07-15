@@ -4,6 +4,8 @@ import com.abc.studentportal.course.application.CourseRepository;
 import com.abc.studentportal.course.domain.Course;
 import com.abc.studentportal.postgres.entity.CourseEntity;
 import com.abc.studentportal.postgres.repository.CourseJpaRepository;
+import com.abc.studentportal.postgres.repository.DepartmentJpaRepository;
+import com.abc.studentportal.postgres.repository.InstructorJpaRepository;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
@@ -14,9 +16,14 @@ import java.util.*;
 public class CoursePostgresRepository implements CourseRepository {
 
     private final CourseJpaRepository courseJpaRepository;
+    private final DepartmentJpaRepository departmentJpaRepository;
+    private final InstructorJpaRepository instructorJpaRepository;
 
-    public CoursePostgresRepository(CourseJpaRepository courseJpaRepository) {
+    public CoursePostgresRepository(CourseJpaRepository courseJpaRepository, DepartmentJpaRepository departmentJpaRepository,
+            InstructorJpaRepository instructorJpaRepository) {
         this.courseJpaRepository = courseJpaRepository;
+        this.departmentJpaRepository = departmentJpaRepository;
+        this.instructorJpaRepository = instructorJpaRepository;
     }
 
     public Course create(Course course) {
@@ -24,7 +31,11 @@ public class CoursePostgresRepository implements CourseRepository {
     }
 
     public Course update(Course course) {
-        return toDomain(courseJpaRepository.save(toEntity(course)));
+        CourseEntity existing = courseJpaRepository.findById(course.id()).orElseThrow();
+        existing.updateDetails(course.courseCode(), course.title(), course.description(), course.credits(), course.capacity(), course.status(),
+                departmentJpaRepository.getReferenceById(course.departmentId()),
+                instructorJpaRepository.getReferenceById(course.instructorId()));
+        return toDomain(courseJpaRepository.save(existing));
     }
 
     public Optional<Course> findById(UUID id) {

@@ -29,4 +29,8 @@ public class DepartmentEntity extends BaseEntity {
         this.description = description;
     }
 
+    public void updateDetails(String code, String name, String description) {
+        this.code = code; this.name = name; this.description = description;
+    }
+
 }

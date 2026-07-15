@@ -44,4 +44,9 @@ public class InstructorEntity extends BaseEntity {
         department = new DepartmentEntity(departmentId, null, null, null);
     }
 
+    public void updateDetails(String employeeNumber, String firstName, String lastName, String email, DepartmentEntity department) {
+        this.employeeNumber = employeeNumber; this.firstName = firstName; this.lastName = lastName;
+        this.email = email; this.department = department;
+    }
+
 }
