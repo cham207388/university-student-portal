@@ -4,6 +4,7 @@ import com.abc.studentportal.student.application.StudentProfileRepository;
 import com.abc.studentportal.student.domain.StudentProfile;
 import com.abc.studentportal.postgres.entity.StudentProfileEntity;
 import com.abc.studentportal.postgres.repository.StudentProfileJpaRepository;
+import com.abc.studentportal.postgres.repository.StudentJpaRepository;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
 
@@ -14,9 +15,12 @@ import java.util.*;
 public class StudentProfilePostgresRepository implements StudentProfileRepository {
 
     private final StudentProfileJpaRepository studentProfileJpaRepository;
+    private final StudentJpaRepository studentJpaRepository;
 
-    public StudentProfilePostgresRepository(StudentProfileJpaRepository studentProfileJpaRepository) {
+    public StudentProfilePostgresRepository(StudentProfileJpaRepository studentProfileJpaRepository,
+            StudentJpaRepository studentJpaRepository) {
         this.studentProfileJpaRepository = studentProfileJpaRepository;
+        this.studentJpaRepository = studentJpaRepository;
     }
 
     public StudentProfile create(StudentProfile x) {
@@ -36,10 +40,12 @@ public class StudentProfilePostgresRepository implements StudentProfileRepositor
     }
 
     private StudentProfileEntity toEntity(StudentProfile studentProfile) {
-        return new StudentProfileEntity(studentProfile.id(),
+        StudentProfileEntity entity = new StudentProfileEntity(studentProfile.id(),
                 studentProfile.studentId(), studentProfile.dateOfBirth(),
                 studentProfile.phoneNumber(), studentProfile.addressLine1(),
                 studentProfile.createdAt(), studentProfile.updatedAt());
+        entity.attachToStudent(studentJpaRepository.getReferenceById(studentProfile.studentId()));
+        return entity;
     }
 
     private StudentProfile toDomain(StudentProfileEntity studentProfileEntity) {

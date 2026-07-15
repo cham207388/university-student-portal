@@ -48,6 +48,11 @@ public class StudentProfileEntity extends BaseEntity {
         this.updatedAt = updatedAt;
     }
 
+    public void attachToStudent(StudentEntity student) {
+        this.student = student;
+        this.id = student.getId();
+    }
+
     public UUID getId() {
         return id;
     }

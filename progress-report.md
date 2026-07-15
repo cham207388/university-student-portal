@@ -437,15 +437,16 @@ Risks and follow-ups:
 
 ## In Progress
 
-- PostgreSQL infrastructure foundation is complete; JPA entities and PostgreSQL repositories remain intentionally
-  deferred to the next checkpoint.
+- PostgreSQL persistence is connected through profile-scoped JPA adapters. The remaining work is PostgreSQL-specific
+  transaction semantics, CRUD/API parity, and migration tooling; DynamoDB remains the comparison/source adapter.
 
 ## Blocked
 
 ## Next Tasks
 
-- Implement separate PostgreSQL JPA entities and repositories while retaining the DynamoDB adapter as the migration
-  source and comparison baseline.
+- Add PostgreSQL transaction services (capacity, active-enrollment locking, dependency-safe deletes) and validate
+  application CRUD/API parity against LocalStack RDS.
+- Add explicit DynamoDB-to-PostgreSQL migration/reconciliation tooling after transaction behavior is covered.
 
 ### PostgreSQL persistence integration scaffold
 
@@ -458,6 +459,15 @@ Risks and follow-ups:
 - Added Flyway `V1__initial_schema.sql` for the six relational tables, foreign keys, status and counter checks,
   alternate-key uniqueness, relationship indexes, and the active-enrollment partial unique index.
 - Documented PostgreSQL schema responsibilities and deferred transaction locking in `docs/postgresql-schema.md`.
+
+### PostgreSQL JPA entities, adapters, and LocalStack RDS validation
+
+- Added six separate JPA entities and Spring Data repositories with shared `BaseEntity` identity/timestamp mapping,
+  correct foreign keys, `@MapsId` student-profile identity, optimistic locking, and profile-scoped adapters.
+- LocalStack Pro RDS PostgreSQL is the supported development datasource; Flyway applies `V1__initial_schema.sql`.
+- Added real LocalStack RDS CRUD integration coverage and a dedicated `localstackRdsIntegrationTest` task. Hibernate
+  owns entity timestamps through `@CreationTimestamp` and `@UpdateTimestamp`; Lombok supplies accessors while entity
+  mutation remains controlled.
 
 ### Six-table DynamoDB persistence foundation
 

@@ -24,8 +24,8 @@ and persistence packages as needed. Runtime profile configuration lives under `c
 
 The Phase 1 code establishes `domain` records, immutable nested API request/response records, explicit API mappers,
 filter objects, and repository ports. Common repository ports intentionally omit list pagination. DynamoDB cursor
-queries are now separate `Dynamo*Queries` capability interfaces, and PostgreSQL pageable queries will follow the same
-explicit-capability approach. DynamoDB-profile controllers and application services are implemented for all current
+queries are now separate `Dynamo*Queries` capability interfaces; PostgreSQL pageable queries will use the same
+explicit-capability approach as their adapters are expanded. DynamoDB-profile controllers and application services are implemented for all current
 resources and relationship routes; the application contains no placeholder runtime beans.
 
 Runtime profiles select explicit adapters:

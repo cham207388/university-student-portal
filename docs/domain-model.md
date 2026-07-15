@@ -2,7 +2,7 @@
 
 ## Purpose
 
-The domain model is persistence-neutral. API DTOs, DynamoDB items, and JPA entities will be separate representations mapped at layer boundaries.
+The domain model is persistence-neutral. API DTOs, DynamoDB items, and JPA entities are separate representations mapped at layer boundaries.
 
 ```mermaid
 erDiagram
@@ -17,7 +17,7 @@ erDiagram
 
 ## Aggregates and identities
 
-Every resource uses a UUID, `createdAt`, `updatedAt`, and a non-negative version. Timestamps are supplied by an injectable clock. Versions support conditional writes in DynamoDB and optimistic locking in PostgreSQL, but the domain does not contain database annotations.
+Every resource uses a UUID, `createdAt`, `updatedAt`, and a non-negative version. Domain timestamps use an injectable clock; PostgreSQL entity timestamps are managed by Hibernate (`@CreationTimestamp`/`@UpdateTimestamp`). Versions support conditional writes in DynamoDB and optimistic locking in PostgreSQL, but the domain does not contain database annotations.
 
 - **Department**: unique uppercase code, name, and optional description.
 - **Student**: unique student number and normalized unique email; belongs to one existing department.
