@@ -20,8 +20,7 @@ import lombok.NoArgsConstructor;
 public class StudentProfileEntity extends BaseEntity {
 
     @OneToOne(fetch = FetchType.LAZY, optional = false)
-    @MapsId
-    @JoinColumn(name = "student_id", nullable = false)
+    @JoinColumn(name = "student_id", nullable = false, insertable = false, updatable = false)
     private StudentEntity student;
 
     @Column(name = "date_of_birth")

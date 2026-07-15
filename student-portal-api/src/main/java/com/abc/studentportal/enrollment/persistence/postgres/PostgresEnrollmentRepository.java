@@ -29,11 +29,11 @@ public class PostgresEnrollmentRepository implements EnrollmentRepository {
     }
 
     public Enrollment create(Enrollment enrollment) {
-        return toDomain(repo.save(toEntity(enrollment)));
+        return toDomain(repo.saveAndFlush(toEntity(enrollment)));
     }
 
     public Enrollment update(Enrollment enrollment) {
-        return toDomain(repo.save(toEntity(enrollment)));
+        return toDomain(repo.saveAndFlush(toEntity(enrollment)));
     }
 
     public Optional<Enrollment> findById(UUID id) {

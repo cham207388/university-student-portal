@@ -4,6 +4,20 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.abc.studentportal.department.application.DepartmentRepository;
 import com.abc.studentportal.department.domain.Department;
+import com.abc.studentportal.student.application.StudentRepository;
+import com.abc.studentportal.student.application.StudentProfileRepository;
+import com.abc.studentportal.student.domain.Student;
+import com.abc.studentportal.student.domain.StudentProfile;
+import com.abc.studentportal.student.domain.StudentStatus;
+import com.abc.studentportal.instructor.application.InstructorRepository;
+import com.abc.studentportal.instructor.domain.Instructor;
+import com.abc.studentportal.course.application.CourseRepository;
+import com.abc.studentportal.course.domain.Course;
+import com.abc.studentportal.course.domain.CourseStatus;
+import com.abc.studentportal.enrollment.application.EnrollmentRepository;
+import com.abc.studentportal.enrollment.domain.Enrollment;
+import com.abc.studentportal.enrollment.domain.EnrollmentStatus;
+import java.time.LocalDate;
 import java.time.Instant;
 import java.util.UUID;
 import org.junit.jupiter.api.Tag;
@@ -17,6 +31,11 @@ import org.springframework.test.context.ActiveProfiles;
 @ActiveProfiles("local-postgres")
 class LocalStackRdsCrudIntegrationTest {
     @Autowired DepartmentRepository departments;
+    @Autowired StudentRepository students;
+    @Autowired StudentProfileRepository studentProfiles;
+    @Autowired InstructorRepository instructors;
+    @Autowired CourseRepository courses;
+    @Autowired EnrollmentRepository enrollments;
 
     @Test
     void departmentCrudRoundTripUsesLocalStackRds() {
@@ -28,5 +47,31 @@ class LocalStackRdsCrudIntegrationTest {
         assertThat(departments.findByCode(created.code())).contains(created);
         departments.delete(created);
         assertThat(departments.findById(id)).isEmpty();
+    }
+
+    @Test
+    void allRelationshipsAndUpdatesRoundTripThroughLocalStackRds() {
+        Instant creationTime = Instant.now();
+        UUID departmentId = UUID.randomUUID();
+        Department department = departments.create(new Department(departmentId, "REL-" + departmentId.toString().substring(0, 8), "Relationships", "RDS", creationTime, creationTime, 0));
+        UUID instructorId = UUID.randomUUID();
+        Instructor instructor = instructors.create(new Instructor(instructorId, "EMP-" + instructorId.toString().substring(0, 8), "Ada", "Lovelace", "ada-" + instructorId + "@example.com", departmentId, creationTime, creationTime, 0));
+        UUID courseId = UUID.randomUUID();
+        Course course = courses.create(new Course(courseId, "CRS" + courseId.toString().substring(0, 5).toUpperCase(), "Integration", "RDS", 3, 20, CourseStatus.OPEN, departmentId, instructorId, creationTime, creationTime, 0));
+        UUID studentId = UUID.randomUUID();
+        Student student = students.create(new Student(studentId, "STU-" + studentId.toString().substring(0, 8), "Grace", "Hopper", "grace-" + studentId + "@example.com", StudentStatus.ACTIVE, departmentId, creationTime, creationTime, 0));
+        Enrollment enrollment = enrollments.create(new Enrollment(UUID.randomUUID(), studentId, courseId, EnrollmentStatus.ENROLLED, creationTime, null, null, creationTime, creationTime, 0));
+
+        assertThat(instructors.findByEmployeeNumber(instructor.employeeNumber())).contains(instructor);
+        assertThat(courses.findByCourseCode(course.courseCode())).contains(course);
+        assertThat(students.findByStudentNumber(student.studentNumber())).contains(student);
+        assertThat(enrollments.existsActiveByStudentIdAndCourseId(studentId, courseId)).isTrue();
+
+        Course updatedCourse = course.transitionTo(CourseStatus.CLOSED, Instant.now());
+        Course persistedCourse = courses.update(updatedCourse);
+        assertThat(persistedCourse.status()).isEqualTo(CourseStatus.CLOSED);
+        assertThat(persistedCourse.createdAt()).isEqualTo(course.createdAt());
+        assertThat(persistedCourse.version()).isGreaterThan(course.version());
+
     }
 }
