@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.function.Function;
 
 @RestController
-@Profile({"local-dynamodb", "test-dynamodb"})
+@Profile({"local-dynamodb", "test-dynamodb", "local-postgres", "test-postgres"})
 @RequestMapping("/api/v1/instructors")
 public class InstructorController {
 

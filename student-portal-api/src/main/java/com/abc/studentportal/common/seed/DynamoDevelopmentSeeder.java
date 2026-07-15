@@ -74,10 +74,16 @@ public class DynamoDevelopmentSeeder implements ApplicationRunner {
         this.exitAfterSeed = exitAfterSeed;
     }
 
+    public DynamoDevelopmentSeeder(DepartmentRepository departments, StudentRepository students,
+            StudentProfileRepository profiles, InstructorRepository instructors, CourseRepository courses,
+            EnrollmentRepository enrollments, DynamoEnrollmentTransactionWriter enrollmentWriter) {
+        this(departments, students, profiles, instructors, courses, enrollments, enrollmentWriter, null, false);
+    }
+
     @Override
     public void run(ApplicationArguments args) {
         seed();
-        if (exitAfterSeed)
+        if (exitAfterSeed && applicationContext != null)
             System.exit(SpringApplication.exit(applicationContext));
     }
 
