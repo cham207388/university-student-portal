@@ -7,6 +7,8 @@ import com.abc.studentportal.postgres.repository.StudentProfileJpaRepository;
 import com.abc.studentportal.postgres.repository.StudentJpaRepository;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
+import jakarta.persistence.EntityManager;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 
@@ -16,27 +18,35 @@ public class StudentProfilePostgresRepository implements StudentProfileRepositor
 
     private final StudentProfileJpaRepository studentProfileJpaRepository;
     private final StudentJpaRepository studentJpaRepository;
+    private final EntityManager entityManager;
 
     public StudentProfilePostgresRepository(StudentProfileJpaRepository studentProfileJpaRepository,
-            StudentJpaRepository studentJpaRepository) {
+            StudentJpaRepository studentJpaRepository, EntityManager entityManager) {
         this.studentProfileJpaRepository = studentProfileJpaRepository;
         this.studentJpaRepository = studentJpaRepository;
+        this.entityManager = entityManager;
     }
 
+    @Transactional
     public StudentProfile create(StudentProfile studentProfile) {
-        return toDomain(studentProfileJpaRepository.save(toEntity(studentProfile)));
+        StudentProfileEntity entity = toEntity(studentProfile);
+        entityManager.persist(entity);
+        entityManager.flush();
+        return toDomain(entity);
     }
 
+    @Transactional
     public StudentProfile update(StudentProfile studentProfile) {
         StudentProfileEntity existing = studentProfileJpaRepository.findById(studentProfile.id()).orElseThrow();
         existing.updateDetails(studentProfile.dateOfBirth(), studentProfile.phoneNumber(), studentProfile.addressLine1());
-        return toDomain(studentProfileJpaRepository.save(existing));
+        return toDomain(studentProfileJpaRepository.saveAndFlush(existing));
     }
 
     public Optional<StudentProfile> findByStudentId(UUID id) {
         return studentProfileJpaRepository.findByStudentId(id).map(this::toDomain);
     }
 
+    @Transactional
     public void delete(StudentProfile studentProfile) {
         studentProfileJpaRepository.deleteById(studentProfile.id());
     }

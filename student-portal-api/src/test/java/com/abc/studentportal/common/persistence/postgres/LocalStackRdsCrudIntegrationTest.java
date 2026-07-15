@@ -50,6 +50,43 @@ class LocalStackRdsCrudIntegrationTest {
     }
 
     @Test
+    void studentProfileCrudUsesSharedStudentPrimaryKey() {
+        Instant creationTime = Instant.now();
+        UUID departmentId = UUID.randomUUID();
+        Department department = departments.create(new Department(departmentId,
+                "PROF-" + departmentId.toString().substring(0, 8), "Profiles", "RDS",
+                creationTime, creationTime, 0));
+        UUID studentId = UUID.randomUUID();
+        Student student = students.create(new Student(studentId,
+                "STU-" + studentId.toString().substring(0, 8), "Katherine", "Johnson",
+                "katherine-" + studentId + "@example.com", StudentStatus.ACTIVE, departmentId,
+                creationTime, creationTime, 0));
+
+        StudentProfile profile = studentProfiles.create(new StudentProfile(studentId, studentId,
+                LocalDate.of(1918, 8, 26), "555-0100", "Original address", null,
+                "unknown", "unknown", "unknown", "unknown",
+                creationTime, creationTime, 0));
+
+        assertThat(profile.id()).isEqualTo(studentId);
+        assertThat(profile.studentId()).isEqualTo(studentId);
+        assertThat(studentProfiles.findByStudentId(studentId)).contains(profile);
+
+        StudentProfile updatedProfile = new StudentProfile(profile.id(), profile.studentId(),
+                profile.dateOfBirth(), "555-0199", "Updated address", profile.addressLine2(),
+                profile.city(), profile.state(), profile.postalCode(), profile.country(), profile.createdAt(),
+                profile.updatedAt(), profile.version());
+        StudentProfile persistedProfile = studentProfiles.update(updatedProfile);
+        assertThat(persistedProfile.phoneNumber()).isEqualTo("555-0199");
+        assertThat(persistedProfile.addressLine1()).isEqualTo("Updated address");
+        assertThat(persistedProfile.version()).isGreaterThan(profile.version());
+
+        studentProfiles.delete(persistedProfile);
+        assertThat(studentProfiles.findByStudentId(studentId)).isEmpty();
+        students.delete(student);
+        departments.delete(department);
+    }
+
+    @Test
     void allRelationshipsAndUpdatesRoundTripThroughLocalStackRds() {
         Instant creationTime = Instant.now();
         UUID departmentId = UUID.randomUUID();
