@@ -1,10 +1,10 @@
 package com.abc.studentportal.enrollment.api;
 
 import com.abc.studentportal.enrollment.domain.EnrollmentStatus;
+import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
-import jakarta.validation.constraints.AssertTrue;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -12,6 +12,7 @@ import java.util.UUID;
 public final class EnrollmentApi {
 
     private EnrollmentApi() {
+
     }
 
     public record CreateRequest(@NotNull UUID studentId, @NotNull UUID courseId) {
@@ -23,6 +24,7 @@ public final class EnrollmentApi {
 
         @AssertTrue(message = "finalGrade is only valid when status is COMPLETED")
         public boolean isFinalGradeCompatible() {
+
             return finalGrade == null || finalGrade.isBlank() || status == EnrollmentStatus.COMPLETED;
         }
 

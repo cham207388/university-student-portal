@@ -1,8 +1,8 @@
 package com.abc.studentportal.student.application;
 
-import com.abc.studentportal.common.exception.ResourceNotFoundException;
-import com.abc.studentportal.common.exception.ConflictException;
 import com.abc.studentportal.common.application.DependencyChecker;
+import com.abc.studentportal.common.exception.ConflictException;
+import com.abc.studentportal.common.exception.ResourceNotFoundException;
 import com.abc.studentportal.department.application.DepartmentRepository;
 import com.abc.studentportal.student.domain.Student;
 import com.abc.studentportal.student.domain.StudentProfile;
@@ -13,9 +13,9 @@ import org.springframework.stereotype.Service;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.util.UUID;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @Profile({"local-dynamodb", "test-dynamodb"})
@@ -33,6 +33,7 @@ public class StudentService {
 
     public StudentService(StudentRepository students, StudentProfileRepository profiles,
                           DepartmentRepository departments, Clock clock, DependencyChecker dependencies) {
+
         this.students = students;
         this.profiles = profiles;
         this.departments = departments;
@@ -41,6 +42,7 @@ public class StudentService {
     }
 
     public Student create(CreateCommand command) {
+
         requireDepartment(command.departmentId());
         Instant now = clock.instant();
         return students
@@ -49,6 +51,7 @@ public class StudentService {
     }
 
     public Student update(UUID id, UpdateCommand command) {
+
         Student current = get(id);
         requireDepartment(command.departmentId());
         return students.update(new Student(id, command.studentNumber(), command.firstName(), command.lastName(),
@@ -57,6 +60,7 @@ public class StudentService {
     }
 
     public Student changeStatus(UUID id, StudentStatus status, long version) {
+
         Student current = get(id);
         Student changed = current.changeStatus(status, clock.instant());
         return students
@@ -66,6 +70,7 @@ public class StudentService {
     }
 
     public StudentProfile putProfile(UUID studentId, ProfileCommand command) {
+
         get(studentId);
         Instant now = clock.instant();
         return profiles.findByStudentId(studentId)
@@ -74,26 +79,31 @@ public class StudentService {
     }
 
     public Student get(UUID id) {
+
         return students.findById(id).orElseThrow(() -> new ResourceNotFoundException("Student", id));
     }
 
     public Optional<Student> findByStudentNumber(String studentNumber) {
+
         return students.findByStudentNumber(
                 com.abc.studentportal.common.domain.DomainChecks.requiredText(studentNumber, "studentNumber"));
     }
 
     public Optional<Student> findByEmail(String email) {
+
         return students.findByEmail(com.abc.studentportal.common.domain.DomainChecks.requiredText(email, "email")
                 .toLowerCase(Locale.ROOT));
     }
 
     public StudentProfile getProfile(UUID studentId) {
+
         get(studentId);
         return profiles.findByStudentId(studentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Student profile", studentId));
     }
 
     public void delete(UUID id, long version) {
+
         Student current = get(id);
         if (dependencies.studentHasEnrollmentHistory(id))
             throw new ConflictException("Student has enrollment history");
@@ -103,6 +113,7 @@ public class StudentService {
     }
 
     public void deleteProfile(UUID studentId, long version) {
+
         StudentProfile profile = profiles.findByStudentId(studentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Student profile", studentId));
         profiles.delete(new StudentProfile(profile.id(), profile.studentId(), profile.dateOfBirth(),
@@ -113,6 +124,7 @@ public class StudentService {
 
     private StudentProfile profile(UUID id, UUID studentId, ProfileCommand command, Instant createdAt,
                                    Instant updatedAt) {
+
         return new StudentProfile(id, studentId, command.dateOfBirth(), command.phoneNumber(), command.addressLine1(),
                 command.addressLine2(), command.city(), command.state(), command.postalCode(), command.country(),
                 createdAt,
@@ -120,6 +132,7 @@ public class StudentService {
     }
 
     private void requireDepartment(UUID id) {
+
         if (departments.findById(id).isEmpty())
             throw new ResourceNotFoundException("Department", id);
     }

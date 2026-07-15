@@ -2,16 +2,14 @@ package com.abc.studentportal.instructor.persistence.postgres;
 
 import com.abc.studentportal.common.persistence.postgres.BaseEntity;
 import com.abc.studentportal.department.persistence.postgres.DepartmentEntity;
-
 import jakarta.persistence.*;
-
-import java.util.UUID;
-import java.time.Instant;
-
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.time.Instant;
+import java.util.UUID;
 
 @Entity
 @Getter
@@ -40,11 +38,13 @@ public class InstructorEntity extends BaseEntity {
     private long version;
 
     public InstructorEntity(UUID id, String employeeNumber, String firstName, String lastName, String email, UUID departmentId) {
+
         this(id, employeeNumber, firstName, lastName, email, departmentId, null, null, 0);
     }
 
     public InstructorEntity(UUID id, String employeeNumber, String firstName, String lastName, String email, UUID departmentId,
-            Instant createdAt, Instant updatedAt, long version) {
+                            Instant createdAt, Instant updatedAt, long version) {
+
         this.id = id;
         this.employeeNumber = employeeNumber;
         this.firstName = firstName;
@@ -56,8 +56,12 @@ public class InstructorEntity extends BaseEntity {
     }
 
     public void updateDetails(String employeeNumber, String firstName, String lastName, String email, DepartmentEntity department) {
-        this.employeeNumber = employeeNumber; this.firstName = firstName; this.lastName = lastName;
-        this.email = email; this.department = department;
+
+        this.employeeNumber = employeeNumber;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.email = email;
+        this.department = department;
     }
 
 }

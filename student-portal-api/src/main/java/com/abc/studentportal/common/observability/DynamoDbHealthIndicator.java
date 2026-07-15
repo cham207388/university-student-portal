@@ -19,6 +19,7 @@ public class DynamoDbHealthIndicator implements HealthIndicator {
     private final List<String> tables;
 
     public DynamoDbHealthIndicator(DynamoDbClient client, DynamoDbProperties properties) {
+
         this.client = client;
         DynamoDbProperties.Tables names = properties.tables();
         this.tables = List.of(names.departments(), names.students(), names.studentProfiles(), names.instructors(),
@@ -27,6 +28,7 @@ public class DynamoDbHealthIndicator implements HealthIndicator {
 
     @Override
     public Health health() {
+
         try {
             List<String> inactive = tables.stream().filter(this::notActive).toList();
             if (!inactive.isEmpty())
@@ -40,6 +42,7 @@ public class DynamoDbHealthIndicator implements HealthIndicator {
     }
 
     private boolean notActive(String table) {
+
         return client.describeTable(software.amazon.awssdk.services.dynamodb.model.DescribeTableRequest.builder()
                 .tableName(table).build()).table().tableStatus() != TableStatus.ACTIVE;
     }

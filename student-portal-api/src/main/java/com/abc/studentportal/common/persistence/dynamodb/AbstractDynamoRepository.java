@@ -26,6 +26,7 @@ public abstract class AbstractDynamoRepository<D, R extends VersionedDynamoRecor
     private final Function<D, String> domainKey;
 
     protected D createItem(D value) {
+
         R record = toRecord.apply(value);
         record.setVersion(null);
         try {
@@ -37,10 +38,12 @@ public abstract class AbstractDynamoRepository<D, R extends VersionedDynamoRecor
     }
 
     protected D updateItem(D value) {
+
         return updateRecord(toRecord.apply(value));
     }
 
     protected D updateRecord(R record) {
+
         try {
             return toDomain.apply(table.updateItem(record));
         } catch (ConditionalCheckFailedException exception) {
@@ -49,11 +52,13 @@ public abstract class AbstractDynamoRepository<D, R extends VersionedDynamoRecor
     }
 
     protected Optional<D> findItem(String key) {
+
         R record = table.getItem(request -> request.key(key(key)).consistentRead(true));
         return Optional.ofNullable(record).map(toDomain);
     }
 
     protected void deleteItem(D value, long version) {
+
         Expression expectedVersion = Expression.builder()
                 .expression("#version = :version")
                 .expressionNames(Map.of("#version", "version"))
@@ -67,15 +72,18 @@ public abstract class AbstractDynamoRepository<D, R extends VersionedDynamoRecor
     }
 
     protected DynamoDbTable<R> table() {
+
         return table;
     }
 
     private Expression attributeDoesNotExist() {
+
         return Expression.builder().expression("attribute_not_exists(#pk)")
                 .expressionNames(Map.of("#pk", partitionKeyName)).build();
     }
 
     protected static Key key(String value) {
+
         return Key.builder().partitionValue(value).build();
     }
 

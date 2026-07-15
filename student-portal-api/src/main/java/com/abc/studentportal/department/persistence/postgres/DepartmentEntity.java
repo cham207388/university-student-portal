@@ -1,15 +1,16 @@
 package com.abc.studentportal.department.persistence.postgres;
 
 import com.abc.studentportal.common.persistence.postgres.BaseEntity;
-
-import jakarta.persistence.*;
-
-import java.util.UUID;
-import java.time.Instant;
-
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import java.time.Instant;
+import java.util.UUID;
 
 @Entity
 @Getter
@@ -26,10 +27,12 @@ public class DepartmentEntity extends BaseEntity {
     private long version;
 
     public DepartmentEntity(UUID id, String code, String name, String description) {
+
         this(id, code, name, description, null, null, 0);
     }
 
     public DepartmentEntity(UUID id, String code, String name, String description, Instant createdAt, Instant updatedAt, long version) {
+
         this.id = id;
         this.code = code;
         this.name = name;
@@ -39,7 +42,10 @@ public class DepartmentEntity extends BaseEntity {
     }
 
     public void updateDetails(String code, String name, String description) {
-        this.code = code; this.name = name; this.description = description;
+
+        this.code = code;
+        this.name = name;
+        this.description = description;
     }
 
 }

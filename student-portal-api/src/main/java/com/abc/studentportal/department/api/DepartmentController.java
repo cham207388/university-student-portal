@@ -6,8 +6,8 @@ import com.abc.studentportal.common.pagination.CursorRequest;
 import com.abc.studentportal.course.api.CourseApi;
 import com.abc.studentportal.course.api.CourseMapper;
 import com.abc.studentportal.course.application.CourseQueries;
-import com.abc.studentportal.department.application.DepartmentService;
 import com.abc.studentportal.department.application.DepartmentQueries;
+import com.abc.studentportal.department.application.DepartmentService;
 import com.abc.studentportal.instructor.api.InstructorApi;
 import com.abc.studentportal.instructor.api.InstructorMapper;
 import com.abc.studentportal.instructor.application.InstructorQueries;
@@ -21,8 +21,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
-import java.util.UUID;
 import java.util.List;
+import java.util.UUID;
 import java.util.function.Function;
 
 @RestController
@@ -43,6 +43,7 @@ public class DepartmentController {
 
     @PostMapping
     ResponseEntity<DepartmentApi.Response> create(@Valid @RequestBody DepartmentApi.CreateRequest request) {
+
         var created = service
                 .create(new DepartmentService.CreateCommand(request.code(), request.name(), request.description()));
         return ResponseEntity.created(URI.create("/api/v1/departments/" + created.id()))
@@ -51,6 +52,7 @@ public class DepartmentController {
 
     @GetMapping("/{id}")
     DepartmentApi.Response get(@PathVariable UUID id) {
+
         return DepartmentMapper.toResponse(service.get(id));
     }
 
@@ -58,6 +60,7 @@ public class DepartmentController {
     CursorPageResponse<DepartmentApi.Response> list(@RequestParam(required = false) String code,
                                                     @RequestParam(defaultValue = "20") int limit,
                                                     @RequestParam(required = false) String cursor) {
+
         if (code != null) {
             requireNoCursor(cursor, "code");
             return exact(service.findByCode(code).map(DepartmentMapper::toResponse).stream().toList());
@@ -67,6 +70,7 @@ public class DepartmentController {
 
     @PutMapping("/{id}")
     DepartmentApi.Response update(@PathVariable UUID id, @Valid @RequestBody DepartmentApi.UpdateRequest request) {
+
         return DepartmentMapper
                 .toResponse(service.update(id, new DepartmentService.UpdateCommand(request.code(), request.name(),
                         request.description(), request.version())));
@@ -74,6 +78,7 @@ public class DepartmentController {
 
     @DeleteMapping("/{id}")
     ResponseEntity<Void> delete(@PathVariable UUID id, @RequestParam long version) {
+
         service.delete(id, version);
         return ResponseEntity.noContent().build();
     }
@@ -82,6 +87,7 @@ public class DepartmentController {
     CursorPageResponse<StudentApi.Response> students(@PathVariable UUID id,
                                                      @RequestParam(required = false) String lastName,
                                                      @RequestParam(defaultValue = "20") int limit, @RequestParam(required = false) String cursor) {
+
         service.get(id);
         return page(students.findByDepartment(id, lastName, new CursorRequest(limit, cursor)),
                 StudentMapper::toResponse);
@@ -91,6 +97,7 @@ public class DepartmentController {
     CursorPageResponse<InstructorApi.Response> instructors(@PathVariable UUID id,
                                                            @RequestParam(defaultValue = "20") int limit,
                                                            @RequestParam(required = false) String cursor) {
+
         service.get(id);
         return page(instructors.findByDepartment(id, new CursorRequest(limit, cursor)), InstructorMapper::toResponse);
     }
@@ -98,20 +105,24 @@ public class DepartmentController {
     @GetMapping("/{id}/courses")
     CursorPageResponse<CourseApi.Response> courses(@PathVariable UUID id, @RequestParam(defaultValue = "20") int limit,
                                                    @RequestParam(required = false) String cursor) {
+
         service.get(id);
         return page(courses.findByDepartment(id, new CursorRequest(limit, cursor)), CourseMapper::toResponse);
     }
 
     private static <D, R> CursorPageResponse<R> page(CursorPage<D> page, Function<D, R> mapper) {
+
         return new CursorPageResponse<>(page.content().stream().map(mapper).toList(), page.limit(), page.nextCursor(),
                 page.hasNext());
     }
 
     private static <R> CursorPageResponse<R> exact(List<R> content) {
+
         return new CursorPageResponse<>(content, 1, null, false);
     }
 
     private static void requireNoCursor(String cursor, String filter) {
+
         if (cursor != null)
             throw new com.abc.studentportal.common.exception.InvalidRequestException(
                     "cursor cannot be combined with exact " + filter + " lookup");

@@ -43,41 +43,49 @@ public class InstructorDynamoRecord implements com.abc.studentportal.common.pers
 
     @DynamoDbPartitionKey
     public String getId() {
+
         return id;
     }
 
     @DynamoDbSecondaryPartitionKey(indexNames = "instructors-by-number")
     public String getEmployeeNumber() {
+
         return employeeNumber;
     }
 
     @DynamoDbSecondaryPartitionKey(indexNames = "instructors-by-email")
     public String getEmail() {
+
         return email;
     }
 
     @DynamoDbSecondaryPartitionKey(indexNames = "instructors-by-department")
     public String getDepartmentId() {
+
         return departmentId;
     }
 
     @DynamoDbSecondaryPartitionKey(indexNames = "instructors-catalog")
     public String getEntityType() {
+
         return entityType;
     }
 
     @DynamoDbSecondarySortKey(indexNames = "instructors-catalog")
     public String getCreatedAtId() {
+
         return createdAtId;
     }
 
     @DynamoDbSecondarySortKey(indexNames = "instructors-by-department")
     public String getLastNameId() {
+
         return lastNameId;
     }
 
     @DynamoDbVersionAttribute
     public Long getVersion() {
+
         return version;
     }
 

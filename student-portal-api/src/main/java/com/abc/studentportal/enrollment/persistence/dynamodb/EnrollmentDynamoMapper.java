@@ -10,9 +10,11 @@ import java.util.UUID;
 public final class EnrollmentDynamoMapper {
 
     private EnrollmentDynamoMapper() {
+
     }
 
     public static EnrollmentDynamoRecord toRecord(Enrollment value) {
+
         EnrollmentDynamoRecord record = new EnrollmentDynamoRecord();
         record.setId(value.id().toString());
         record.setRecordType("ENROLLMENT");
@@ -31,6 +33,7 @@ public final class EnrollmentDynamoMapper {
     }
 
     public static Enrollment toDomain(EnrollmentDynamoRecord value) {
+
         return new Enrollment(UUID.fromString(value.getId()), UUID.fromString(value.getStudentId()),
                 UUID.fromString(value.getCourseId()), EnrollmentStatus.valueOf(value.getStatus()),
                 Instant.parse(value.getEnrolledAt()),

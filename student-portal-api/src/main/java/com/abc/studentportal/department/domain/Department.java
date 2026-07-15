@@ -9,6 +9,7 @@ public record Department(UUID id, String code, String name, String description,
                          Instant createdAt, Instant updatedAt, long version) {
 
     public Department {
+
         DomainChecks.audit(id, createdAt, updatedAt, version);
         code = DomainChecks.uppercaseCode(code, "code");
         name = DomainChecks.requiredText(name, "name");

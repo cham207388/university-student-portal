@@ -2,17 +2,15 @@ package com.abc.studentportal.student.persistence.postgres;
 
 import com.abc.studentportal.common.persistence.postgres.BaseEntity;
 import com.abc.studentportal.department.persistence.postgres.DepartmentEntity;
-
 import com.abc.studentportal.student.domain.StudentStatus;
 import jakarta.persistence.*;
-
-import java.util.UUID;
-import java.time.Instant;
-
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.time.Instant;
+import java.util.UUID;
 
 @Entity
 @Getter
@@ -48,11 +46,13 @@ public class StudentEntity extends BaseEntity {
     private StudentProfileEntity profile;
 
     public StudentEntity(UUID id, String studentNumber, String firstName, String lastName, String email, StudentStatus status, UUID departmentId) {
+
         this(id, studentNumber, firstName, lastName, email, status, departmentId, null, null, 0);
     }
 
     public StudentEntity(UUID id, String studentNumber, String firstName, String lastName, String email, StudentStatus status,
-            UUID departmentId, Instant createdAt, Instant updatedAt, long version) {
+                         UUID departmentId, Instant createdAt, Instant updatedAt, long version) {
+
         this.id = id;
         this.studentNumber = studentNumber;
         this.firstName = firstName;
@@ -65,8 +65,13 @@ public class StudentEntity extends BaseEntity {
     }
 
     public void updateDetails(String studentNumber, String firstName, String lastName, String email, StudentStatus status, DepartmentEntity department) {
-        this.studentNumber = studentNumber; this.firstName = firstName; this.lastName = lastName;
-        this.email = email; this.status = status; this.department = department;
+
+        this.studentNumber = studentNumber;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.email = email;
+        this.status = status;
+        this.department = department;
     }
 
 }

@@ -6,6 +6,7 @@ public record PageResponse<T>(List<T> content, int page, int size, long totalEle
                               boolean hasNext, boolean hasPrevious) {
 
     public PageResponse {
+
         content = List.copyOf(content);
     }
 

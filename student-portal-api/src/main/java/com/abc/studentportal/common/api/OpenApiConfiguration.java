@@ -4,11 +4,7 @@ import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.examples.Example;
 import io.swagger.v3.oas.models.info.Info;
-import io.swagger.v3.oas.models.media.ArraySchema;
-import io.swagger.v3.oas.models.media.Content;
-import io.swagger.v3.oas.models.media.MediaType;
-import io.swagger.v3.oas.models.media.ObjectSchema;
-import io.swagger.v3.oas.models.media.Schema;
+import io.swagger.v3.oas.models.media.*;
 import io.swagger.v3.oas.models.responses.ApiResponse;
 import org.springdoc.core.customizers.OperationCustomizer;
 import org.springframework.context.annotation.Bean;
@@ -24,6 +20,7 @@ public class OpenApiConfiguration {
 
     @Bean
     OpenAPI studentPortalOpenApi() {
+
         Schema<?> fieldError = new ObjectSchema()
                 .addProperty("field", new Schema<String>().type("string").example("email"))
                 .addProperty("message", new Schema<String>().type("string").example("must be a well-formed email address"));
@@ -44,6 +41,7 @@ public class OpenApiConfiguration {
 
     @Bean
     OperationCustomizer studentPortalOperationCustomizer() {
+
         return (operation, handler) -> {
             if (operation.getSummary() == null)
                 operation.setSummary(summary(handler));
@@ -68,6 +66,7 @@ public class OpenApiConfiguration {
     }
 
     private static void addProblem(io.swagger.v3.oas.models.Operation operation, String status, String description) {
+
         if (operation.getResponses().containsKey(status))
             return;
         Example example = new Example().value(java.util.Map.of("type",
@@ -79,12 +78,14 @@ public class OpenApiConfiguration {
     }
 
     private static String summary(HandlerMethod handler) {
+
         String resource = handler.getBeanType().getSimpleName().replace("Controller", "");
         String action = handler.getMethod().getName().replaceAll("([a-z])([A-Z])", "$1 $2");
         return (action + " " + resource).toLowerCase(Locale.ROOT);
     }
 
     private static String description(HandlerMethod handler) {
+
         return "Executes the " + handler.getMethod().getName() + " operation through the DynamoDB application service and documented bounded access pattern.";
     }
 

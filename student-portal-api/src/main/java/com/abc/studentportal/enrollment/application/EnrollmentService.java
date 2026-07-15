@@ -29,6 +29,7 @@ public class EnrollmentService {
 
     public EnrollmentService(EnrollmentRepository enrollments, StudentRepository students,
                              CourseRepository courses, Clock clock) {
+
         this.enrollments = enrollments;
         this.students = students;
         this.courses = courses;
@@ -36,6 +37,7 @@ public class EnrollmentService {
     }
 
     public Enrollment enroll(UUID studentId, UUID courseId) {
+
         Student student = students.findById(studentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Student", studentId));
         Course course = courses.findById(courseId)
@@ -50,6 +52,7 @@ public class EnrollmentService {
     }
 
     public Enrollment changeStatus(UUID id, EnrollmentStatus target, String finalGrade, long version) {
+
         Enrollment current = get(id);
         Enrollment changed = current.transitionTo(target, finalGrade, clock.instant());
         return enrollments
@@ -59,10 +62,12 @@ public class EnrollmentService {
     }
 
     public Enrollment drop(UUID id, long version) {
+
         return changeStatus(id, EnrollmentStatus.DROPPED, null, version);
     }
 
     public Enrollment get(UUID id) {
+
         return enrollments.findById(id).orElseThrow(() -> new ResourceNotFoundException("Enrollment", id));
     }
 

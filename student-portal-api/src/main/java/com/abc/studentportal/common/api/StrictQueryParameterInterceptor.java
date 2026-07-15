@@ -15,6 +15,7 @@ final class StrictQueryParameterInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
+
         if (!(handler instanceof HandlerMethod method))
             return true;
 

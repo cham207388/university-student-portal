@@ -12,10 +12,12 @@ import java.util.function.Function;
 public final class DynamoCursorQueries {
 
     private DynamoCursorQueries() {
+
     }
 
     public static <R, D> CursorPage<D> query(DynamoDbIndex<R> index, QueryConditional conditional,
                                              CursorRequest request, String queryIdentity, DynamoCursorCodec codec, Function<R, D> mapper) {
+
         var startKey = codec.decode(queryIdentity, request.cursor());
         var query = index.query(builder -> {
             builder.queryConditional(conditional).limit(request.limit());
@@ -29,31 +31,37 @@ public final class DynamoCursorQueries {
     }
 
     public static QueryConditional equalTo(String partitionValue) {
+
         return QueryConditional.keyEqualTo(Key.builder().partitionValue(partitionValue).build());
     }
 
     public static QueryConditional beginsWith(String partitionValue, String sortPrefix) {
+
         return QueryConditional.sortBeginsWith(Key.builder().partitionValue(partitionValue)
                 .sortValue(sortPrefix).build());
     }
 
     public static QueryConditional between(String partitionValue, String from, String to) {
+
         Key lower = Key.builder().partitionValue(partitionValue).sortValue(from).build();
         Key upper = Key.builder().partitionValue(partitionValue).sortValue(to).build();
         return QueryConditional.sortBetween(lower, upper);
     }
 
     public static QueryConditional from(String partitionValue, String from) {
+
         return QueryConditional.sortGreaterThanOrEqualTo(Key.builder().partitionValue(partitionValue)
                 .sortValue(from).build());
     }
 
     public static QueryConditional to(String partitionValue, String to) {
+
         return QueryConditional.sortLessThanOrEqualTo(Key.builder().partitionValue(partitionValue)
                 .sortValue(to).build());
     }
 
     public static String identity(String table, String index, String... parameters) {
+
         StringBuilder identity = new StringBuilder();
         append(identity, table);
         append(identity, index);
@@ -63,6 +71,7 @@ public final class DynamoCursorQueries {
     }
 
     private static void append(StringBuilder target, String value) {
+
         if (value == null)
             target.append("-1:");
         else

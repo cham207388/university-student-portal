@@ -1,11 +1,7 @@
 package com.abc.studentportal.course.api;
 
 import com.abc.studentportal.course.domain.CourseStatus;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
-import jakarta.validation.constraints.PositiveOrZero;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -13,6 +9,7 @@ import java.util.UUID;
 public final class CourseApi {
 
     private CourseApi() {
+
     }
 
     public record CreateRequest(@NotBlank @Size(max = 30) String courseCode,

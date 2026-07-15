@@ -8,7 +8,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Clock;
 
-/** PostgreSQL transaction boundary for student and profile workflows. */
+/**
+ * PostgreSQL transaction boundary for student and profile workflows.
+ */
 @Service
 @Profile({"local-postgres", "test-postgres"})
 @Transactional
@@ -17,6 +19,8 @@ public class PostgresStudentService extends StudentService {
     public PostgresStudentService(StudentRepository students, StudentProfileRepository profiles,
                                   DepartmentRepository departments, Clock clock,
                                   DependencyChecker dependencies) {
+
         super(students, profiles, departments, clock, dependencies);
     }
+
 }

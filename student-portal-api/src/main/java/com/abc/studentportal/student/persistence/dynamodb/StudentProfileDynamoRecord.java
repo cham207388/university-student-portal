@@ -42,11 +42,13 @@ public class StudentProfileDynamoRecord
 
     @DynamoDbPartitionKey
     public String getStudentId() {
+
         return studentId;
     }
 
     @DynamoDbVersionAttribute
     public Long getVersion() {
+
         return version;
     }
 

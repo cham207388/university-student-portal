@@ -10,6 +10,7 @@ public record Instructor(UUID id, String employeeNumber, String firstName, Strin
                          UUID departmentId, Instant createdAt, Instant updatedAt, long version) {
 
     public Instructor {
+
         DomainChecks.audit(id, createdAt, updatedAt, version);
         employeeNumber = DomainChecks.requiredText(employeeNumber, "employeeNumber");
         firstName = DomainChecks.requiredText(firstName, "firstName");

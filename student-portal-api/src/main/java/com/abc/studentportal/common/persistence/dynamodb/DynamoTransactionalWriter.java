@@ -4,11 +4,7 @@ import com.abc.studentportal.common.exception.ConflictException;
 import lombok.RequiredArgsConstructor;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
-import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
-import software.amazon.awssdk.services.dynamodb.model.Delete;
-import software.amazon.awssdk.services.dynamodb.model.Put;
-import software.amazon.awssdk.services.dynamodb.model.TransactionCanceledException;
-import software.amazon.awssdk.services.dynamodb.model.TransactWriteItem;
+import software.amazon.awssdk.services.dynamodb.model.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,11 +17,13 @@ public final class DynamoTransactionalWriter {
 
     public <R extends VersionedDynamoRecord> R create(DynamoDbTable<R> table, String partitionKey, R record,
                                                       List<DynamoUniqueClaim> claims) {
+
         return create(table, partitionKey, record, claims, List.of());
     }
 
     public <R extends VersionedDynamoRecord> R create(DynamoDbTable<R> table, String partitionKey, R record,
                                                       List<DynamoUniqueClaim> claims, List<TransactWriteItem> additionalActions) {
+
         record.setVersion(1L);
         List<TransactWriteItem> actions = new ArrayList<>();
         actions.add(TransactWriteItem.builder().put(Put.builder().tableName(table.tableName())
@@ -39,12 +37,14 @@ public final class DynamoTransactionalWriter {
 
     public <R extends VersionedDynamoRecord> R update(DynamoDbTable<R> table, String partitionKey, R record,
                                                       long expectedVersion, List<DynamoUniqueClaim> previousClaims, List<DynamoUniqueClaim> nextClaims) {
+
         return update(table, partitionKey, record, expectedVersion, previousClaims, nextClaims, List.of());
     }
 
     public <R extends VersionedDynamoRecord> R update(DynamoDbTable<R> table, String partitionKey, R record,
                                                       long expectedVersion, List<DynamoUniqueClaim> previousClaims, List<DynamoUniqueClaim> nextClaims,
                                                       List<TransactWriteItem> additionalActions) {
+
         record.setVersion(expectedVersion + 1);
         List<TransactWriteItem> actions = new ArrayList<>();
         actions.add(TransactWriteItem.builder().put(Put.builder().tableName(table.tableName())
@@ -66,22 +66,26 @@ public final class DynamoTransactionalWriter {
 
     public void delete(String table, String partitionKey, String entityId, long expectedVersion,
                        List<DynamoUniqueClaim> claims) {
+
         delete(table, partitionKey, entityId, expectedVersion, claims, List.of(), false);
     }
 
     public void delete(String table, String partitionKey, String entityId, long expectedVersion,
                        List<DynamoUniqueClaim> claims, List<TransactWriteItem> additionalActions) {
+
         delete(table, partitionKey, entityId, expectedVersion, claims, additionalActions, false);
     }
 
     public void delete(String table, String partitionKey, String entityId, long expectedVersion,
                        List<DynamoUniqueClaim> claims, List<TransactWriteItem> additionalActions, boolean requireNoEnrollments) {
+
         deleteRequiringZeroCounters(table, partitionKey, entityId, expectedVersion, claims, additionalActions,
                 requireNoEnrollments ? List.of("enrollmentCount") : List.of());
     }
 
     public void deleteRequiringZeroCounters(String table, String partitionKey, String entityId, long expectedVersion,
                                             List<DynamoUniqueClaim> claims, List<TransactWriteItem> additionalActions, List<String> zeroCounters) {
+
         List<TransactWriteItem> actions = new ArrayList<>();
         StringBuilder condition = new StringBuilder("#version = :version");
         Map<String, String> names = new java.util.LinkedHashMap<>();
@@ -106,6 +110,7 @@ public final class DynamoTransactionalWriter {
     }
 
     private void execute(List<TransactWriteItem> actions, String conflictMessage) {
+
         try {
             client.transactWriteItems(request -> request.transactItems(actions));
         } catch (TransactionCanceledException exception) {
@@ -114,6 +119,7 @@ public final class DynamoTransactionalWriter {
     }
 
     private static TransactWriteItem putClaim(String table, String partitionKey, DynamoUniqueClaim claim) {
+
         Map<String, AttributeValue> item = Map.of(
                 partitionKey, string(claim.id()),
                 "recordType", string("UNIQUE_CLAIM"),
@@ -124,6 +130,7 @@ public final class DynamoTransactionalWriter {
     }
 
     private static TransactWriteItem deleteClaim(String table, String partitionKey, DynamoUniqueClaim claim) {
+
         return TransactWriteItem.builder().delete(Delete.builder().tableName(table)
                 .key(Map.of(partitionKey, string(claim.id())))
                 .conditionExpression("#owner = :owner")
@@ -132,10 +139,12 @@ public final class DynamoTransactionalWriter {
     }
 
     private static AttributeValue string(String value) {
+
         return AttributeValue.builder().s(value).build();
     }
 
     private static AttributeValue number(long value) {
+
         return AttributeValue.builder().n(Long.toString(value)).build();
     }
 

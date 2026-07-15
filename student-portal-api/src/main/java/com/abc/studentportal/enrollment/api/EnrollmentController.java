@@ -30,6 +30,7 @@ public class EnrollmentController {
 
     @PostMapping
     ResponseEntity<EnrollmentApi.Response> create(@Valid @RequestBody EnrollmentApi.CreateRequest request) {
+
         var value = service.enroll(request.studentId(), request.courseId());
         return ResponseEntity.created(URI.create("/api/v1/enrollments/" + value.id()))
                 .body(EnrollmentMapper.toResponse(value));
@@ -37,6 +38,7 @@ public class EnrollmentController {
 
     @GetMapping("/{id}")
     EnrollmentApi.Response get(@PathVariable UUID id) {
+
         return EnrollmentMapper.toResponse(service.get(id));
     }
 
@@ -45,6 +47,7 @@ public class EnrollmentController {
                                                     @RequestParam(required = false) UUID courseId, @RequestParam(required = false) EnrollmentStatus status,
                                                     @RequestParam(required = false) Instant enrolledFrom, @RequestParam(required = false) Instant enrolledTo,
                                                     @RequestParam(defaultValue = "20") int limit, @RequestParam(required = false) String cursor) {
+
         int filters = (studentId == null ? 0 : 1) + (courseId == null ? 0 : 1) + (status == null ? 0 : 1);
         if (filters > 1)
             throw new InvalidRequestException(
@@ -62,16 +65,19 @@ public class EnrollmentController {
     @PatchMapping("/{id}/status")
     EnrollmentApi.Response status(@PathVariable UUID id,
                                   @Valid @RequestBody EnrollmentApi.StatusRequest request) {
+
         return EnrollmentMapper
                 .toResponse(service.changeStatus(id, request.status(), request.finalGrade(), request.version()));
     }
 
     @DeleteMapping("/{id}")
     EnrollmentApi.Response drop(@PathVariable UUID id, @RequestParam long version) {
+
         return EnrollmentMapper.toResponse(service.drop(id, version));
     }
 
     private static <D, R> CursorPageResponse<R> page(CursorPage<D> page, Function<D, R> mapper) {
+
         return new CursorPageResponse<>(page.content().stream().map(mapper).toList(), page.limit(), page.nextCursor(),
                 page.hasNext());
     }

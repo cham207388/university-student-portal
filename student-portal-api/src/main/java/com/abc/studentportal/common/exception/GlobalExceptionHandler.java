@@ -2,24 +2,23 @@ package com.abc.studentportal.common.exception;
 
 import com.abc.studentportal.common.api.FieldErrorDetail;
 import com.abc.studentportal.common.domain.DomainRuleViolationException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.util.List;
-
-import org.slf4j.MDC;
-import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.orm.ObjectOptimisticLockingFailureException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -28,6 +27,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ApiException.class)
     ResponseEntity<ProblemDetail> handleApiException(ApiException exception) {
+
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(exception.status(), exception.getMessage());
         problem.setTitle(exception.status().getReasonPhrase());
         problem.setType(exception.type());
@@ -37,12 +37,14 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(DomainRuleViolationException.class)
     ResponseEntity<ProblemDetail> handleDomainRule(DomainRuleViolationException exception) {
+
         ProblemDetail problem = problem(HttpStatus.CONFLICT, "domain-rule-violation", exception.getMessage());
         return ResponseEntity.status(HttpStatus.CONFLICT).body(problem);
     }
 
     @ExceptionHandler({ObjectOptimisticLockingFailureException.class, DataIntegrityViolationException.class})
     ResponseEntity<ProblemDetail> handlePostgresConflict(Exception exception) {
+
         ProblemDetail problem = problem(HttpStatus.CONFLICT, "conflict",
                 exception instanceof ObjectOptimisticLockingFailureException
                         ? "The resource was modified by another request"
@@ -52,6 +54,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     ResponseEntity<ProblemDetail> handleValidation(MethodArgumentNotValidException exception) {
+
         ProblemDetail problem = problem(HttpStatus.BAD_REQUEST, "validation-failed", "Request validation failed");
         List<FieldErrorDetail> errors = exception.getBindingResult().getFieldErrors().stream()
                 .map(error -> new FieldErrorDetail(error.getField(), error.getDefaultMessage()))
@@ -62,6 +65,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
     ResponseEntity<ProblemDetail> handleMalformedRequest() {
+
         ProblemDetail problem = problem(HttpStatus.BAD_REQUEST, "malformed-request",
                 "Request body is malformed or contains an unsupported value");
         return ResponseEntity.badRequest().body(problem);
@@ -69,18 +73,21 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(IllegalArgumentException.class)
     ResponseEntity<ProblemDetail> handleIllegalArgument(IllegalArgumentException exception) {
+
         ProblemDetail problem = problem(HttpStatus.BAD_REQUEST, "invalid-request", exception.getMessage());
         return ResponseEntity.badRequest().body(problem);
     }
 
     @ExceptionHandler({MissingServletRequestParameterException.class, MethodArgumentTypeMismatchException.class})
     ResponseEntity<ProblemDetail> handleInvalidRequestParameter(Exception exception) {
+
         ProblemDetail problem = problem(HttpStatus.BAD_REQUEST, "invalid-request", exception.getMessage());
         return ResponseEntity.badRequest().body(problem);
     }
 
     @ExceptionHandler(Exception.class)
     ResponseEntity<ProblemDetail> handleUnexpected(Exception exception) {
+
         LOGGER.error("Unexpected request failure", exception);
         ProblemDetail problem = problem(HttpStatus.INTERNAL_SERVER_ERROR, "internal-error",
                 "An unexpected internal error occurred");
@@ -88,6 +95,7 @@ public class GlobalExceptionHandler {
     }
 
     private static ProblemDetail problem(HttpStatus status, String type, String detail) {
+
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(status, detail);
         problem.setTitle(status.getReasonPhrase());
         problem.setType(URI.create("https://student-portal.example/problems/" + type));
@@ -96,6 +104,7 @@ public class GlobalExceptionHandler {
     }
 
     private static void addCorrelationId(ProblemDetail problem) {
+
         String correlationId = MDC.get(com.abc.studentportal.common.observability.CorrelationIdFilter.MDC_KEY);
         if (correlationId != null)
             problem.setProperty("correlationId", correlationId);

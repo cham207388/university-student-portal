@@ -5,12 +5,7 @@ import com.abc.studentportal.common.persistence.dynamodb.DynamoDbTables;
 import com.abc.studentportal.enrollment.domain.Enrollment;
 import lombok.RequiredArgsConstructor;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
-import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
-import software.amazon.awssdk.services.dynamodb.model.Delete;
-import software.amazon.awssdk.services.dynamodb.model.Put;
-import software.amazon.awssdk.services.dynamodb.model.TransactionCanceledException;
-import software.amazon.awssdk.services.dynamodb.model.TransactWriteItem;
-import software.amazon.awssdk.services.dynamodb.model.Update;
+import software.amazon.awssdk.services.dynamodb.model.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,6 +19,7 @@ public final class DynamoEnrollmentTransactionWriter {
     private final DynamoDbTables tables;
 
     public Enrollment create(Enrollment value) {
+
         EnrollmentDynamoRecord record = EnrollmentDynamoMapper.toRecord(value);
         record.setVersion(1L);
         List<TransactWriteItem> actions = new ArrayList<>();
@@ -38,6 +34,7 @@ public final class DynamoEnrollmentTransactionWriter {
     }
 
     public Enrollment update(Enrollment previous, Enrollment next) {
+
         EnrollmentDynamoRecord record = EnrollmentDynamoMapper.toRecord(next);
         record.setVersion(next.version() + 1);
         List<TransactWriteItem> actions = new ArrayList<>();
@@ -54,11 +51,13 @@ public final class DynamoEnrollmentTransactionWriter {
     }
 
     public void ensureRelationship(Enrollment value) {
+
         client.putItem(request -> request.tableName(tables.enrollments().tableName())
                 .item(putRelationship(value).put().item()));
     }
 
     private TransactWriteItem addStudentEnrollment(Enrollment value) {
+
         return TransactWriteItem.builder().update(Update.builder()
                 .tableName(tables.students().tableName()).key(key(value.studentId().toString()))
                 .updateExpression(
@@ -70,6 +69,7 @@ public final class DynamoEnrollmentTransactionWriter {
     }
 
     private TransactWriteItem addCourseEnrollment(String courseId, boolean consumesCapacity) {
+
         String update = consumesCapacity
                 ? "SET enrollmentCount = if_not_exists(enrollmentCount, :zero) + :one, #occupied = #occupied + :one, #version = #version + :one"
                 : "SET enrollmentCount = if_not_exists(enrollmentCount, :zero) + :one, #version = #version + :one";
@@ -90,6 +90,7 @@ public final class DynamoEnrollmentTransactionWriter {
     }
 
     private TransactWriteItem changeCapacity(String courseId, int delta) {
+
         String condition = delta > 0
                 ? "attribute_exists(id) AND #status = :open AND #occupied < #capacity"
                 : "attribute_exists(id) AND #occupied > :zero";
@@ -108,6 +109,7 @@ public final class DynamoEnrollmentTransactionWriter {
 
     private TransactWriteItem putEnrollment(EnrollmentDynamoRecord record, String condition,
                                             Map<String, AttributeValue> values) {
+
         Put.Builder put = Put.builder().tableName(tables.enrollments().tableName())
                 .item(tables.enrollments().tableSchema().itemToMap(record, true)).conditionExpression(condition);
         if (condition.contains("#version"))
@@ -118,6 +120,7 @@ public final class DynamoEnrollmentTransactionWriter {
     }
 
     private TransactWriteItem putActiveLock(Enrollment value) {
+
         Map<String, AttributeValue> item = Map.of("id", string(lockId(value)), "recordType",
                 string("ACTIVE_ENROLLMENT_LOCK"), "ownerId", string(value.id().toString()));
         return TransactWriteItem.builder().put(Put.builder().tableName(tables.enrollments().tableName()).item(item)
@@ -125,6 +128,7 @@ public final class DynamoEnrollmentTransactionWriter {
     }
 
     private TransactWriteItem putRelationship(Enrollment value) {
+
         Map<String, AttributeValue> item = Map.of(
                 "id", string("RELATIONSHIP#" + value.studentId() + "#" + value.courseId()),
                 "recordType", string("STUDENT_COURSE_RELATIONSHIP"),
@@ -135,12 +139,14 @@ public final class DynamoEnrollmentTransactionWriter {
     }
 
     private TransactWriteItem deleteActiveLock(Enrollment value) {
+
         return TransactWriteItem.builder().delete(Delete.builder().tableName(tables.enrollments().tableName())
                 .key(key(lockId(value))).conditionExpression("ownerId = :owner")
                 .expressionAttributeValues(Map.of(":owner", string(value.id().toString()))).build()).build();
     }
 
     private void execute(List<TransactWriteItem> actions, String message) {
+
         try {
             client.transactWriteItems(request -> request.transactItems(actions));
         } catch (TransactionCanceledException exception) {
@@ -149,18 +155,22 @@ public final class DynamoEnrollmentTransactionWriter {
     }
 
     private static String lockId(Enrollment value) {
+
         return "ACTIVE#" + value.studentId() + "#" + value.courseId();
     }
 
     private static Map<String, AttributeValue> key(String id) {
+
         return Map.of("id", string(id));
     }
 
     private static AttributeValue string(String value) {
+
         return AttributeValue.builder().s(value).build();
     }
 
     private static AttributeValue number(long value) {
+
         return AttributeValue.builder().n(Long.toString(value)).build();
     }
 

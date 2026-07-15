@@ -1,62 +1,80 @@
 package com.abc.studentportal.common.migration;
 
 import com.abc.studentportal.common.pagination.CursorRequest;
+import com.abc.studentportal.course.application.CourseRepository;
+import com.abc.studentportal.course.application.DynamoCourseQueries;
 import com.abc.studentportal.department.application.DepartmentRepository;
 import com.abc.studentportal.department.application.DynamoDepartmentQueries;
-import com.abc.studentportal.instructor.application.DynamoInstructorQueries;
-import com.abc.studentportal.instructor.application.InstructorRepository;
-import com.abc.studentportal.course.application.DynamoCourseQueries;
-import com.abc.studentportal.course.application.CourseRepository;
 import com.abc.studentportal.enrollment.application.DynamoEnrollmentQueries;
 import com.abc.studentportal.enrollment.application.EnrollmentRepository;
-import com.abc.studentportal.student.application.DynamoStudentQueries;
-import com.abc.studentportal.student.application.StudentRepository;
-import com.abc.studentportal.student.application.StudentProfileRepository;
+import com.abc.studentportal.instructor.application.DynamoInstructorQueries;
+import com.abc.studentportal.instructor.application.InstructorRepository;
 import com.abc.studentportal.student.application.DynamoStudentProfileQueries;
+import com.abc.studentportal.student.application.DynamoStudentQueries;
+import com.abc.studentportal.student.application.StudentProfileRepository;
+import com.abc.studentportal.student.application.StudentRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Profile;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.UUID;
 
 @Component
 @Profile("migration")
 @ConditionalOnProperty(name = "migration.run", havingValue = "true")
 public class DynamoToPostgresMigrationRunner implements ApplicationRunner {
+
     private final DynamoDepartmentQueries dynamoDepartments;
+
     private final DynamoInstructorQueries dynamoInstructors;
+
     private final DepartmentRepository departments;
+
     private final InstructorRepository instructors;
+
     private final ConfigurableApplicationContext context;
+
     private final DynamoStudentQueries dynamoStudents;
+
     private final StudentRepository students;
+
     private final StudentProfileRepository profiles;
+
     private final DynamoStudentProfileQueries dynamoProfiles;
+
     private final DynamoCourseQueries dynamoCourses;
+
     private final CourseRepository courses;
+
     private final DynamoEnrollmentQueries dynamoEnrollments;
+
     private final EnrollmentRepository enrollments;
+
     private final int batchSize;
+
     private final boolean dryRun;
+
     private final MigrationTracker tracker;
 
     public DynamoToPostgresMigrationRunner(DynamoDepartmentQueries dynamoDepartments,
-            DynamoInstructorQueries dynamoInstructors, DepartmentRepository departments,
-            InstructorRepository instructors, ConfigurableApplicationContext context,
-            DynamoStudentQueries dynamoStudents, StudentRepository students,
-            StudentProfileRepository profiles, DynamoStudentProfileQueries dynamoProfiles,
-            DynamoCourseQueries dynamoCourses, CourseRepository courses,
-            DynamoEnrollmentQueries dynamoEnrollments, EnrollmentRepository enrollments,
-            @Value("${migration.batch-size:100}") int batchSize,
-            @Value("${migration.dry-run:false}") boolean dryRun,
-            MigrationTracker tracker) {
+                                           DynamoInstructorQueries dynamoInstructors, DepartmentRepository departments,
+                                           InstructorRepository instructors, ConfigurableApplicationContext context,
+                                           DynamoStudentQueries dynamoStudents, StudentRepository students,
+                                           StudentProfileRepository profiles, DynamoStudentProfileQueries dynamoProfiles,
+                                           DynamoCourseQueries dynamoCourses, CourseRepository courses,
+                                           DynamoEnrollmentQueries dynamoEnrollments, EnrollmentRepository enrollments,
+                                           @Value("${migration.batch-size:100}") int batchSize,
+                                           @Value("${migration.dry-run:false}") boolean dryRun,
+                                           MigrationTracker tracker) {
+
         if (batchSize < 1 || batchSize > 100) {
             throw new IllegalArgumentException("migration.batch-size must be between 1 and 100");
         }
@@ -80,6 +98,7 @@ public class DynamoToPostgresMigrationRunner implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments arguments) {
+
         try {
             migrate();
             System.exit(SpringApplication.exit(context, () -> 0));
@@ -90,6 +109,7 @@ public class DynamoToPostgresMigrationRunner implements ApplicationRunner {
     }
 
     public void migrate() {
+
         UUID runId = tracker.start(dryRun, batchSize);
         try {
             AtomicInteger departmentCount = new AtomicInteger();
@@ -171,7 +191,8 @@ public class DynamoToPostgresMigrationRunner implements ApplicationRunner {
     }
 
     private <T> void forEachPage(Function<CursorRequest, com.abc.studentportal.common.pagination.CursorPage<T>> query,
-            Consumer<T> consumer) {
+                                 Consumer<T> consumer) {
+
         String cursor = null;
         do {
             var page = query.apply(new CursorRequest(batchSize, cursor));
@@ -182,4 +203,5 @@ public class DynamoToPostgresMigrationRunner implements ApplicationRunner {
             }
         } while (cursor != null);
     }
+
 }

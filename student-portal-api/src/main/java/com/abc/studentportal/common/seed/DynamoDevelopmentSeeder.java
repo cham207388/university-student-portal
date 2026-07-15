@@ -18,14 +18,14 @@ import com.abc.studentportal.student.domain.StudentProfile;
 import com.abc.studentportal.student.domain.StudentStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.context.annotation.Profile;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import java.nio.charset.StandardCharsets;
@@ -56,7 +56,9 @@ public class DynamoDevelopmentSeeder implements ApplicationRunner {
     private final EnrollmentRepository enrollments;
 
     private final DynamoEnrollmentTransactionWriter enrollmentWriter;
+
     private final ConfigurableApplicationContext applicationContext;
+
     private final boolean exitAfterSeed;
 
     @Autowired
@@ -65,6 +67,7 @@ public class DynamoDevelopmentSeeder implements ApplicationRunner {
                                    EnrollmentRepository enrollments, DynamoEnrollmentTransactionWriter enrollmentWriter,
                                    ConfigurableApplicationContext applicationContext,
                                    @Value("${student-portal.seed.exit:false}") boolean exitAfterSeed) {
+
         this.departments = departments;
         this.students = students;
         this.profiles = profiles;
@@ -77,19 +80,22 @@ public class DynamoDevelopmentSeeder implements ApplicationRunner {
     }
 
     public DynamoDevelopmentSeeder(DepartmentRepository departments, StudentRepository students,
-            StudentProfileRepository profiles, InstructorRepository instructors, CourseRepository courses,
-            EnrollmentRepository enrollments, DynamoEnrollmentTransactionWriter enrollmentWriter) {
+                                   StudentProfileRepository profiles, InstructorRepository instructors, CourseRepository courses,
+                                   EnrollmentRepository enrollments, DynamoEnrollmentTransactionWriter enrollmentWriter) {
+
         this(departments, students, profiles, instructors, courses, enrollments, enrollmentWriter, null, false);
     }
 
     @Override
     public void run(ApplicationArguments args) {
+
         seed();
         if (exitAfterSeed && applicationContext != null)
             System.exit(SpringApplication.exit(applicationContext));
     }
 
     public void seed() {
+
         LOGGER.info("event=development_seed_started database=dynamodb");
         List<Department> departmentData = List.of(
                 new Department(id("department-computing"), "CSE", "Computing and Software Engineering",
@@ -172,6 +178,7 @@ public class DynamoDevelopmentSeeder implements ApplicationRunner {
     }
 
     private void ensureEnrollment(int number, Student student, Course course, EnrollmentStatus target) {
+
         UUID enrollmentId = id("enrollment-" + number);
         Enrollment current = enrollments.findById(enrollmentId).orElse(null);
         if (current == null) {
@@ -190,6 +197,7 @@ public class DynamoDevelopmentSeeder implements ApplicationRunner {
     }
 
     private void setCourseStatus(UUID id, CourseStatus status) {
+
         Course current = courses.findById(id).orElseThrow();
         if (current.status() == status)
             return;
@@ -201,6 +209,7 @@ public class DynamoDevelopmentSeeder implements ApplicationRunner {
     }
 
     private void setStudentStatus(UUID id, StudentStatus status) {
+
         Student current = students.findById(id).orElseThrow();
         if (current.status() == status)
             return;
@@ -211,12 +220,14 @@ public class DynamoDevelopmentSeeder implements ApplicationRunner {
     }
 
     private static Instructor instructor(int number, String employee, String first, String last, UUID departmentId) {
+
         return new Instructor(id("instructor-" + number), employee, first, last,
                 first.toLowerCase() + "." + last.toLowerCase() + "@example.edu",
                 departmentId, CREATED.plusSeconds(10 + number), CREATED.plusSeconds(10 + number), 0);
     }
 
     private static StudentProfile profile(Student student, int index) {
+
         return new StudentProfile(id("profile-" + (index + 1)), student.id(),
                 LocalDate.of(1998 + index % 5, 1 + index % 12, 10 + index),
                 "555-01" + String.format("%02d", index), (100 + index) + " University Way", null, "Austin", "TX",
@@ -225,6 +236,7 @@ public class DynamoDevelopmentSeeder implements ApplicationRunner {
     }
 
     private static UUID id(String name) {
+
         return UUID.nameUUIDFromBytes(("student-portal:" + name).getBytes(StandardCharsets.UTF_8));
     }
 

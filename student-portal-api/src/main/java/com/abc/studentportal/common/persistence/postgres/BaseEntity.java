@@ -10,11 +10,14 @@ import lombok.NoArgsConstructor;
 import java.time.Instant;
 import java.util.UUID;
 
-/** Common identity and lifecycle columns for all PostgreSQL entities. */
+/**
+ * Common identity and lifecycle columns for all PostgreSQL entities.
+ */
 @Getter
 @MappedSuperclass
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public abstract class BaseEntity {
+
     @Id
     protected UUID id;
 
@@ -25,10 +28,14 @@ public abstract class BaseEntity {
     protected Instant updatedAt;
 
     protected void audit(Instant createdAt, Instant updatedAt) {
+
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
 
-    public void touch(Instant updatedAt) { this.updatedAt = updatedAt; }
+    public void touch(Instant updatedAt) {
+
+        this.updatedAt = updatedAt;
+    }
 
 }

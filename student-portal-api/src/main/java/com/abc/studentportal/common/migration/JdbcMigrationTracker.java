@@ -4,21 +4,24 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
-import java.time.Instant;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.UUID;
 
 @Component
 @Profile("migration")
 public class JdbcMigrationTracker implements MigrationTracker {
+
     private final JdbcTemplate jdbc;
 
     public JdbcMigrationTracker(JdbcTemplate jdbc) {
+
         this.jdbc = jdbc;
     }
 
     @Override
     public UUID start(boolean dryRun, int batchSize) {
+
         UUID runId = UUID.randomUUID();
         jdbc.update("""
                 INSERT INTO migration_runs
@@ -30,6 +33,7 @@ public class JdbcMigrationTracker implements MigrationTracker {
 
     @Override
     public void checkpoint(UUID runId, String entityType, long read, long inserted, long skipped, String cursor) {
+
         jdbc.update("""
                 INSERT INTO migration_checkpoints
                     (run_id, entity_type, status, read_count, insert_count, skip_count,
@@ -48,12 +52,14 @@ public class JdbcMigrationTracker implements MigrationTracker {
 
     @Override
     public void complete(UUID runId, boolean withErrors) {
+
         jdbc.update("UPDATE migration_runs SET status = ?, ended_at = ? WHERE id = ?",
                 withErrors ? "COMPLETED_WITH_ERRORS" : "COMPLETED", now(), runId);
     }
 
     @Override
     public void fail(UUID runId, String entityType, String sourceKey, Exception exception) {
+
         String message = safeMessage(exception);
         jdbc.update("""
                 INSERT INTO migration_errors
@@ -65,11 +71,14 @@ public class JdbcMigrationTracker implements MigrationTracker {
     }
 
     private String safeMessage(Exception exception) {
+
         String message = exception.getMessage() == null ? "Migration failed" : exception.getMessage();
         return message.substring(0, Math.min(message.length(), 2000));
     }
 
     private Timestamp now() {
+
         return Timestamp.from(Instant.now());
     }
+
 }

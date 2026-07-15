@@ -10,6 +10,7 @@ public record Student(UUID id, String studentNumber, String firstName, String la
                       StudentStatus status, UUID departmentId, Instant createdAt, Instant updatedAt, long version) {
 
     public Student {
+
         DomainChecks.audit(id, createdAt, updatedAt, version);
         studentNumber = DomainChecks.requiredText(studentNumber, "studentNumber");
         firstName = DomainChecks.requiredText(firstName, "firstName");
@@ -20,10 +21,12 @@ public record Student(UUID id, String studentNumber, String firstName, String la
     }
 
     public boolean mayEnroll() {
+
         return status == StudentStatus.ACTIVE;
     }
 
     public Student changeStatus(StudentStatus target, Instant changedAt) {
+
         DomainChecks.required(target, "status");
         DomainChecks.required(changedAt, "changedAt");
         return new Student(id, studentNumber, firstName, lastName, email, target, departmentId,

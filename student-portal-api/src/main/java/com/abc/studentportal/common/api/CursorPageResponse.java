@@ -12,6 +12,7 @@ public record CursorPageResponse<T>(
         @Schema(description = "Whether another page is available", example = "false") boolean hasNext) {
 
     public CursorPageResponse {
+
         content = List.copyOf(content);
     }
 

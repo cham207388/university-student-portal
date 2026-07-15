@@ -8,7 +8,9 @@ import java.util.Base64;
 
 @Component
 public class PostgresCursorCodec {
+
     public int page(String cursor, String query) {
+
         if (cursor == null) return 0;
         try {
             String decoded = new String(Base64.getUrlDecoder().decode(cursor), StandardCharsets.UTF_8);
@@ -23,12 +25,15 @@ public class PostgresCursorCodec {
     }
 
     public String next(int page, String query, boolean hasNext) {
+
         if (!hasNext) return null;
         String value = "v1|" + query + "|" + (page + 1);
         return Base64.getUrlEncoder().withoutPadding().encodeToString(value.getBytes(StandardCharsets.UTF_8));
     }
 
     private InvalidRequestException invalid() {
+
         return new InvalidRequestException("cursor is invalid for this PostgreSQL query");
     }
+
 }

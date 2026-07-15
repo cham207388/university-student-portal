@@ -9,9 +9,11 @@ import java.util.UUID;
 public final class InstructorDynamoMapper {
 
     private InstructorDynamoMapper() {
+
     }
 
     public static InstructorDynamoRecord toRecord(Instructor value) {
+
         InstructorDynamoRecord record = new InstructorDynamoRecord();
         record.setId(value.id().toString());
         record.setEmployeeNumber(value.employeeNumber());
@@ -30,6 +32,7 @@ public final class InstructorDynamoMapper {
     }
 
     public static Instructor toDomain(InstructorDynamoRecord value) {
+
         return new Instructor(UUID.fromString(value.getId()), value.getEmployeeNumber(), value.getFirstName(),
                 value.getLastName(),
                 value.getEmail(), UUID.fromString(value.getDepartmentId()), Instant.parse(value.getCreatedAt()),

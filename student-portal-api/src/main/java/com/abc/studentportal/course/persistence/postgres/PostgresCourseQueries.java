@@ -1,11 +1,13 @@
 package com.abc.studentportal.course.persistence.postgres;
 
-import com.abc.studentportal.common.pagination.*;
-import com.abc.studentportal.course.application.CourseQueries;
-import com.abc.studentportal.course.domain.*;
+import com.abc.studentportal.common.pagination.CursorPage;
+import com.abc.studentportal.common.pagination.CursorRequest;
 import com.abc.studentportal.common.persistence.postgres.PostgresCursorCodec;
 import com.abc.studentportal.common.persistence.postgres.PostgresDomainMapper;
 import com.abc.studentportal.common.persistence.postgres.PostgresPageSupport;
+import com.abc.studentportal.course.application.CourseQueries;
+import com.abc.studentportal.course.domain.Course;
+import com.abc.studentportal.course.domain.CourseStatus;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;

@@ -1,20 +1,18 @@
 package com.abc.studentportal.course.persistence.postgres;
 
+import com.abc.studentportal.common.exception.ConflictException;
 import com.abc.studentportal.common.persistence.postgres.BaseEntity;
+import com.abc.studentportal.course.domain.CourseStatus;
 import com.abc.studentportal.department.persistence.postgres.DepartmentEntity;
 import com.abc.studentportal.instructor.persistence.postgres.InstructorEntity;
-
-import com.abc.studentportal.course.domain.CourseStatus;
 import jakarta.persistence.*;
-
-import java.util.UUID;
-import java.time.Instant;
-
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import com.abc.studentportal.common.exception.ConflictException;
+
+import java.time.Instant;
+import java.util.UUID;
 
 @Entity
 @Getter
@@ -57,11 +55,13 @@ public class CourseEntity extends BaseEntity {
     private long version;
 
     public CourseEntity(UUID id, String courseCode, String title, String description, int credits, int capacity, CourseStatus status, UUID departmentId, UUID instructorId) {
+
         this(id, courseCode, title, description, credits, capacity, status, departmentId, instructorId, null, null, 0);
     }
 
     public CourseEntity(UUID id, String courseCode, String title, String description, int credits, int capacity,
-            CourseStatus status, UUID departmentId, UUID instructorId, Instant createdAt, Instant updatedAt, long version) {
+                        CourseStatus status, UUID departmentId, UUID instructorId, Instant createdAt, Instant updatedAt, long version) {
+
         this.id = id;
         this.courseCode = courseCode;
         this.title = title;
@@ -76,18 +76,26 @@ public class CourseEntity extends BaseEntity {
     }
 
     public void updateDetails(String courseCode, String title, String description, int credits, int capacity, CourseStatus status,
-            DepartmentEntity department, InstructorEntity instructor) {
-        this.courseCode = courseCode; this.title = title; this.description = description;
-        this.credits = credits; this.capacity = capacity; this.status = status;
-        this.department = department; this.instructor = instructor;
+                              DepartmentEntity department, InstructorEntity instructor) {
+
+        this.courseCode = courseCode;
+        this.title = title;
+        this.description = description;
+        this.credits = credits;
+        this.capacity = capacity;
+        this.status = status;
+        this.department = department;
+        this.instructor = instructor;
     }
 
     public void reserveSeat() {
+
         if (occupiedSeats >= capacity) throw new ConflictException("Course capacity has been reached");
         occupiedSeats++;
     }
 
     public void releaseSeat() {
+
         if (occupiedSeats <= 0) throw new IllegalStateException("Course occupied seat count cannot become negative");
         occupiedSeats--;
     }

@@ -14,6 +14,7 @@ public class DynamoStudentProfileRepository extends AbstractDynamoRepository<Stu
         implements StudentProfileRepository, com.abc.studentportal.student.application.DynamoStudentProfileQueries {
 
     public DynamoStudentProfileRepository(DynamoDbTables tables) {
+
         super(tables.studentProfiles(), "studentId", StudentProfileDynamoMapper::toRecord,
                 StudentProfileDynamoMapper::toDomain,
                 value -> value.studentId().toString());
@@ -21,21 +22,25 @@ public class DynamoStudentProfileRepository extends AbstractDynamoRepository<Stu
 
     @Override
     public StudentProfile create(StudentProfile value) {
+
         return createItem(value);
     }
 
     @Override
     public StudentProfile update(StudentProfile value) {
+
         return updateItem(value);
     }
 
     @Override
     public Optional<StudentProfile> findByStudentId(UUID id) {
+
         return findItem(id.toString());
     }
 
     @Override
     public void delete(StudentProfile value) {
+
         deleteItem(value, value.version());
     }
 

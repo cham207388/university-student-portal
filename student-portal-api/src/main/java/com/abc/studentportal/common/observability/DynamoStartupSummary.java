@@ -23,12 +23,14 @@ public class DynamoStartupSummary implements ApplicationRunner {
     private final Environment environment;
 
     public DynamoStartupSummary(DynamoDbProperties properties, Environment environment) {
+
         this.properties = properties;
         this.environment = environment;
     }
 
     @Override
     public void run(ApplicationArguments args) {
+
         URI endpoint = properties.endpoint();
         DynamoDbProperties.Tables tables = properties.tables();
         LOGGER.info("event=startup_configuration persistence=dynamodb profiles={} region={} endpoint={}://{}:{} tableCount=6 tables={}",

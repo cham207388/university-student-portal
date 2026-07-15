@@ -11,6 +11,7 @@ public record StudentProfile(UUID id, UUID studentId, LocalDate dateOfBirth, Str
                              String country, Instant createdAt, Instant updatedAt, long version) {
 
     public StudentProfile {
+
         DomainChecks.audit(id, createdAt, updatedAt, version);
         DomainChecks.required(studentId, "studentId");
         DomainChecks.required(dateOfBirth, "dateOfBirth");

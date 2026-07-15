@@ -1,10 +1,5 @@
 package com.abc.studentportal.course.application;
 
-import com.abc.studentportal.common.pagination.CursorPage;
-import com.abc.studentportal.common.pagination.CursorRequest;
-import com.abc.studentportal.course.domain.Course;
-import com.abc.studentportal.course.domain.CourseStatus;
+public interface DynamoCourseQueries extends CourseQueries {
 
-import java.util.UUID;
-
-public interface DynamoCourseQueries extends CourseQueries { }
+}

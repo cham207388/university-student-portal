@@ -3,11 +3,7 @@ package com.abc.studentportal.common.persistence.dynamodb;
 import com.abc.studentportal.common.exception.InvalidRequestException;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.util.Base64;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -19,6 +15,7 @@ public final class DynamoCursorCodec {
     private static final int MAX_CURSOR_LENGTH = 8_192;
 
     public String encode(String queryIdentity, Map<String, AttributeValue> key) {
+
         if (key == null || key.isEmpty())
             return null;
         try {
@@ -39,6 +36,7 @@ public final class DynamoCursorCodec {
     }
 
     public Map<String, AttributeValue> decode(String queryIdentity, String cursor) {
+
         if (cursor == null || cursor.isBlank())
             return Map.of();
         if (cursor.length() > MAX_CURSOR_LENGTH)
@@ -66,6 +64,7 @@ public final class DynamoCursorCodec {
     }
 
     private static void writeValue(DataOutputStream output, AttributeValue value) throws IOException {
+
         if (value.s() != null) {
             output.writeByte('S');
             output.writeUTF(value.s());
@@ -81,6 +80,7 @@ public final class DynamoCursorCodec {
     }
 
     private static AttributeValue readValue(DataInputStream input) throws IOException {
+
         return switch (input.readByte()) {
             case 'S' -> AttributeValue.builder().s(input.readUTF()).build();
             case 'N' -> AttributeValue.builder().n(input.readUTF()).build();
@@ -91,6 +91,7 @@ public final class DynamoCursorCodec {
     }
 
     private static InvalidRequestException invalidCursor() {
+
         return new InvalidRequestException("Cursor is invalid or does not belong to this query");
     }
 

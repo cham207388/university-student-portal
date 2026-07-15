@@ -20,6 +20,7 @@ public record Course(UUID id, String courseCode, String title, String descriptio
             CourseStatus.COMPLETED, Set.of());
 
     public Course {
+
         DomainChecks.audit(id, createdAt, updatedAt, version);
         courseCode = DomainChecks.uppercaseCode(courseCode, "courseCode");
         title = DomainChecks.requiredText(title, "title");
@@ -32,10 +33,12 @@ public record Course(UUID id, String courseCode, String title, String descriptio
     }
 
     public boolean acceptsEnrollment() {
+
         return status == CourseStatus.OPEN;
     }
 
     public Course transitionTo(CourseStatus target, Instant changedAt) {
+
         DomainChecks.required(target, "status");
         if (target == status) {
             return this;

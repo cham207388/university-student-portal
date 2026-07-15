@@ -10,9 +10,11 @@ import java.util.UUID;
 public final class CourseDynamoMapper {
 
     private CourseDynamoMapper() {
+
     }
 
     public static CourseDynamoRecord toRecord(Course value) {
+
         CourseDynamoRecord record = new CourseDynamoRecord();
         record.setId(value.id().toString());
         record.setCourseCode(value.courseCode());
@@ -36,6 +38,7 @@ public final class CourseDynamoMapper {
     }
 
     public static Course toDomain(CourseDynamoRecord value) {
+
         return new Course(UUID.fromString(value.getId()), value.getCourseCode(), value.getTitle(),
                 value.getDescription(),
                 value.getCredits(), value.getCapacity(), CourseStatus.valueOf(value.getStatus()),

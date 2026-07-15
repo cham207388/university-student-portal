@@ -9,9 +9,11 @@ import java.util.UUID;
 public final class StudentProfileDynamoMapper {
 
     private StudentProfileDynamoMapper() {
+
     }
 
     public static StudentProfileDynamoRecord toRecord(StudentProfile value) {
+
         StudentProfileDynamoRecord record = new StudentProfileDynamoRecord();
         record.setStudentId(value.studentId().toString());
         record.setId(value.id().toString());
@@ -30,6 +32,7 @@ public final class StudentProfileDynamoMapper {
     }
 
     public static StudentProfile toDomain(StudentProfileDynamoRecord value) {
+
         return new StudentProfile(UUID.fromString(value.getId()), UUID.fromString(value.getStudentId()),
                 LocalDate.parse(value.getDateOfBirth()), value.getPhoneNumber(), value.getAddressLine1(),
                 value.getAddressLine2(),

@@ -10,6 +10,7 @@ import java.util.UUID;
 public final class DepartmentApi {
 
     private DepartmentApi() {
+
     }
 
     public record CreateRequest(

@@ -10,9 +10,11 @@ import java.util.UUID;
 public final class StudentDynamoMapper {
 
     private StudentDynamoMapper() {
+
     }
 
     public static StudentDynamoRecord toRecord(Student value) {
+
         StudentDynamoRecord record = new StudentDynamoRecord();
         record.setId(value.id().toString());
         record.setStudentNumber(value.studentNumber());
@@ -33,6 +35,7 @@ public final class StudentDynamoMapper {
     }
 
     public static Student toDomain(StudentDynamoRecord value) {
+
         return new Student(UUID.fromString(value.getId()), value.getStudentNumber(), value.getFirstName(),
                 value.getLastName(),
                 value.getEmail(), StudentStatus.valueOf(value.getStatus()), UUID.fromString(value.getDepartmentId()),

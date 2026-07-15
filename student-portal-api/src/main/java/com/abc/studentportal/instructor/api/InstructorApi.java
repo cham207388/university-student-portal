@@ -1,10 +1,6 @@
 package com.abc.studentportal.instructor.api;
 
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.PositiveOrZero;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -12,6 +8,7 @@ import java.util.UUID;
 public final class InstructorApi {
 
     private InstructorApi() {
+
     }
 
     public record CreateRequest(@NotBlank @Size(max = 50) String employeeNumber,

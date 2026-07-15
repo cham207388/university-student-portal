@@ -9,6 +9,7 @@ public record EnrollmentFilter(UUID studentId, UUID courseId, EnrollmentStatus s
                                Instant enrolledFrom, Instant enrolledTo) {
 
     public EnrollmentFilter {
+
         if (enrolledFrom != null && enrolledTo != null && enrolledFrom.isAfter(enrolledTo)) {
             throw new IllegalArgumentException("enrolledFrom must not be after enrolledTo");
         }

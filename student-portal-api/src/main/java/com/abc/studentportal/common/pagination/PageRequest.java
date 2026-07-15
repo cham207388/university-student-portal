@@ -3,6 +3,7 @@ package com.abc.studentportal.common.pagination;
 public record PageRequest(int page, int size, String sort) {
 
     public PageRequest {
+
         if (page < 0) {
             throw new IllegalArgumentException("page must not be negative");
         }

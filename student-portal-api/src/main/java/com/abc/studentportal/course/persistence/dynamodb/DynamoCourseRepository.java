@@ -3,15 +3,7 @@ package com.abc.studentportal.course.persistence.dynamodb;
 import com.abc.studentportal.common.exception.ConflictException;
 import com.abc.studentportal.common.pagination.CursorPage;
 import com.abc.studentportal.common.pagination.CursorRequest;
-import com.abc.studentportal.common.persistence.dynamodb.DynamoCursorCodec;
-import com.abc.studentportal.common.persistence.dynamodb.DynamoCursorQueries;
-import com.abc.studentportal.common.persistence.dynamodb.AbstractDynamoRepository;
-import com.abc.studentportal.common.persistence.dynamodb.DynamoDbTables;
-import com.abc.studentportal.common.persistence.dynamodb.DynamoPersistenceAdapter;
-import com.abc.studentportal.common.persistence.dynamodb.DynamoQueries;
-import com.abc.studentportal.common.persistence.dynamodb.DynamoTransactionalWriter;
-import com.abc.studentportal.common.persistence.dynamodb.DynamoUniqueClaim;
-import com.abc.studentportal.common.persistence.dynamodb.DynamoRelationshipCounters;
+import com.abc.studentportal.common.persistence.dynamodb.*;
 import com.abc.studentportal.course.application.CourseRepository;
 import com.abc.studentportal.course.application.DynamoCourseQueries;
 import com.abc.studentportal.course.domain.Course;
@@ -33,6 +25,7 @@ public class DynamoCourseRepository extends AbstractDynamoRepository<Course, Cou
 
     public DynamoCourseRepository(DynamoDbTables tables, DynamoCursorCodec cursorCodec,
                                   DynamoTransactionalWriter writer, DynamoRelationshipCounters counters) {
+
         super(tables.courses(), "id", CourseDynamoMapper::toRecord, CourseDynamoMapper::toDomain,
                 value -> value.id().toString());
         this.cursorCodec = cursorCodec;
@@ -42,6 +35,7 @@ public class DynamoCourseRepository extends AbstractDynamoRepository<Course, Cou
 
     @Override
     public Course create(Course value) {
+
         return CourseDynamoMapper.toDomain(writer.create(table(), "id", CourseDynamoMapper.toRecord(value),
                 java.util.List.of(claim(value)), java.util.List.of(
                         counters.department(value.departmentId().toString(), "courseCount", 1),
@@ -50,6 +44,7 @@ public class DynamoCourseRepository extends AbstractDynamoRepository<Course, Cou
 
     @Override
     public Course update(Course value) {
+
         CourseDynamoRecord current = table()
                 .getItem(request -> request.key(key(value.id().toString())).consistentRead(true));
         if (current == null) {
@@ -74,21 +69,25 @@ public class DynamoCourseRepository extends AbstractDynamoRepository<Course, Cou
 
     @Override
     public Optional<Course> findById(UUID id) {
+
         return findItem(id.toString());
     }
 
     @Override
     public boolean existsByCourseCode(String value) {
+
         return DynamoQueries.exists(table().index("courses-by-code"), value);
     }
 
     @Override
     public Optional<Course> findByCourseCode(String value) {
+
         return DynamoQueries.findOne(table().index("courses-by-code"), value).map(CourseDynamoMapper::toDomain);
     }
 
     @Override
     public void delete(Course value) {
+
         Course current = findById(value.id()).orElseThrow(() -> new ConflictException(
                 "Resource does not exist or was modified by another request"));
         writer.delete(table().tableName(), "id", value.id().toString(), value.version(),
@@ -100,31 +99,37 @@ public class DynamoCourseRepository extends AbstractDynamoRepository<Course, Cou
 
     @Override
     public CursorPage<Course> findAll(CursorRequest request) {
+
         return query("courses-catalog", "COURSE", request);
     }
 
     @Override
     public CursorPage<Course> findByDepartment(UUID id, CursorRequest request) {
+
         return query("courses-by-department", id.toString(), request);
     }
 
     @Override
     public CursorPage<Course> findByInstructor(UUID id, CursorRequest request) {
+
         return query("courses-by-instructor", id.toString(), request);
     }
 
     @Override
     public CursorPage<Course> findByStatus(CourseStatus status, CursorRequest request) {
+
         return query("courses-by-status", status.name(), request);
     }
 
     private CursorPage<Course> query(String index, String partition, CursorRequest request) {
+
         return DynamoCursorQueries.query(table().index(index), DynamoCursorQueries.equalTo(partition), request,
                 DynamoCursorQueries.identity(table().tableName(), index, partition), cursorCodec,
                 CourseDynamoMapper::toDomain);
     }
 
     private static DynamoUniqueClaim claim(Course value) {
+
         return new DynamoUniqueClaim("UNIQUE#COURSE_CODE#" + value.courseCode(), value.id().toString());
     }
 

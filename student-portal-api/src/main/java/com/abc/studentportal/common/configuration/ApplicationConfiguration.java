@@ -10,6 +10,7 @@ public class ApplicationConfiguration {
 
     @Bean
     Clock applicationClock() {
+
         return Clock.systemUTC();
     }
 

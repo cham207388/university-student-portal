@@ -11,6 +11,7 @@ class StrictQueryParameterConfiguration implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
+
         registry.addInterceptor(new StrictQueryParameterInterceptor()).addPathPatterns("/api/v1/**");
     }
 

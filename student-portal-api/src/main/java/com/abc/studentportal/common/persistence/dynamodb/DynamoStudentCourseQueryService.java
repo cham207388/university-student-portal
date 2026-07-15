@@ -14,11 +14,7 @@ import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import software.amazon.awssdk.services.dynamodb.model.KeysAndAttributes;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Function;
 
 @DynamoPersistenceAdapter
@@ -33,6 +29,7 @@ public class DynamoStudentCourseQueryService implements DynamoStudentCourseQueri
 
     @Override
     public CursorPage<Course> findCoursesByStudent(UUID studentId, CursorRequest request) {
+
         var edges = edges("enrollment-relationships-by-student", studentId, request);
         List<String> ids = edges.content().stream().map(EnrollmentDynamoRecord::getRelationshipCourseId).toList();
         return new CursorPage<>(batch(ids, tables.courses().tableName(), tables.courses().tableSchema()::mapToItem,
@@ -41,6 +38,7 @@ public class DynamoStudentCourseQueryService implements DynamoStudentCourseQueri
 
     @Override
     public CursorPage<Student> findStudentsByCourse(UUID courseId, CursorRequest request) {
+
         var edges = edges("enrollment-relationships-by-course", courseId, request);
         List<String> ids = edges.content().stream().map(EnrollmentDynamoRecord::getRelationshipStudentId).toList();
         return new CursorPage<>(batch(ids, tables.students().tableName(), tables.students().tableSchema()::mapToItem,
@@ -48,6 +46,7 @@ public class DynamoStudentCourseQueryService implements DynamoStudentCourseQueri
     }
 
     private CursorPage<EnrollmentDynamoRecord> edges(String index, UUID ownerId, CursorRequest request) {
+
         return DynamoCursorQueries.query(tables.enrollments().index(index),
                 DynamoCursorQueries.equalTo(ownerId.toString()),
                 request, DynamoCursorQueries.identity(tables.enrollments().tableName(), index, ownerId.toString()),
@@ -57,6 +56,7 @@ public class DynamoStudentCourseQueryService implements DynamoStudentCourseQueri
 
     private <R, D> List<D> batch(List<String> ids, String table, Function<Map<String, AttributeValue>, R> recordMapper,
                                  Function<R, D> domainMapper) {
+
         if (ids.isEmpty())
             return List.of();
         Map<String, KeysAndAttributes> pending = Map.of(table, KeysAndAttributes.builder()
@@ -83,6 +83,7 @@ public class DynamoStudentCourseQueryService implements DynamoStudentCourseQueri
     }
 
     private static Map<String, AttributeValue> key(String id) {
+
         return Map.of("id", AttributeValue.builder().s(id).build());
     }
 

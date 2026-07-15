@@ -1,15 +1,16 @@
 package com.abc.studentportal.student.persistence.postgres;
 
+import com.abc.studentportal.common.persistence.postgres.PostgresVersions;
 import com.abc.studentportal.student.application.StudentProfileRepository;
 import com.abc.studentportal.student.domain.StudentProfile;
-import com.abc.studentportal.common.persistence.postgres.PostgresVersions;
-import org.springframework.context.annotation.Profile;
-import org.springframework.context.annotation.Primary;
-import org.springframework.stereotype.Repository;
 import jakarta.persistence.EntityManager;
+import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import java.util.Optional;
+import java.util.UUID;
 
 @Repository
 @Primary
@@ -17,11 +18,14 @@ import java.util.*;
 public class StudentProfilePostgresRepository implements StudentProfileRepository {
 
     private final StudentProfileJpaRepository studentProfileJpaRepository;
+
     private final StudentJpaRepository studentJpaRepository;
+
     private final EntityManager entityManager;
 
     public StudentProfilePostgresRepository(StudentProfileJpaRepository studentProfileJpaRepository,
-            StudentJpaRepository studentJpaRepository, EntityManager entityManager) {
+                                            StudentJpaRepository studentJpaRepository, EntityManager entityManager) {
+
         this.studentProfileJpaRepository = studentProfileJpaRepository;
         this.studentJpaRepository = studentJpaRepository;
         this.entityManager = entityManager;
@@ -29,6 +33,7 @@ public class StudentProfilePostgresRepository implements StudentProfileRepositor
 
     @Transactional
     public StudentProfile create(StudentProfile studentProfile) {
+
         StudentProfileEntity entity = toEntity(studentProfile);
         entityManager.persist(entity);
         entityManager.flush();
@@ -37,6 +42,7 @@ public class StudentProfilePostgresRepository implements StudentProfileRepositor
 
     @Transactional
     public StudentProfile update(StudentProfile studentProfile) {
+
         StudentProfileEntity existing = studentProfileJpaRepository.findById(studentProfile.id()).orElseThrow();
         PostgresVersions.require(StudentProfileEntity.class, studentProfile.id(), studentProfile.version(), existing.getVersion());
         existing.updateDetails(studentProfile.dateOfBirth(), studentProfile.phoneNumber(), studentProfile.addressLine1(),
@@ -47,11 +53,13 @@ public class StudentProfilePostgresRepository implements StudentProfileRepositor
     }
 
     public Optional<StudentProfile> findByStudentId(UUID id) {
+
         return studentProfileJpaRepository.findByStudentId(id).map(this::toDomain);
     }
 
     @Transactional
     public void delete(StudentProfile studentProfile) {
+
         StudentProfileEntity existing = studentProfileJpaRepository.findById(studentProfile.id()).orElseThrow();
         PostgresVersions.require(StudentProfileEntity.class, studentProfile.id(), studentProfile.version(), existing.getVersion());
         studentProfileJpaRepository.delete(existing);
@@ -59,6 +67,7 @@ public class StudentProfilePostgresRepository implements StudentProfileRepositor
     }
 
     private StudentProfileEntity toEntity(StudentProfile studentProfile) {
+
         StudentProfileEntity entity = new StudentProfileEntity(studentProfile.id(),
                 studentProfile.studentId(), studentProfile.dateOfBirth(),
                 studentProfile.phoneNumber(), studentProfile.addressLine1(), studentProfile.createdAt(),
@@ -71,6 +80,7 @@ public class StudentProfilePostgresRepository implements StudentProfileRepositor
     }
 
     private StudentProfile toDomain(StudentProfileEntity studentProfileEntity) {
+
         return new StudentProfile(studentProfileEntity.getId(), studentProfileEntity.getStudent().getId(),
                 studentProfileEntity.getDateOfBirth(), studentProfileEntity.getPhoneNumber(),
                 studentProfileEntity.getAddressLine1(), studentProfileEntity.getAddressLine2(),

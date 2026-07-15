@@ -1,15 +1,9 @@
 package com.abc.studentportal.enrollment.persistence.dynamodb;
 
 import com.abc.studentportal.common.exception.InvalidRequestException;
-import com.abc.studentportal.common.persistence.dynamodb.AbstractDynamoRepository;
-import com.abc.studentportal.common.persistence.dynamodb.DynamoDbTables;
-import com.abc.studentportal.common.persistence.dynamodb.DynamoPersistenceAdapter;
-import com.abc.studentportal.common.persistence.dynamodb.DynamoQueries;
-import com.abc.studentportal.common.persistence.dynamodb.DynamoSortKeys;
-import com.abc.studentportal.common.persistence.dynamodb.DynamoCursorCodec;
-import com.abc.studentportal.common.persistence.dynamodb.DynamoCursorQueries;
 import com.abc.studentportal.common.pagination.CursorPage;
 import com.abc.studentportal.common.pagination.CursorRequest;
+import com.abc.studentportal.common.persistence.dynamodb.*;
 import com.abc.studentportal.enrollment.application.DynamoEnrollmentQueries;
 import com.abc.studentportal.enrollment.application.EnrollmentRepository;
 import com.abc.studentportal.enrollment.domain.Enrollment;
@@ -29,6 +23,7 @@ public class DynamoEnrollmentRepository extends AbstractDynamoRepository<Enrollm
 
     public DynamoEnrollmentRepository(DynamoDbTables tables, DynamoCursorCodec cursorCodec,
                                       DynamoEnrollmentTransactionWriter transactionWriter) {
+
         super(tables.enrollments(), "id", EnrollmentDynamoMapper::toRecord, EnrollmentDynamoMapper::toDomain,
                 value -> value.id().toString());
         this.cursorCodec = cursorCodec;
@@ -37,11 +32,13 @@ public class DynamoEnrollmentRepository extends AbstractDynamoRepository<Enrollm
 
     @Override
     public Enrollment create(Enrollment value) {
+
         return transactionWriter.create(value);
     }
 
     @Override
     public Enrollment update(Enrollment value) {
+
         Enrollment current = findById(value.id())
                 .orElseThrow(() -> new com.abc.studentportal.common.exception.ConflictException(
                         "Enrollment does not exist or was modified by another request"));
@@ -50,47 +47,56 @@ public class DynamoEnrollmentRepository extends AbstractDynamoRepository<Enrollm
 
     @Override
     public Optional<Enrollment> findById(UUID id) {
+
         return findItem(id.toString());
     }
 
     @Override
     public boolean existsActiveByStudentIdAndCourseId(UUID studentId, UUID courseId) {
+
         return table().getItem(request -> request.key(key("ACTIVE#" + studentId + "#" + courseId))
                 .consistentRead(true)) != null;
     }
 
     @Override
     public boolean existsByStudentId(UUID id) {
+
         return DynamoQueries.exists(table().index("enrollments-by-student"), id.toString());
     }
 
     @Override
     public boolean existsByCourseId(UUID id) {
+
         return DynamoQueries.exists(table().index("enrollments-by-course"), id.toString());
     }
 
     @Override
     public CursorPage<Enrollment> findAll(CursorRequest request) {
+
         return query("enrollments-catalog", "ENROLLMENT", null, null, request);
     }
 
     @Override
     public CursorPage<Enrollment> findByStudent(UUID id, Instant from, Instant to, CursorRequest request) {
+
         return query("enrollments-by-student", id.toString(), from, to, request);
     }
 
     @Override
     public CursorPage<Enrollment> findByCourse(UUID id, Instant from, Instant to, CursorRequest request) {
+
         return query("enrollments-by-course", id.toString(), from, to, request);
     }
 
     @Override
     public CursorPage<Enrollment> findByStatus(EnrollmentStatus status, CursorRequest request) {
+
         return query("enrollments-by-status", status.name(), null, null, request);
     }
 
     private CursorPage<Enrollment> query(String index, String partition, Instant from, Instant to,
                                          CursorRequest request) {
+
         if (from != null && to != null && from.isAfter(to)) {
             throw new InvalidRequestException("enrolledFrom must not be after enrolledTo");
         }

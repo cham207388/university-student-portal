@@ -1,9 +1,9 @@
 package com.abc.studentportal.course.application;
 
+import com.abc.studentportal.common.application.DependencyChecker;
+import com.abc.studentportal.common.exception.ConflictException;
 import com.abc.studentportal.common.exception.InvalidRequestException;
 import com.abc.studentportal.common.exception.ResourceNotFoundException;
-import com.abc.studentportal.common.exception.ConflictException;
-import com.abc.studentportal.common.application.DependencyChecker;
 import com.abc.studentportal.course.domain.Course;
 import com.abc.studentportal.course.domain.CourseStatus;
 import com.abc.studentportal.department.application.DepartmentRepository;
@@ -15,8 +15,8 @@ import org.springframework.stereotype.Service;
 
 import java.time.Clock;
 import java.time.Instant;
-import java.util.UUID;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -34,6 +34,7 @@ public class CourseService {
     private final DependencyChecker dependencies;
 
     public Course create(CreateCommand command) {
+
         validateRelationships(command.departmentId(), command.instructorId());
         Instant now = clock.instant();
         return courses.create(new Course(UUID.randomUUID(), command.courseCode(), command.title(),
@@ -43,6 +44,7 @@ public class CourseService {
     }
 
     public Course update(UUID id, UpdateCommand command) {
+
         Course current = get(id);
         validateRelationships(command.departmentId(), command.instructorId());
         return courses
@@ -53,6 +55,7 @@ public class CourseService {
     }
 
     public Course changeStatus(UUID id, CourseStatus status, long version) {
+
         Course changed = get(id).transitionTo(status, clock.instant());
         return courses.update(new Course(changed.id(), changed.courseCode(), changed.title(), changed.description(),
                 changed.credits(), changed.capacity(), changed.status(), changed.departmentId(), changed.instructorId(),
@@ -60,15 +63,18 @@ public class CourseService {
     }
 
     public Course get(UUID id) {
+
         return courses.findById(id).orElseThrow(() -> new ResourceNotFoundException("Course", id));
     }
 
     public Optional<Course> findByCourseCode(String courseCode) {
+
         return courses.findByCourseCode(
                 com.abc.studentportal.common.domain.DomainChecks.uppercaseCode(courseCode, "courseCode"));
     }
 
     public void delete(UUID id, long version) {
+
         Course current = get(id);
         if (dependencies.courseHasEnrollmentHistory(id))
             throw new ConflictException("Course has enrollment history");
@@ -80,6 +86,7 @@ public class CourseService {
     }
 
     private void validateRelationships(UUID departmentId, UUID instructorId) {
+
         if (departments.findById(departmentId).isEmpty())
             throw new ResourceNotFoundException("Department", departmentId);
         Instructor instructor = instructors.findById(instructorId)

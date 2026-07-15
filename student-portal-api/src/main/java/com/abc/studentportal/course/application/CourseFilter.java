@@ -8,6 +8,7 @@ public record CourseFilter(UUID departmentId, UUID instructorId, CourseStatus st
                            String title, Integer minimumCredits, Integer maximumCredits) {
 
     public CourseFilter {
+
         if (minimumCredits != null && minimumCredits <= 0) {
             throw new IllegalArgumentException("minimumCredits must be positive");
         }

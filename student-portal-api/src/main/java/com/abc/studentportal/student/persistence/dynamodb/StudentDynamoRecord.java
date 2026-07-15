@@ -47,51 +47,61 @@ public class StudentDynamoRecord implements com.abc.studentportal.common.persist
 
     @DynamoDbPartitionKey
     public String getId() {
+
         return id;
     }
 
     @DynamoDbSecondaryPartitionKey(indexNames = "students-by-number")
     public String getStudentNumber() {
+
         return studentNumber;
     }
 
     @DynamoDbSecondaryPartitionKey(indexNames = "students-by-email")
     public String getEmail() {
+
         return email;
     }
 
     @DynamoDbSecondaryPartitionKey(indexNames = "students-by-department")
     public String getDepartmentId() {
+
         return departmentId;
     }
 
     @DynamoDbSecondaryPartitionKey(indexNames = "students-by-status")
     public String getStatus() {
+
         return status;
     }
 
     @DynamoDbSecondaryPartitionKey(indexNames = "students-catalog")
     public String getEntityType() {
+
         return entityType;
     }
 
     @DynamoDbSecondarySortKey(indexNames = "students-catalog")
     public String getCreatedAtId() {
+
         return createdAtId;
     }
 
     @DynamoDbSecondarySortKey(indexNames = "students-by-status")
     public String getUpdatedAtId() {
+
         return updatedAtId;
     }
 
     @DynamoDbSecondarySortKey(indexNames = "students-by-department")
     public String getLastNameId() {
+
         return lastNameId;
     }
 
     @DynamoDbVersionAttribute
     public Long getVersion() {
+
         return version;
     }
 

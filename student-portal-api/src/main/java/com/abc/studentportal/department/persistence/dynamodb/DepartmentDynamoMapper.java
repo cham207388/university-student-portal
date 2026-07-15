@@ -9,9 +9,11 @@ import java.util.UUID;
 public final class DepartmentDynamoMapper {
 
     private DepartmentDynamoMapper() {
+
     }
 
     public static DepartmentDynamoRecord toRecord(Department value) {
+
         DepartmentDynamoRecord record = new DepartmentDynamoRecord();
         record.setId(value.id().toString());
         record.setCode(value.code());
@@ -29,6 +31,7 @@ public final class DepartmentDynamoMapper {
     }
 
     public static Department toDomain(DepartmentDynamoRecord value) {
+
         return new Department(UUID.fromString(value.getId()), value.getCode(), value.getName(), value.getDescription(),
                 Instant.parse(value.getCreatedAt()), Instant.parse(value.getUpdatedAt()), value.getVersion());
     }
