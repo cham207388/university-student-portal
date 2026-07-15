@@ -3,7 +3,6 @@ package com.abc.studentportal.postgres.entity;
 import jakarta.persistence.*;
 
 import java.util.UUID;
-import java.time.Instant;
 import java.time.LocalDate;
 
 import lombok.AccessLevel;
@@ -38,14 +37,11 @@ public class StudentProfileEntity extends BaseEntity {
     @Column(nullable = false)
     private long version;
 
-    public StudentProfileEntity(UUID id, UUID studentId, LocalDate dateOfBirth, String phone, String address,
-                                Instant createdAt, Instant updatedAt) {
+    public StudentProfileEntity(UUID id, UUID studentId, LocalDate dateOfBirth, String phone, String address) {
         this.id = studentId;
         this.dateOfBirth = dateOfBirth;
         this.phoneNumber = phone;
         this.addressLine1 = address;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
     }
 
     public void attachToStudent(StudentEntity student) {

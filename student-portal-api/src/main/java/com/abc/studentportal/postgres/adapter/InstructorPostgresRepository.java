@@ -52,7 +52,7 @@ public class InstructorPostgresRepository implements InstructorRepository {
     }
 
     private InstructorEntity toEntity(Instructor x) {
-        return new InstructorEntity(x.id(), x.employeeNumber(), x.firstName(), x.lastName(), x.email(), x.departmentId(), x.createdAt(), x.updatedAt());
+        return new InstructorEntity(x.id(), x.employeeNumber(), x.firstName(), x.lastName(), x.email(), x.departmentId());
     }
 
     private Instructor toDomain(InstructorEntity e) {

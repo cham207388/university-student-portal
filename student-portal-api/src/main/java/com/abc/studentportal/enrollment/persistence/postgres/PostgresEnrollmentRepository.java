@@ -53,7 +53,7 @@ public class PostgresEnrollmentRepository implements EnrollmentRepository {
     }
 
     private EnrollmentEntity toEntity(Enrollment enrollment) {
-        return new EnrollmentEntity(enrollment.id(), students.getReferenceById(enrollment.studentId()), courses.getReferenceById(enrollment.courseId()), enrollment.status(), enrollment.enrolledAt(), enrollment.droppedAt(), enrollment.finalGrade(), enrollment.createdAt(), enrollment.updatedAt(), enrollment.version());
+        return new EnrollmentEntity(enrollment.id(), students.getReferenceById(enrollment.studentId()), courses.getReferenceById(enrollment.courseId()), enrollment.status(), enrollment.enrolledAt(), enrollment.droppedAt(), enrollment.finalGrade());
     }
 
     private Enrollment toDomain(EnrollmentEntity enrollmentEntity) {

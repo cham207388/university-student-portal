@@ -3,7 +3,6 @@ package com.abc.studentportal.postgres.entity;
 import com.abc.studentportal.course.domain.CourseStatus;
 import jakarta.persistence.*;
 
-import java.time.Instant;
 import java.util.UUID;
 
 import lombok.AccessLevel;
@@ -51,7 +50,7 @@ public class CourseEntity extends BaseEntity {
     @Version
     private long version;
 
-    public CourseEntity(UUID id, String courseCode, String title, String description, int credits, int capacity, CourseStatus status, UUID departmentId, UUID instructorId, Instant createdAt, Instant updatedAt) {
+    public CourseEntity(UUID id, String courseCode, String title, String description, int credits, int capacity, CourseStatus status, UUID departmentId, UUID instructorId) {
         this.id = id;
         this.courseCode = courseCode;
         this.title = title;
@@ -59,10 +58,8 @@ public class CourseEntity extends BaseEntity {
         this.credits = credits;
         this.capacity = capacity;
         this.status = status;
-        this.department = new DepartmentEntity(departmentId, null, null, null, createdAt, updatedAt);
-        this.instructor = new InstructorEntity(instructorId, null, null, null, null, departmentId, createdAt, updatedAt);
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
+        this.department = new DepartmentEntity(departmentId, null, null, null);
+        this.instructor = new InstructorEntity(instructorId, null, null, null, null, departmentId);
     }
 
 }

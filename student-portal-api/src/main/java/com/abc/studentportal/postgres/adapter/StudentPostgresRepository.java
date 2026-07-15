@@ -52,7 +52,7 @@ public class StudentPostgresRepository implements StudentRepository {
     }
 
     private StudentEntity toEntity(Student s) {
-        return new StudentEntity(s.id(), s.studentNumber(), s.firstName(), s.lastName(), s.email(), s.status(), s.departmentId(), s.createdAt(), s.updatedAt());
+        return new StudentEntity(s.id(), s.studentNumber(), s.firstName(), s.lastName(), s.email(), s.status(), s.departmentId());
     }
 
     private Student toDomain(StudentEntity e) {

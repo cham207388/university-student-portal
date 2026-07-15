@@ -3,7 +3,6 @@ package com.abc.studentportal.postgres.entity;
 import com.abc.studentportal.student.domain.StudentStatus;
 import jakarta.persistence.*;
 
-import java.time.Instant;
 import java.util.UUID;
 
 import lombok.AccessLevel;
@@ -44,16 +43,14 @@ public class StudentEntity extends BaseEntity {
     @OneToOne(mappedBy = "student", fetch = FetchType.LAZY, orphanRemoval = true)
     private StudentProfileEntity profile;
 
-    public StudentEntity(UUID id, String studentNumber, String firstName, String lastName, String email, StudentStatus status, UUID departmentId, Instant createdAt, Instant updatedAt) {
+    public StudentEntity(UUID id, String studentNumber, String firstName, String lastName, String email, StudentStatus status, UUID departmentId) {
         this.id = id;
         this.studentNumber = studentNumber;
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
         this.status = status;
-        this.department = new DepartmentEntity(departmentId, null, null, null, createdAt, updatedAt);
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
+        this.department = new DepartmentEntity(departmentId, null, null, null);
     }
 
 }

@@ -42,8 +42,7 @@ public class StudentProfilePostgresRepository implements StudentProfileRepositor
     private StudentProfileEntity toEntity(StudentProfile studentProfile) {
         StudentProfileEntity entity = new StudentProfileEntity(studentProfile.id(),
                 studentProfile.studentId(), studentProfile.dateOfBirth(),
-                studentProfile.phoneNumber(), studentProfile.addressLine1(),
-                studentProfile.createdAt(), studentProfile.updatedAt());
+                studentProfile.phoneNumber(), studentProfile.addressLine1());
         entity.attachToStudent(studentJpaRepository.getReferenceById(studentProfile.studentId()));
         return entity;
     }

@@ -41,7 +41,7 @@ public class EnrollmentEntity extends BaseEntity {
     @Column(nullable = false)
     private long version;
 
-    public EnrollmentEntity(UUID id, StudentEntity student, CourseEntity course, EnrollmentStatus status, Instant enrolledAt, Instant droppedAt, String finalGrade, Instant createdAt, Instant updatedAt, long version) {
+    public EnrollmentEntity(UUID id, StudentEntity student, CourseEntity course, EnrollmentStatus status, Instant enrolledAt, Instant droppedAt, String finalGrade) {
         this.id = id;
         this.student = student;
         this.course = course;
@@ -49,9 +49,6 @@ public class EnrollmentEntity extends BaseEntity {
         this.enrolledAt = enrolledAt;
         this.droppedAt = droppedAt;
         this.finalGrade = finalGrade;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
-        this.version = version;
     }
 
     public UUID getStudentId() {

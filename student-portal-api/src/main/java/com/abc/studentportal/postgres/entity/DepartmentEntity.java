@@ -2,7 +2,6 @@ package com.abc.studentportal.postgres.entity;
 
 import jakarta.persistence.*;
 
-import java.time.Instant;
 import java.util.UUID;
 
 import lombok.AccessLevel;
@@ -23,13 +22,11 @@ public class DepartmentEntity extends BaseEntity {
     @Version
     private long version;
 
-    public DepartmentEntity(UUID id, String code, String name, String description, Instant createdAt, Instant updatedAt) {
+    public DepartmentEntity(UUID id, String code, String name, String description) {
         this.id = id;
         this.code = code;
         this.name = name;
         this.description = description;
-        this.createdAt = createdAt;
-        this.updatedAt = updatedAt;
     }
 
 }

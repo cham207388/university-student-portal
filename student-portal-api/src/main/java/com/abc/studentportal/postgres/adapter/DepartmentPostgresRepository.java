@@ -45,7 +45,7 @@ public class DepartmentPostgresRepository implements DepartmentRepository {
     }
 
     private DepartmentEntity toEntity(Department d) {
-        return new DepartmentEntity(d.id(), d.code(), d.name(), d.description(), d.createdAt(), d.updatedAt());
+        return new DepartmentEntity(d.id(), d.code(), d.name(), d.description());
     }
 
     private Department toDomain(DepartmentEntity e) {

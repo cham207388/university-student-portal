@@ -44,7 +44,7 @@ public class CoursePostgresRepository implements CourseRepository {
     }
 
     private CourseEntity toEntity(Course x) {
-        return new CourseEntity(x.id(), x.courseCode(), x.title(), x.description(), x.credits(), x.capacity(), x.status(), x.departmentId(), x.instructorId(), x.createdAt(), x.updatedAt());
+        return new CourseEntity(x.id(), x.courseCode(), x.title(), x.description(), x.credits(), x.capacity(), x.status(), x.departmentId(), x.instructorId());
     }
 
     private Course toDomain(CourseEntity e) {

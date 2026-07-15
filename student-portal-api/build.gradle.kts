@@ -61,6 +61,7 @@ val dynamodbIntegrationTest by tasks.registering(Test::class) {
 	testClassesDirs = sourceSets.test.get().output.classesDirs
 	classpath = sourceSets.test.get().runtimeClasspath
 	shouldRunAfter(tasks.test)
+	systemProperty("spring.autoconfigure.exclude", "org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration")
 	useJUnitPlatform {
 		includeTags("dynamodb-integration")
 	}
