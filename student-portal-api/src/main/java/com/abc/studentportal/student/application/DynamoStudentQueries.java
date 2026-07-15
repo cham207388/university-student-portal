@@ -8,9 +8,11 @@ import com.abc.studentportal.student.domain.StudentStatus;
 import java.util.UUID;
 
 public interface DynamoStudentQueries {
-	CursorPage<Student> findAll(CursorRequest request);
 
-	CursorPage<Student> findByDepartment(UUID departmentId, String lastNamePrefix, CursorRequest request);
+    CursorPage<Student> findAll(CursorRequest request);
 
-	CursorPage<Student> findByStatus(StudentStatus status, CursorRequest request);
+    CursorPage<Student> findByDepartment(UUID departmentId, String lastNamePrefix, CursorRequest request);
+
+    CursorPage<Student> findByStatus(StudentStatus status, CursorRequest request);
+
 }

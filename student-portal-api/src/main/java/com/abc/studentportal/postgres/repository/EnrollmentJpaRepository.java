@@ -1,1 +1,21 @@
-package com.abc.studentportal.postgres.repository; import org.springframework.data.jpa.repository.JpaRepository; import com.abc.studentportal.postgres.entity.EnrollmentEntity; import com.abc.studentportal.enrollment.domain.EnrollmentStatus; import java.util.*; public interface EnrollmentJpaRepository extends JpaRepository<EnrollmentEntity,UUID>{ List<EnrollmentEntity> findByStudent_Id(UUID id); List<EnrollmentEntity> findByCourse_Id(UUID id); boolean existsByStudent_Id(UUID id); boolean existsByCourse_Id(UUID id); boolean existsByStudent_IdAndCourse_IdAndStatusIn(UUID studentId, UUID courseId, Collection<EnrollmentStatus> statuses); }
+package com.abc.studentportal.postgres.repository;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import com.abc.studentportal.postgres.entity.EnrollmentEntity;
+import com.abc.studentportal.enrollment.domain.EnrollmentStatus;
+
+import java.util.*;
+
+public interface EnrollmentJpaRepository extends JpaRepository<EnrollmentEntity, UUID> {
+
+    List<EnrollmentEntity> findByStudent_Id(UUID id);
+
+    List<EnrollmentEntity> findByCourse_Id(UUID id);
+
+    boolean existsByStudent_Id(UUID id);
+
+    boolean existsByCourse_Id(UUID id);
+
+    boolean existsByStudent_IdAndCourse_IdAndStatusIn(UUID studentId, UUID courseId, Collection<EnrollmentStatus> statuses);
+
+}

@@ -11,39 +11,45 @@ import java.util.UUID;
 
 @DynamoPersistenceAdapter
 public class DynamoDependencyChecker implements DependencyChecker {
-	private static final CursorRequest ONE = new CursorRequest(1, null);
-	private final DynamoStudentQueries students;
-	private final DynamoInstructorQueries instructors;
-	private final DynamoCourseQueries courses;
-	private final EnrollmentRepository enrollments;
 
-	public DynamoDependencyChecker(DynamoStudentQueries students, DynamoInstructorQueries instructors,
-			DynamoCourseQueries courses, EnrollmentRepository enrollments) {
-		this.students = students;
-		this.instructors = instructors;
-		this.courses = courses;
-		this.enrollments = enrollments;
-	}
+    private static final CursorRequest ONE = new CursorRequest(1, null);
 
-	@Override
-	public boolean departmentHasDependents(UUID id) {
-		return !students.findByDepartment(id, null, ONE).content().isEmpty()
-				|| !instructors.findByDepartment(id, ONE).content().isEmpty()
-				|| !courses.findByDepartment(id, ONE).content().isEmpty();
-	}
+    private final DynamoStudentQueries students;
 
-	@Override
-	public boolean studentHasEnrollmentHistory(UUID id) {
-		return enrollments.existsByStudentId(id);
-	}
+    private final DynamoInstructorQueries instructors;
 
-	@Override
-	public boolean instructorHasCourses(UUID id) {
-		return !courses.findByInstructor(id, ONE).content().isEmpty();
-	}
+    private final DynamoCourseQueries courses;
 
-	@Override
-	public boolean courseHasEnrollmentHistory(UUID id) {
-		return enrollments.existsByCourseId(id);
-	}
+    private final EnrollmentRepository enrollments;
+
+    public DynamoDependencyChecker(DynamoStudentQueries students, DynamoInstructorQueries instructors,
+                                   DynamoCourseQueries courses, EnrollmentRepository enrollments) {
+        this.students = students;
+        this.instructors = instructors;
+        this.courses = courses;
+        this.enrollments = enrollments;
+    }
+
+    @Override
+    public boolean departmentHasDependents(UUID id) {
+        return !students.findByDepartment(id, null, ONE).content().isEmpty()
+                || !instructors.findByDepartment(id, ONE).content().isEmpty()
+                || !courses.findByDepartment(id, ONE).content().isEmpty();
+    }
+
+    @Override
+    public boolean studentHasEnrollmentHistory(UUID id) {
+        return enrollments.existsByStudentId(id);
+    }
+
+    @Override
+    public boolean instructorHasCourses(UUID id) {
+        return !courses.findByInstructor(id, ONE).content().isEmpty();
+    }
+
+    @Override
+    public boolean courseHasEnrollmentHistory(UUID id) {
+        return enrollments.existsByCourseId(id);
+    }
+
 }

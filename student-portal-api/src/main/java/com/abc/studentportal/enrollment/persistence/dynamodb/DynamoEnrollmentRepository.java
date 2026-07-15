@@ -21,85 +21,88 @@ import java.util.UUID;
 
 @DynamoPersistenceAdapter
 public class DynamoEnrollmentRepository extends AbstractDynamoRepository<Enrollment, EnrollmentDynamoRecord>
-		implements EnrollmentRepository, DynamoEnrollmentQueries {
-	private final DynamoCursorCodec cursorCodec;
-	private final DynamoEnrollmentTransactionWriter transactionWriter;
+        implements EnrollmentRepository, DynamoEnrollmentQueries {
 
-	public DynamoEnrollmentRepository(DynamoDbTables tables, DynamoCursorCodec cursorCodec,
-			DynamoEnrollmentTransactionWriter transactionWriter) {
-		super(tables.enrollments(), "id", EnrollmentDynamoMapper::toRecord, EnrollmentDynamoMapper::toDomain,
-				value -> value.id().toString());
-		this.cursorCodec = cursorCodec;
-		this.transactionWriter = transactionWriter;
-	}
+    private final DynamoCursorCodec cursorCodec;
 
-	@Override
-	public Enrollment create(Enrollment value) {
-		return transactionWriter.create(value);
-	}
+    private final DynamoEnrollmentTransactionWriter transactionWriter;
 
-	@Override
-	public Enrollment update(Enrollment value) {
-		Enrollment current = findById(value.id())
-				.orElseThrow(() -> new com.abc.studentportal.common.exception.ConflictException(
-						"Enrollment does not exist or was modified by another request"));
-		return transactionWriter.update(current, value);
-	}
+    public DynamoEnrollmentRepository(DynamoDbTables tables, DynamoCursorCodec cursorCodec,
+                                      DynamoEnrollmentTransactionWriter transactionWriter) {
+        super(tables.enrollments(), "id", EnrollmentDynamoMapper::toRecord, EnrollmentDynamoMapper::toDomain,
+                value -> value.id().toString());
+        this.cursorCodec = cursorCodec;
+        this.transactionWriter = transactionWriter;
+    }
 
-	@Override
-	public Optional<Enrollment> findById(UUID id) {
-		return findItem(id.toString());
-	}
+    @Override
+    public Enrollment create(Enrollment value) {
+        return transactionWriter.create(value);
+    }
 
-	@Override
-	public boolean existsActiveByStudentIdAndCourseId(UUID studentId, UUID courseId) {
-		return table().getItem(request -> request.key(key("ACTIVE#" + studentId + "#" + courseId))
-				.consistentRead(true)) != null;
-	}
+    @Override
+    public Enrollment update(Enrollment value) {
+        Enrollment current = findById(value.id())
+                .orElseThrow(() -> new com.abc.studentportal.common.exception.ConflictException(
+                        "Enrollment does not exist or was modified by another request"));
+        return transactionWriter.update(current, value);
+    }
 
-	@Override
-	public boolean existsByStudentId(UUID id) {
-		return DynamoQueries.exists(table().index("enrollments-by-student"), id.toString());
-	}
+    @Override
+    public Optional<Enrollment> findById(UUID id) {
+        return findItem(id.toString());
+    }
 
-	@Override
-	public boolean existsByCourseId(UUID id) {
-		return DynamoQueries.exists(table().index("enrollments-by-course"), id.toString());
-	}
+    @Override
+    public boolean existsActiveByStudentIdAndCourseId(UUID studentId, UUID courseId) {
+        return table().getItem(request -> request.key(key("ACTIVE#" + studentId + "#" + courseId))
+                .consistentRead(true)) != null;
+    }
 
-	@Override
-	public CursorPage<Enrollment> findAll(CursorRequest request) {
-		return query("enrollments-catalog", "ENROLLMENT", null, null, request);
-	}
+    @Override
+    public boolean existsByStudentId(UUID id) {
+        return DynamoQueries.exists(table().index("enrollments-by-student"), id.toString());
+    }
 
-	@Override
-	public CursorPage<Enrollment> findByStudent(UUID id, Instant from, Instant to, CursorRequest request) {
-		return query("enrollments-by-student", id.toString(), from, to, request);
-	}
+    @Override
+    public boolean existsByCourseId(UUID id) {
+        return DynamoQueries.exists(table().index("enrollments-by-course"), id.toString());
+    }
 
-	@Override
-	public CursorPage<Enrollment> findByCourse(UUID id, Instant from, Instant to, CursorRequest request) {
-		return query("enrollments-by-course", id.toString(), from, to, request);
-	}
+    @Override
+    public CursorPage<Enrollment> findAll(CursorRequest request) {
+        return query("enrollments-catalog", "ENROLLMENT", null, null, request);
+    }
 
-	@Override
-	public CursorPage<Enrollment> findByStatus(EnrollmentStatus status, CursorRequest request) {
-		return query("enrollments-by-status", status.name(), null, null, request);
-	}
+    @Override
+    public CursorPage<Enrollment> findByStudent(UUID id, Instant from, Instant to, CursorRequest request) {
+        return query("enrollments-by-student", id.toString(), from, to, request);
+    }
 
-	private CursorPage<Enrollment> query(String index, String partition, Instant from, Instant to,
-			CursorRequest request) {
-		if (from != null && to != null && from.isAfter(to)) {
-			throw new InvalidRequestException("enrolledFrom must not be after enrolledTo");
-		}
-		String lower = from == null ? null : DynamoSortKeys.timestampPrefix(from);
-		String upper = to == null ? null : DynamoSortKeys.timestampPrefix(to) + "\uffff";
-		var condition = lower != null && upper != null ? DynamoCursorQueries.between(partition, lower, upper)
-				: lower != null ? DynamoCursorQueries.from(partition, lower)
-						: upper != null ? DynamoCursorQueries.to(partition, upper)
-								: DynamoCursorQueries.equalTo(partition);
-		return DynamoCursorQueries.query(table().index(index), condition, request,
-				DynamoCursorQueries.identity(table().tableName(), index, partition, lower, upper), cursorCodec,
-				EnrollmentDynamoMapper::toDomain);
-	}
+    @Override
+    public CursorPage<Enrollment> findByCourse(UUID id, Instant from, Instant to, CursorRequest request) {
+        return query("enrollments-by-course", id.toString(), from, to, request);
+    }
+
+    @Override
+    public CursorPage<Enrollment> findByStatus(EnrollmentStatus status, CursorRequest request) {
+        return query("enrollments-by-status", status.name(), null, null, request);
+    }
+
+    private CursorPage<Enrollment> query(String index, String partition, Instant from, Instant to,
+                                         CursorRequest request) {
+        if (from != null && to != null && from.isAfter(to)) {
+            throw new InvalidRequestException("enrolledFrom must not be after enrolledTo");
+        }
+        String lower = from == null ? null : DynamoSortKeys.timestampPrefix(from);
+        String upper = to == null ? null : DynamoSortKeys.timestampPrefix(to) + "\uffff";
+        var condition = lower != null && upper != null ? DynamoCursorQueries.between(partition, lower, upper)
+                : lower != null ? DynamoCursorQueries.from(partition, lower)
+                  : upper != null ? DynamoCursorQueries.to(partition, upper)
+                    : DynamoCursorQueries.equalTo(partition);
+        return DynamoCursorQueries.query(table().index(index), condition, request,
+                DynamoCursorQueries.identity(table().tableName(), index, partition, lower, upper), cursorCodec,
+                EnrollmentDynamoMapper::toDomain);
+    }
+
 }

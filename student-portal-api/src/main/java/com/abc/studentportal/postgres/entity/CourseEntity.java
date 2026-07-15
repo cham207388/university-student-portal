@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 
 import java.time.Instant;
 import java.util.UUID;
+
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,6 +15,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class CourseEntity {
+
     @Id
     private UUID id;
 
@@ -30,21 +32,28 @@ public class CourseEntity {
 
     @Column(nullable = false)
     private int capacity;
+
     @Column(name = "occupied_seats", nullable = false)
     private int occupiedSeats;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "department_id", nullable = false)
     private DepartmentEntity department;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "instructor_id", nullable = false)
     private InstructorEntity instructor;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private CourseStatus status;
+
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
+
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
+
     @Version
     private long version;
 

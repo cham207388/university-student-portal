@@ -3,9 +3,10 @@ package com.abc.studentportal.common.api;
 import java.util.List;
 
 public record PageResponse<T>(List<T> content, int page, int size, long totalElements, int totalPages,
-		boolean hasNext, boolean hasPrevious) {
+                              boolean hasNext, boolean hasPrevious) {
 
-	public PageResponse {
-		content = List.copyOf(content);
-	}
+    public PageResponse {
+        content = List.copyOf(content);
+    }
+
 }

@@ -6,20 +6,22 @@ import java.net.URI;
 
 public abstract class ApiException extends RuntimeException {
 
-	private final HttpStatus status;
-	private final URI type;
+    private final HttpStatus status;
 
-	protected ApiException(HttpStatus status, String problemType, String message) {
-		super(message);
-		this.status = status;
-		this.type = URI.create("https://student-portal.example/problems/" + problemType);
-	}
+    private final URI type;
 
-	public HttpStatus status() {
-		return status;
-	}
+    protected ApiException(HttpStatus status, String problemType, String message) {
+        super(message);
+        this.status = status;
+        this.type = URI.create("https://student-portal.example/problems/" + problemType);
+    }
 
-	public URI type() {
-		return type;
-	}
+    public HttpStatus status() {
+        return status;
+    }
+
+    public URI type() {
+        return type;
+    }
+
 }

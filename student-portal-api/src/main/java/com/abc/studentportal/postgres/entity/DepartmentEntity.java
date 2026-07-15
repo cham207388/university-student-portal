@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 
 import java.time.Instant;
 import java.util.UUID;
+
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,15 +14,21 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class DepartmentEntity {
+
     @Id
     private UUID id;
+
     @Column(nullable = false, unique = true)
     private String code;
+
     private String name, description;
+
     @Column(name = "created_at")
     private Instant createdAt;
+
     @Column(name = "updated_at")
     private Instant updatedAt;
+
     @Version
     private long version;
 

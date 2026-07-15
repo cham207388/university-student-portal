@@ -14,67 +14,83 @@ import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSecon
 @Setter
 @NoArgsConstructor
 public class EnrollmentDynamoRecord implements com.abc.studentportal.common.persistence.dynamodb.VersionedDynamoRecord {
-	private String id;
-	private String recordType;
-	private String studentId;
-	private String courseId;
-	private String status;
-	private String enrolledAt;
-	private String droppedAt;
-	private String finalGrade;
-	private String createdAt;
-	private String updatedAt;
-	private String entityType;
-	private String enrolledAtId;
-	private String relationshipStudentId;
-	private String relationshipCourseId;
-	private Long version;
 
-	@DynamoDbPartitionKey
-	public String getId() {
-		return id;
-	}
+    private String id;
 
-	@DynamoDbSecondaryPartitionKey(indexNames = "enrollments-by-student")
-	public String getStudentId() {
-		return studentId;
-	}
+    private String recordType;
 
-	@DynamoDbSecondaryPartitionKey(indexNames = "enrollments-by-course")
-	public String getCourseId() {
-		return courseId;
-	}
+    private String studentId;
 
-	@DynamoDbSecondaryPartitionKey(indexNames = "enrollments-by-status")
-	public String getStatus() {
-		return status;
-	}
+    private String courseId;
 
-	@DynamoDbSecondaryPartitionKey(indexNames = "enrollments-catalog")
-	public String getEntityType() {
-		return entityType;
-	}
+    private String status;
 
-	@DynamoDbSecondarySortKey(indexNames = { "enrollments-by-student", "enrollments-by-course", "enrollments-by-status",
-			"enrollments-catalog" })
-	public String getEnrolledAtId() {
-		return enrolledAtId;
-	}
+    private String enrolledAt;
 
-	@DynamoDbSecondaryPartitionKey(indexNames = "enrollment-relationships-by-student")
-	@DynamoDbSecondarySortKey(indexNames = "enrollment-relationships-by-course")
-	public String getRelationshipStudentId() {
-		return relationshipStudentId;
-	}
+    private String droppedAt;
 
-	@DynamoDbSecondaryPartitionKey(indexNames = "enrollment-relationships-by-course")
-	@DynamoDbSecondarySortKey(indexNames = "enrollment-relationships-by-student")
-	public String getRelationshipCourseId() {
-		return relationshipCourseId;
-	}
+    private String finalGrade;
 
-	@DynamoDbVersionAttribute
-	public Long getVersion() {
-		return version;
-	}
+    private String createdAt;
+
+    private String updatedAt;
+
+    private String entityType;
+
+    private String enrolledAtId;
+
+    private String relationshipStudentId;
+
+    private String relationshipCourseId;
+
+    private Long version;
+
+    @DynamoDbPartitionKey
+    public String getId() {
+        return id;
+    }
+
+    @DynamoDbSecondaryPartitionKey(indexNames = "enrollments-by-student")
+    public String getStudentId() {
+        return studentId;
+    }
+
+    @DynamoDbSecondaryPartitionKey(indexNames = "enrollments-by-course")
+    public String getCourseId() {
+        return courseId;
+    }
+
+    @DynamoDbSecondaryPartitionKey(indexNames = "enrollments-by-status")
+    public String getStatus() {
+        return status;
+    }
+
+    @DynamoDbSecondaryPartitionKey(indexNames = "enrollments-catalog")
+    public String getEntityType() {
+        return entityType;
+    }
+
+    @DynamoDbSecondarySortKey(indexNames = {"enrollments-by-student", "enrollments-by-course", "enrollments-by-status",
+            "enrollments-catalog"})
+    public String getEnrolledAtId() {
+        return enrolledAtId;
+    }
+
+    @DynamoDbSecondaryPartitionKey(indexNames = "enrollment-relationships-by-student")
+    @DynamoDbSecondarySortKey(indexNames = "enrollment-relationships-by-course")
+    public String getRelationshipStudentId() {
+        return relationshipStudentId;
+    }
+
+    @DynamoDbSecondaryPartitionKey(indexNames = "enrollment-relationships-by-course")
+    @DynamoDbSecondarySortKey(indexNames = "enrollment-relationships-by-student")
+    public String getRelationshipCourseId() {
+        return relationshipCourseId;
+    }
+
+    @DynamoDbVersionAttribute
+    public Long getVersion() {
+        return version;
+    }
+
 }

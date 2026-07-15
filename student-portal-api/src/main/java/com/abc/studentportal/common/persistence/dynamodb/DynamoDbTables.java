@@ -9,10 +9,11 @@ import com.abc.studentportal.student.persistence.dynamodb.StudentProfileDynamoRe
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
 
 public record DynamoDbTables(
-		DynamoDbTable<DepartmentDynamoRecord> departments,
-		DynamoDbTable<StudentDynamoRecord> students,
-		DynamoDbTable<StudentProfileDynamoRecord> studentProfiles,
-		DynamoDbTable<InstructorDynamoRecord> instructors,
-		DynamoDbTable<CourseDynamoRecord> courses,
-		DynamoDbTable<EnrollmentDynamoRecord> enrollments) {
+        DynamoDbTable<DepartmentDynamoRecord> departments,
+        DynamoDbTable<StudentDynamoRecord> students,
+        DynamoDbTable<StudentProfileDynamoRecord> studentProfiles,
+        DynamoDbTable<InstructorDynamoRecord> instructors,
+        DynamoDbTable<CourseDynamoRecord> courses,
+        DynamoDbTable<EnrollmentDynamoRecord> enrollments) {
+
 }

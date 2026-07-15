@@ -7,15 +7,16 @@ import java.util.UUID;
 
 public interface DepartmentRepository {
 
-	Department create(Department department);
+    Department create(Department department);
 
-	Department update(Department department);
+    Department update(Department department);
 
-	Optional<Department> findById(UUID id);
+    Optional<Department> findById(UUID id);
 
-	Optional<Department> findByCode(String code);
+    Optional<Department> findByCode(String code);
 
-	boolean existsByCode(String code);
+    boolean existsByCode(String code);
 
-	void delete(Department department);
+    void delete(Department department);
+
 }

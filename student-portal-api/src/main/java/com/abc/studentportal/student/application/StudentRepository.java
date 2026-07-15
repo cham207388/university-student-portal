@@ -7,19 +7,20 @@ import java.util.UUID;
 
 public interface StudentRepository {
 
-	Student create(Student student);
+    Student create(Student student);
 
-	Student update(Student student);
+    Student update(Student student);
 
-	Optional<Student> findById(UUID id);
+    Optional<Student> findById(UUID id);
 
-	Optional<Student> findByStudentNumber(String studentNumber);
+    Optional<Student> findByStudentNumber(String studentNumber);
 
-	Optional<Student> findByEmail(String email);
+    Optional<Student> findByEmail(String email);
 
-	boolean existsByStudentNumber(String studentNumber);
+    boolean existsByStudentNumber(String studentNumber);
 
-	boolean existsByEmail(String email);
+    boolean existsByEmail(String email);
 
-	void delete(Student student);
+    void delete(Student student);
+
 }

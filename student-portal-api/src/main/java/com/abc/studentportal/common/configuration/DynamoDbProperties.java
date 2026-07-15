@@ -11,16 +11,18 @@ import java.net.URI;
 @Validated
 @ConfigurationProperties("student-portal.dynamodb")
 public record DynamoDbProperties(
-		@NotBlank String region,
-		@NotNull URI endpoint,
-		@NotNull @Valid Tables tables) {
+        @NotBlank String region,
+        @NotNull URI endpoint,
+        @NotNull @Valid Tables tables) {
 
-	public record Tables(
-			@NotBlank String departments,
-			@NotBlank String students,
-			@NotBlank String studentProfiles,
-			@NotBlank String instructors,
-			@NotBlank String courses,
-			@NotBlank String enrollments) {
-	}
+    public record Tables(
+            @NotBlank String departments,
+            @NotBlank String students,
+            @NotBlank String studentProfiles,
+            @NotBlank String instructors,
+            @NotBlank String courses,
+            @NotBlank String enrollments) {
+
+    }
+
 }

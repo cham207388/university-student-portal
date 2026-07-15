@@ -11,30 +11,32 @@ import java.util.UUID;
 
 @DynamoPersistenceAdapter
 public class DynamoStudentProfileRepository extends AbstractDynamoRepository<StudentProfile, StudentProfileDynamoRecord>
-		implements StudentProfileRepository {
-	public DynamoStudentProfileRepository(DynamoDbTables tables) {
-		super(tables.studentProfiles(), "studentId", StudentProfileDynamoMapper::toRecord,
-				StudentProfileDynamoMapper::toDomain,
-				value -> value.studentId().toString());
-	}
+        implements StudentProfileRepository {
 
-	@Override
-	public StudentProfile create(StudentProfile value) {
-		return createItem(value);
-	}
+    public DynamoStudentProfileRepository(DynamoDbTables tables) {
+        super(tables.studentProfiles(), "studentId", StudentProfileDynamoMapper::toRecord,
+                StudentProfileDynamoMapper::toDomain,
+                value -> value.studentId().toString());
+    }
 
-	@Override
-	public StudentProfile update(StudentProfile value) {
-		return updateItem(value);
-	}
+    @Override
+    public StudentProfile create(StudentProfile value) {
+        return createItem(value);
+    }
 
-	@Override
-	public Optional<StudentProfile> findByStudentId(UUID id) {
-		return findItem(id.toString());
-	}
+    @Override
+    public StudentProfile update(StudentProfile value) {
+        return updateItem(value);
+    }
 
-	@Override
-	public void delete(StudentProfile value) {
-		deleteItem(value, value.version());
-	}
+    @Override
+    public Optional<StudentProfile> findByStudentId(UUID id) {
+        return findItem(id.toString());
+    }
+
+    @Override
+    public void delete(StudentProfile value) {
+        deleteItem(value, value.version());
+    }
+
 }

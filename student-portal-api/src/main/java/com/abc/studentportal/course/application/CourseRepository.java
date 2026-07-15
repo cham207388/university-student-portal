@@ -7,15 +7,16 @@ import java.util.UUID;
 
 public interface CourseRepository {
 
-	Course create(Course course);
+    Course create(Course course);
 
-	Course update(Course course);
+    Course update(Course course);
 
-	Optional<Course> findById(UUID id);
+    Optional<Course> findById(UUID id);
 
-	Optional<Course> findByCourseCode(String courseCode);
+    Optional<Course> findByCourseCode(String courseCode);
 
-	boolean existsByCourseCode(String courseCode);
+    boolean existsByCourseCode(String courseCode);
 
-	void delete(Course course);
+    void delete(Course course);
+
 }

@@ -7,11 +7,12 @@ import java.util.UUID;
 
 public interface StudentProfileRepository {
 
-	StudentProfile create(StudentProfile profile);
+    StudentProfile create(StudentProfile profile);
 
-	StudentProfile update(StudentProfile profile);
+    StudentProfile update(StudentProfile profile);
 
-	Optional<StudentProfile> findByStudentId(UUID studentId);
+    Optional<StudentProfile> findByStudentId(UUID studentId);
 
-	void delete(StudentProfile profile);
+    void delete(StudentProfile profile);
+
 }

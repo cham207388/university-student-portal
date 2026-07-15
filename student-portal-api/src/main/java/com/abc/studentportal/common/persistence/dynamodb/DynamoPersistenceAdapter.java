@@ -11,6 +11,7 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Repository
-@Profile({ "local-dynamodb", "test-dynamodb", "migration" })
+@Profile({"local-dynamodb", "test-dynamodb", "migration"})
 public @interface DynamoPersistenceAdapter {
+
 }

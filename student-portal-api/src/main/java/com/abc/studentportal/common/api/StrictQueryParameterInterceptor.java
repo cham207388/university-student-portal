@@ -12,27 +12,29 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 final class StrictQueryParameterInterceptor implements HandlerInterceptor {
-	@Override
-	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
-		if (!(handler instanceof HandlerMethod method))
-			return true;
 
-		Set<String> allowed = new LinkedHashSet<>();
-		for (MethodParameter parameter : method.getMethodParameters()) {
-			RequestParam annotation = parameter.getParameterAnnotation(RequestParam.class);
-			if (annotation == null)
-				continue;
-			String name = annotation.name().isBlank() ? annotation.value() : annotation.name();
-			if (name.isBlank())
-				name = parameter.getParameterName();
-			if (name != null)
-				allowed.add(name);
-		}
+    @Override
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
+        if (!(handler instanceof HandlerMethod method))
+            return true;
 
-		Set<String> unsupported = new LinkedHashSet<>(request.getParameterMap().keySet());
-		unsupported.removeAll(allowed);
-		if (!unsupported.isEmpty())
-			throw new InvalidRequestException("Unsupported query parameter(s): " + String.join(", ", unsupported));
-		return true;
-	}
+        Set<String> allowed = new LinkedHashSet<>();
+        for (MethodParameter parameter : method.getMethodParameters()) {
+            RequestParam annotation = parameter.getParameterAnnotation(RequestParam.class);
+            if (annotation == null)
+                continue;
+            String name = annotation.name().isBlank() ? annotation.value() : annotation.name();
+            if (name.isBlank())
+                name = parameter.getParameterName();
+            if (name != null)
+                allowed.add(name);
+        }
+
+        Set<String> unsupported = new LinkedHashSet<>(request.getParameterMap().keySet());
+        unsupported.removeAll(allowed);
+        if (!unsupported.isEmpty())
+            throw new InvalidRequestException("Unsupported query parameter(s): " + String.join(", ", unsupported));
+        return true;
+    }
+
 }

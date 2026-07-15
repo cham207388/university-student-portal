@@ -7,7 +7,9 @@ import com.abc.studentportal.instructor.domain.Instructor;
 import java.util.UUID;
 
 public interface DynamoInstructorQueries {
-	CursorPage<Instructor> findAll(CursorRequest request);
 
-	CursorPage<Instructor> findByDepartment(UUID departmentId, CursorRequest request);
+    CursorPage<Instructor> findAll(CursorRequest request);
+
+    CursorPage<Instructor> findByDepartment(UUID departmentId, CursorRequest request);
+
 }

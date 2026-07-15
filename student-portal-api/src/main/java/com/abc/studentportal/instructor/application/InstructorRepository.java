@@ -7,19 +7,20 @@ import java.util.UUID;
 
 public interface InstructorRepository {
 
-	Instructor create(Instructor instructor);
+    Instructor create(Instructor instructor);
 
-	Instructor update(Instructor instructor);
+    Instructor update(Instructor instructor);
 
-	Optional<Instructor> findById(UUID id);
+    Optional<Instructor> findById(UUID id);
 
-	Optional<Instructor> findByEmployeeNumber(String employeeNumber);
+    Optional<Instructor> findByEmployeeNumber(String employeeNumber);
 
-	Optional<Instructor> findByEmail(String email);
+    Optional<Instructor> findByEmail(String email);
 
-	boolean existsByEmployeeNumber(String employeeNumber);
+    boolean existsByEmployeeNumber(String employeeNumber);
 
-	boolean existsByEmail(String email);
+    boolean existsByEmail(String email);
 
-	void delete(Instructor instructor);
+    void delete(Instructor instructor);
+
 }

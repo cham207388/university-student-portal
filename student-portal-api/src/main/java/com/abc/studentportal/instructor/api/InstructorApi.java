@@ -11,21 +11,25 @@ import java.util.UUID;
 
 public final class InstructorApi {
 
-	private InstructorApi() {
-	}
+    private InstructorApi() {
+    }
 
-	public record CreateRequest(@NotBlank @Size(max = 50) String employeeNumber,
-			@NotBlank @Size(max = 100) String firstName, @NotBlank @Size(max = 100) String lastName,
-			@NotBlank @Email @Size(max = 320) String email, @NotNull UUID departmentId) {
-	}
+    public record CreateRequest(@NotBlank @Size(max = 50) String employeeNumber,
+                                @NotBlank @Size(max = 100) String firstName, @NotBlank @Size(max = 100) String lastName,
+                                @NotBlank @Email @Size(max = 320) String email, @NotNull UUID departmentId) {
 
-	public record UpdateRequest(@NotBlank @Size(max = 50) String employeeNumber,
-			@NotBlank @Size(max = 100) String firstName, @NotBlank @Size(max = 100) String lastName,
-			@NotBlank @Email @Size(max = 320) String email, @NotNull UUID departmentId,
-			@PositiveOrZero long version) {
-	}
+    }
 
-	public record Response(UUID id, String employeeNumber, String firstName, String lastName, String email,
-			UUID departmentId, Instant createdAt, Instant updatedAt, long version) {
-	}
+    public record UpdateRequest(@NotBlank @Size(max = 50) String employeeNumber,
+                                @NotBlank @Size(max = 100) String firstName, @NotBlank @Size(max = 100) String lastName,
+                                @NotBlank @Email @Size(max = 320) String email, @NotNull UUID departmentId,
+                                @PositiveOrZero long version) {
+
+    }
+
+    public record Response(UUID id, String employeeNumber, String firstName, String lastName, String email,
+                           UUID departmentId, Instant createdAt, Instant updatedAt, long version) {
+
+    }
+
 }

@@ -14,57 +14,71 @@ import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSecon
 @Setter
 @NoArgsConstructor
 public class InstructorDynamoRecord implements com.abc.studentportal.common.persistence.dynamodb.VersionedDynamoRecord {
-	private String id;
-	private String employeeNumber;
-	private String firstName;
-	private String lastName;
-	private String email;
-	private String departmentId;
-	private String entityType;
-	private String createdAt;
-	private String updatedAt;
-	private String createdAtId;
-	private String lastNameId;
-	private Long courseCount;
-	private Long version;
 
-	@DynamoDbPartitionKey
-	public String getId() {
-		return id;
-	}
+    private String id;
 
-	@DynamoDbSecondaryPartitionKey(indexNames = "instructors-by-number")
-	public String getEmployeeNumber() {
-		return employeeNumber;
-	}
+    private String employeeNumber;
 
-	@DynamoDbSecondaryPartitionKey(indexNames = "instructors-by-email")
-	public String getEmail() {
-		return email;
-	}
+    private String firstName;
 
-	@DynamoDbSecondaryPartitionKey(indexNames = "instructors-by-department")
-	public String getDepartmentId() {
-		return departmentId;
-	}
+    private String lastName;
 
-	@DynamoDbSecondaryPartitionKey(indexNames = "instructors-catalog")
-	public String getEntityType() {
-		return entityType;
-	}
+    private String email;
 
-	@DynamoDbSecondarySortKey(indexNames = "instructors-catalog")
-	public String getCreatedAtId() {
-		return createdAtId;
-	}
+    private String departmentId;
 
-	@DynamoDbSecondarySortKey(indexNames = "instructors-by-department")
-	public String getLastNameId() {
-		return lastNameId;
-	}
+    private String entityType;
 
-	@DynamoDbVersionAttribute
-	public Long getVersion() {
-		return version;
-	}
+    private String createdAt;
+
+    private String updatedAt;
+
+    private String createdAtId;
+
+    private String lastNameId;
+
+    private Long courseCount;
+
+    private Long version;
+
+    @DynamoDbPartitionKey
+    public String getId() {
+        return id;
+    }
+
+    @DynamoDbSecondaryPartitionKey(indexNames = "instructors-by-number")
+    public String getEmployeeNumber() {
+        return employeeNumber;
+    }
+
+    @DynamoDbSecondaryPartitionKey(indexNames = "instructors-by-email")
+    public String getEmail() {
+        return email;
+    }
+
+    @DynamoDbSecondaryPartitionKey(indexNames = "instructors-by-department")
+    public String getDepartmentId() {
+        return departmentId;
+    }
+
+    @DynamoDbSecondaryPartitionKey(indexNames = "instructors-catalog")
+    public String getEntityType() {
+        return entityType;
+    }
+
+    @DynamoDbSecondarySortKey(indexNames = "instructors-catalog")
+    public String getCreatedAtId() {
+        return createdAtId;
+    }
+
+    @DynamoDbSecondarySortKey(indexNames = "instructors-by-department")
+    public String getLastNameId() {
+        return lastNameId;
+    }
+
+    @DynamoDbVersionAttribute
+    public Long getVersion() {
+        return version;
+    }
+
 }

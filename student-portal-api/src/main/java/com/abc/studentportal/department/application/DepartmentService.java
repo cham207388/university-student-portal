@@ -13,50 +13,56 @@ import java.util.UUID;
 import java.util.Optional;
 
 @Service
-@Profile({ "local-dynamodb", "test-dynamodb" })
+@Profile({"local-dynamodb", "test-dynamodb"})
 public class DepartmentService {
-	private final DepartmentRepository repository;
-	private final Clock clock;
-	private final DependencyChecker dependencies;
 
-	public DepartmentService(DepartmentRepository repository, Clock clock, DependencyChecker dependencies) {
-		this.repository = repository;
-		this.clock = clock;
-		this.dependencies = dependencies;
-	}
+    private final DepartmentRepository repository;
 
-	public Department create(CreateCommand command) {
-		Instant now = clock.instant();
-		return repository
-				.create(new Department(UUID.randomUUID(), command.code(), command.name(), command.description(),
-						now, now, 0));
-	}
+    private final Clock clock;
 
-	public Department update(UUID id, UpdateCommand command) {
-		Department current = get(id);
-		return repository.update(new Department(id, command.code(), command.name(), command.description(),
-				current.createdAt(), clock.instant(), command.version()));
-	}
+    private final DependencyChecker dependencies;
 
-	public Department get(UUID id) {
-		return repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Department", id));
-	}
+    public DepartmentService(DepartmentRepository repository, Clock clock, DependencyChecker dependencies) {
+        this.repository = repository;
+        this.clock = clock;
+        this.dependencies = dependencies;
+    }
 
-	public Optional<Department> findByCode(String code) {
-		return repository.findByCode(com.abc.studentportal.common.domain.DomainChecks.uppercaseCode(code, "code"));
-	}
+    public Department create(CreateCommand command) {
+        Instant now = clock.instant();
+        return repository
+                .create(new Department(UUID.randomUUID(), command.code(), command.name(), command.description(),
+                        now, now, 0));
+    }
 
-	public void delete(UUID id, long version) {
-		Department current = get(id);
-		if (dependencies.departmentHasDependents(id))
-			throw new ConflictException("Department still has dependent records");
-		repository.delete(new Department(current.id(), current.code(), current.name(), current.description(),
-				current.createdAt(), current.updatedAt(), version));
-	}
+    public Department update(UUID id, UpdateCommand command) {
+        Department current = get(id);
+        return repository.update(new Department(id, command.code(), command.name(), command.description(),
+                current.createdAt(), clock.instant(), command.version()));
+    }
 
-	public record CreateCommand(String code, String name, String description) {
-	}
+    public Department get(UUID id) {
+        return repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Department", id));
+    }
 
-	public record UpdateCommand(String code, String name, String description, long version) {
-	}
+    public Optional<Department> findByCode(String code) {
+        return repository.findByCode(com.abc.studentportal.common.domain.DomainChecks.uppercaseCode(code, "code"));
+    }
+
+    public void delete(UUID id, long version) {
+        Department current = get(id);
+        if (dependencies.departmentHasDependents(id))
+            throw new ConflictException("Department still has dependent records");
+        repository.delete(new Department(current.id(), current.code(), current.name(), current.description(),
+                current.createdAt(), current.updatedAt(), version));
+    }
+
+    public record CreateCommand(String code, String name, String description) {
+
+    }
+
+    public record UpdateCommand(String code, String name, String description, long version) {
+
+    }
+
 }

@@ -24,54 +24,55 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 
 @Configuration(proxyBeanMethods = false)
-@Profile({ "local-dynamodb", "test-dynamodb", "migration" })
+@Profile({"local-dynamodb", "test-dynamodb", "migration"})
 @EnableConfigurationProperties(DynamoDbProperties.class)
 public class DynamoDbConfiguration {
 
-	@Bean(destroyMethod = "close")
-	DynamoDbClient dynamoDbClient(DynamoDbProperties properties) {
-		return DynamoDbClient.builder()
-				.region(Region.of(properties.region()))
-				.endpointOverride(properties.endpoint())
-				.credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create("test", "test")))
-				.httpClientBuilder(UrlConnectionHttpClient.builder())
-				.build();
-	}
+    @Bean(destroyMethod = "close")
+    DynamoDbClient dynamoDbClient(DynamoDbProperties properties) {
+        return DynamoDbClient.builder()
+                .region(Region.of(properties.region()))
+                .endpointOverride(properties.endpoint())
+                .credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create("test", "test")))
+                .httpClientBuilder(UrlConnectionHttpClient.builder())
+                .build();
+    }
 
-	@Bean
-	DynamoDbEnhancedClient dynamoDbEnhancedClient(DynamoDbClient client) {
-		return DynamoDbEnhancedClient.builder().dynamoDbClient(client).build();
-	}
+    @Bean
+    DynamoDbEnhancedClient dynamoDbEnhancedClient(DynamoDbClient client) {
+        return DynamoDbEnhancedClient.builder().dynamoDbClient(client).build();
+    }
 
-	@Bean
-	DynamoCursorCodec dynamoCursorCodec() {
-		return new DynamoCursorCodec();
-	}
+    @Bean
+    DynamoCursorCodec dynamoCursorCodec() {
+        return new DynamoCursorCodec();
+    }
 
-	@Bean
-	DynamoTransactionalWriter dynamoTransactionalWriter(DynamoDbClient client) {
-		return new DynamoTransactionalWriter(client);
-	}
+    @Bean
+    DynamoTransactionalWriter dynamoTransactionalWriter(DynamoDbClient client) {
+        return new DynamoTransactionalWriter(client);
+    }
 
-	@Bean
-	DynamoEnrollmentTransactionWriter dynamoEnrollmentTransactionWriter(DynamoDbClient client, DynamoDbTables tables) {
-		return new DynamoEnrollmentTransactionWriter(client, tables);
-	}
+    @Bean
+    DynamoEnrollmentTransactionWriter dynamoEnrollmentTransactionWriter(DynamoDbClient client, DynamoDbTables tables) {
+        return new DynamoEnrollmentTransactionWriter(client, tables);
+    }
 
-	@Bean
-	DynamoRelationshipCounters dynamoRelationshipCounters(DynamoDbTables tables) {
-		return new DynamoRelationshipCounters(tables);
-	}
+    @Bean
+    DynamoRelationshipCounters dynamoRelationshipCounters(DynamoDbTables tables) {
+        return new DynamoRelationshipCounters(tables);
+    }
 
-	@Bean
-	DynamoDbTables dynamoDbTables(DynamoDbEnhancedClient client, DynamoDbProperties properties) {
-		DynamoDbProperties.Tables names = properties.tables();
-		return new DynamoDbTables(
-				client.table(names.departments(), TableSchema.fromBean(DepartmentDynamoRecord.class)),
-				client.table(names.students(), TableSchema.fromBean(StudentDynamoRecord.class)),
-				client.table(names.studentProfiles(), TableSchema.fromBean(StudentProfileDynamoRecord.class)),
-				client.table(names.instructors(), TableSchema.fromBean(InstructorDynamoRecord.class)),
-				client.table(names.courses(), TableSchema.fromBean(CourseDynamoRecord.class)),
-				client.table(names.enrollments(), TableSchema.fromBean(EnrollmentDynamoRecord.class)));
-	}
+    @Bean
+    DynamoDbTables dynamoDbTables(DynamoDbEnhancedClient client, DynamoDbProperties properties) {
+        DynamoDbProperties.Tables names = properties.tables();
+        return new DynamoDbTables(
+                client.table(names.departments(), TableSchema.fromBean(DepartmentDynamoRecord.class)),
+                client.table(names.students(), TableSchema.fromBean(StudentDynamoRecord.class)),
+                client.table(names.studentProfiles(), TableSchema.fromBean(StudentProfileDynamoRecord.class)),
+                client.table(names.instructors(), TableSchema.fromBean(InstructorDynamoRecord.class)),
+                client.table(names.courses(), TableSchema.fromBean(CourseDynamoRecord.class)),
+                client.table(names.enrollments(), TableSchema.fromBean(EnrollmentDynamoRecord.class)));
+    }
+
 }

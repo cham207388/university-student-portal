@@ -12,28 +12,42 @@ import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbParti
 @Setter
 @NoArgsConstructor
 public class StudentProfileDynamoRecord
-		implements com.abc.studentportal.common.persistence.dynamodb.VersionedDynamoRecord {
-	private String studentId;
-	private String id;
-	private String dateOfBirth;
-	private String phoneNumber;
-	private String addressLine1;
-	private String addressLine2;
-	private String city;
-	private String state;
-	private String postalCode;
-	private String country;
-	private String createdAt;
-	private String updatedAt;
-	private Long version;
+        implements com.abc.studentportal.common.persistence.dynamodb.VersionedDynamoRecord {
 
-	@DynamoDbPartitionKey
-	public String getStudentId() {
-		return studentId;
-	}
+    private String studentId;
 
-	@DynamoDbVersionAttribute
-	public Long getVersion() {
-		return version;
-	}
+    private String id;
+
+    private String dateOfBirth;
+
+    private String phoneNumber;
+
+    private String addressLine1;
+
+    private String addressLine2;
+
+    private String city;
+
+    private String state;
+
+    private String postalCode;
+
+    private String country;
+
+    private String createdAt;
+
+    private String updatedAt;
+
+    private Long version;
+
+    @DynamoDbPartitionKey
+    public String getStudentId() {
+        return studentId;
+    }
+
+    @DynamoDbVersionAttribute
+    public Long getVersion() {
+        return version;
+    }
+
 }

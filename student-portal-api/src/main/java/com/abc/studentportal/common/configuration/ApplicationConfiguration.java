@@ -7,8 +7,10 @@ import java.time.Clock;
 
 @Configuration(proxyBeanMethods = false)
 public class ApplicationConfiguration {
-	@Bean
-	Clock applicationClock() {
-		return Clock.systemUTC();
-	}
+
+    @Bean
+    Clock applicationClock() {
+        return Clock.systemUTC();
+    }
+
 }

@@ -14,69 +14,85 @@ import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSecon
 @Setter
 @NoArgsConstructor
 public class StudentDynamoRecord implements com.abc.studentportal.common.persistence.dynamodb.VersionedDynamoRecord {
-	private String id;
-	private String studentNumber;
-	private String firstName;
-	private String lastName;
-	private String email;
-	private String status;
-	private String departmentId;
-	private String entityType;
-	private String createdAt;
-	private String updatedAt;
-	private String createdAtId;
-	private String updatedAtId;
-	private String lastNameId;
-	private Long enrollmentCount;
-	private Long version;
 
-	@DynamoDbPartitionKey
-	public String getId() {
-		return id;
-	}
+    private String id;
 
-	@DynamoDbSecondaryPartitionKey(indexNames = "students-by-number")
-	public String getStudentNumber() {
-		return studentNumber;
-	}
+    private String studentNumber;
 
-	@DynamoDbSecondaryPartitionKey(indexNames = "students-by-email")
-	public String getEmail() {
-		return email;
-	}
+    private String firstName;
 
-	@DynamoDbSecondaryPartitionKey(indexNames = "students-by-department")
-	public String getDepartmentId() {
-		return departmentId;
-	}
+    private String lastName;
 
-	@DynamoDbSecondaryPartitionKey(indexNames = "students-by-status")
-	public String getStatus() {
-		return status;
-	}
+    private String email;
 
-	@DynamoDbSecondaryPartitionKey(indexNames = "students-catalog")
-	public String getEntityType() {
-		return entityType;
-	}
+    private String status;
 
-	@DynamoDbSecondarySortKey(indexNames = "students-catalog")
-	public String getCreatedAtId() {
-		return createdAtId;
-	}
+    private String departmentId;
 
-	@DynamoDbSecondarySortKey(indexNames = "students-by-status")
-	public String getUpdatedAtId() {
-		return updatedAtId;
-	}
+    private String entityType;
 
-	@DynamoDbSecondarySortKey(indexNames = "students-by-department")
-	public String getLastNameId() {
-		return lastNameId;
-	}
+    private String createdAt;
 
-	@DynamoDbVersionAttribute
-	public Long getVersion() {
-		return version;
-	}
+    private String updatedAt;
+
+    private String createdAtId;
+
+    private String updatedAtId;
+
+    private String lastNameId;
+
+    private Long enrollmentCount;
+
+    private Long version;
+
+    @DynamoDbPartitionKey
+    public String getId() {
+        return id;
+    }
+
+    @DynamoDbSecondaryPartitionKey(indexNames = "students-by-number")
+    public String getStudentNumber() {
+        return studentNumber;
+    }
+
+    @DynamoDbSecondaryPartitionKey(indexNames = "students-by-email")
+    public String getEmail() {
+        return email;
+    }
+
+    @DynamoDbSecondaryPartitionKey(indexNames = "students-by-department")
+    public String getDepartmentId() {
+        return departmentId;
+    }
+
+    @DynamoDbSecondaryPartitionKey(indexNames = "students-by-status")
+    public String getStatus() {
+        return status;
+    }
+
+    @DynamoDbSecondaryPartitionKey(indexNames = "students-catalog")
+    public String getEntityType() {
+        return entityType;
+    }
+
+    @DynamoDbSecondarySortKey(indexNames = "students-catalog")
+    public String getCreatedAtId() {
+        return createdAtId;
+    }
+
+    @DynamoDbSecondarySortKey(indexNames = "students-by-status")
+    public String getUpdatedAtId() {
+        return updatedAtId;
+    }
+
+    @DynamoDbSecondarySortKey(indexNames = "students-by-department")
+    public String getLastNameId() {
+        return lastNameId;
+    }
+
+    @DynamoDbVersionAttribute
+    public Long getVersion() {
+        return version;
+    }
+
 }

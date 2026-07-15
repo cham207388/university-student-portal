@@ -8,7 +8,9 @@ import com.abc.studentportal.student.domain.Student;
 import java.util.UUID;
 
 public interface DynamoStudentCourseQueries {
-	CursorPage<Course> findCoursesByStudent(UUID studentId, CursorRequest request);
 
-	CursorPage<Student> findStudentsByCourse(UUID courseId, CursorRequest request);
+    CursorPage<Course> findCoursesByStudent(UUID studentId, CursorRequest request);
+
+    CursorPage<Student> findStudentsByCourse(UUID courseId, CursorRequest request);
+
 }

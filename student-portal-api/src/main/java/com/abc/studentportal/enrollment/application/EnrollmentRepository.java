@@ -6,16 +6,17 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface EnrollmentRepository {
-	Enrollment create(Enrollment enrollment);
 
-	Enrollment update(Enrollment enrollment);
+    Enrollment create(Enrollment enrollment);
 
-	Optional<Enrollment> findById(UUID id);
+    Enrollment update(Enrollment enrollment);
 
-	boolean existsActiveByStudentIdAndCourseId(UUID studentId, UUID courseId);
+    Optional<Enrollment> findById(UUID id);
 
-	boolean existsByStudentId(UUID studentId);
+    boolean existsActiveByStudentIdAndCourseId(UUID studentId, UUID courseId);
 
-	boolean existsByCourseId(UUID courseId);
+    boolean existsByStudentId(UUID studentId);
+
+    boolean existsByCourseId(UUID courseId);
 
 }

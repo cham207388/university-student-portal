@@ -9,11 +9,13 @@ import java.time.Instant;
 import java.util.UUID;
 
 public interface DynamoEnrollmentQueries {
-	CursorPage<Enrollment> findAll(CursorRequest request);
 
-	CursorPage<Enrollment> findByStudent(UUID studentId, Instant from, Instant to, CursorRequest request);
+    CursorPage<Enrollment> findAll(CursorRequest request);
 
-	CursorPage<Enrollment> findByCourse(UUID courseId, Instant from, Instant to, CursorRequest request);
+    CursorPage<Enrollment> findByStudent(UUID studentId, Instant from, Instant to, CursorRequest request);
 
-	CursorPage<Enrollment> findByStatus(EnrollmentStatus status, CursorRequest request);
+    CursorPage<Enrollment> findByCourse(UUID courseId, Instant from, Instant to, CursorRequest request);
+
+    CursorPage<Enrollment> findByStatus(EnrollmentStatus status, CursorRequest request);
+
 }

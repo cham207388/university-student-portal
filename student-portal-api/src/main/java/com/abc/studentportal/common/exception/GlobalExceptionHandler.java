@@ -16,75 +16,78 @@ import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.util.List;
+
 import org.slf4j.MDC;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
-	private static final Logger LOGGER = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
-	@ExceptionHandler(ApiException.class)
-	ResponseEntity<ProblemDetail> handleApiException(ApiException exception) {
-		ProblemDetail problem = ProblemDetail.forStatusAndDetail(exception.status(), exception.getMessage());
-		problem.setTitle(exception.status().getReasonPhrase());
-		problem.setType(exception.type());
-		addCorrelationId(problem);
-		return ResponseEntity.status(exception.status()).body(problem);
-	}
+    private static final Logger LOGGER = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
-	@ExceptionHandler(DomainRuleViolationException.class)
-	ResponseEntity<ProblemDetail> handleDomainRule(DomainRuleViolationException exception) {
-		ProblemDetail problem = problem(HttpStatus.CONFLICT, "domain-rule-violation", exception.getMessage());
-		return ResponseEntity.status(HttpStatus.CONFLICT).body(problem);
-	}
+    @ExceptionHandler(ApiException.class)
+    ResponseEntity<ProblemDetail> handleApiException(ApiException exception) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(exception.status(), exception.getMessage());
+        problem.setTitle(exception.status().getReasonPhrase());
+        problem.setType(exception.type());
+        addCorrelationId(problem);
+        return ResponseEntity.status(exception.status()).body(problem);
+    }
 
-	@ExceptionHandler(MethodArgumentNotValidException.class)
-	ResponseEntity<ProblemDetail> handleValidation(MethodArgumentNotValidException exception) {
-		ProblemDetail problem = problem(HttpStatus.BAD_REQUEST, "validation-failed", "Request validation failed");
-		List<FieldErrorDetail> errors = exception.getBindingResult().getFieldErrors().stream()
-				.map(error -> new FieldErrorDetail(error.getField(), error.getDefaultMessage()))
-				.toList();
-		problem.setProperty("fieldErrors", errors);
-		return ResponseEntity.badRequest().body(problem);
-	}
+    @ExceptionHandler(DomainRuleViolationException.class)
+    ResponseEntity<ProblemDetail> handleDomainRule(DomainRuleViolationException exception) {
+        ProblemDetail problem = problem(HttpStatus.CONFLICT, "domain-rule-violation", exception.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(problem);
+    }
 
-	@ExceptionHandler(HttpMessageNotReadableException.class)
-	ResponseEntity<ProblemDetail> handleMalformedRequest() {
-		ProblemDetail problem = problem(HttpStatus.BAD_REQUEST, "malformed-request",
-				"Request body is malformed or contains an unsupported value");
-		return ResponseEntity.badRequest().body(problem);
-	}
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    ResponseEntity<ProblemDetail> handleValidation(MethodArgumentNotValidException exception) {
+        ProblemDetail problem = problem(HttpStatus.BAD_REQUEST, "validation-failed", "Request validation failed");
+        List<FieldErrorDetail> errors = exception.getBindingResult().getFieldErrors().stream()
+                .map(error -> new FieldErrorDetail(error.getField(), error.getDefaultMessage()))
+                .toList();
+        problem.setProperty("fieldErrors", errors);
+        return ResponseEntity.badRequest().body(problem);
+    }
 
-	@ExceptionHandler(IllegalArgumentException.class)
-	ResponseEntity<ProblemDetail> handleIllegalArgument(IllegalArgumentException exception) {
-		ProblemDetail problem = problem(HttpStatus.BAD_REQUEST, "invalid-request", exception.getMessage());
-		return ResponseEntity.badRequest().body(problem);
-	}
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    ResponseEntity<ProblemDetail> handleMalformedRequest() {
+        ProblemDetail problem = problem(HttpStatus.BAD_REQUEST, "malformed-request",
+                "Request body is malformed or contains an unsupported value");
+        return ResponseEntity.badRequest().body(problem);
+    }
 
-	@ExceptionHandler({ MissingServletRequestParameterException.class, MethodArgumentTypeMismatchException.class })
-	ResponseEntity<ProblemDetail> handleInvalidRequestParameter(Exception exception) {
-		ProblemDetail problem = problem(HttpStatus.BAD_REQUEST, "invalid-request", exception.getMessage());
-		return ResponseEntity.badRequest().body(problem);
-	}
+    @ExceptionHandler(IllegalArgumentException.class)
+    ResponseEntity<ProblemDetail> handleIllegalArgument(IllegalArgumentException exception) {
+        ProblemDetail problem = problem(HttpStatus.BAD_REQUEST, "invalid-request", exception.getMessage());
+        return ResponseEntity.badRequest().body(problem);
+    }
 
-	@ExceptionHandler(Exception.class)
-	ResponseEntity<ProblemDetail> handleUnexpected(Exception exception) {
-		LOGGER.error("Unexpected request failure", exception);
-		ProblemDetail problem = problem(HttpStatus.INTERNAL_SERVER_ERROR, "internal-error",
-				"An unexpected internal error occurred");
-		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(problem);
-	}
+    @ExceptionHandler({MissingServletRequestParameterException.class, MethodArgumentTypeMismatchException.class})
+    ResponseEntity<ProblemDetail> handleInvalidRequestParameter(Exception exception) {
+        ProblemDetail problem = problem(HttpStatus.BAD_REQUEST, "invalid-request", exception.getMessage());
+        return ResponseEntity.badRequest().body(problem);
+    }
 
-	private static ProblemDetail problem(HttpStatus status, String type, String detail) {
-		ProblemDetail problem = ProblemDetail.forStatusAndDetail(status, detail);
-		problem.setTitle(status.getReasonPhrase());
-		problem.setType(URI.create("https://student-portal.example/problems/" + type));
-		addCorrelationId(problem);
-		return problem;
-	}
+    @ExceptionHandler(Exception.class)
+    ResponseEntity<ProblemDetail> handleUnexpected(Exception exception) {
+        LOGGER.error("Unexpected request failure", exception);
+        ProblemDetail problem = problem(HttpStatus.INTERNAL_SERVER_ERROR, "internal-error",
+                "An unexpected internal error occurred");
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(problem);
+    }
 
-	private static void addCorrelationId(ProblemDetail problem) {
-		String correlationId = MDC.get(com.abc.studentportal.common.observability.CorrelationIdFilter.MDC_KEY);
-		if (correlationId != null)
-			problem.setProperty("correlationId", correlationId);
-	}
+    private static ProblemDetail problem(HttpStatus status, String type, String detail) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(status, detail);
+        problem.setTitle(status.getReasonPhrase());
+        problem.setType(URI.create("https://student-portal.example/problems/" + type));
+        addCorrelationId(problem);
+        return problem;
+    }
+
+    private static void addCorrelationId(ProblemDetail problem) {
+        String correlationId = MDC.get(com.abc.studentportal.common.observability.CorrelationIdFilter.MDC_KEY);
+        if (correlationId != null)
+            problem.setProperty("correlationId", correlationId);
+    }
+
 }

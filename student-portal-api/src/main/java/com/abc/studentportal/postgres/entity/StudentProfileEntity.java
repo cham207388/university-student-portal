@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import java.util.UUID;
 import java.time.Instant;
 import java.time.LocalDate;
+
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,6 +18,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class StudentProfileEntity {
+
     @Id
     @Column(name = "student_id", nullable = false)
     private UUID studentId;
@@ -25,16 +27,22 @@ public class StudentProfileEntity {
     @MapsId
     @JoinColumn(name = "student_id", nullable = false)
     private StudentEntity student;
+
     @Column(name = "date_of_birth", nullable = false)
     private LocalDate dateOfBirth;
+
     @Column(name = "phone")
     private String phoneNumber;
+
     @Column(name = "address")
     private String addressLine1;
+
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
+
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
+
     @Version
     @Column(nullable = false)
     private long version;

@@ -7,14 +7,15 @@ import java.util.Locale;
 import java.util.UUID;
 
 public record Instructor(UUID id, String employeeNumber, String firstName, String lastName, String email,
-		UUID departmentId, Instant createdAt, Instant updatedAt, long version) {
+                         UUID departmentId, Instant createdAt, Instant updatedAt, long version) {
 
-	public Instructor {
-		DomainChecks.audit(id, createdAt, updatedAt, version);
-		employeeNumber = DomainChecks.requiredText(employeeNumber, "employeeNumber");
-		firstName = DomainChecks.requiredText(firstName, "firstName");
-		lastName = DomainChecks.requiredText(lastName, "lastName");
-		email = DomainChecks.requiredText(email, "email").toLowerCase(Locale.ROOT);
-		DomainChecks.required(departmentId, "departmentId");
-	}
+    public Instructor {
+        DomainChecks.audit(id, createdAt, updatedAt, version);
+        employeeNumber = DomainChecks.requiredText(employeeNumber, "employeeNumber");
+        firstName = DomainChecks.requiredText(firstName, "firstName");
+        lastName = DomainChecks.requiredText(lastName, "lastName");
+        email = DomainChecks.requiredText(email, "email").toLowerCase(Locale.ROOT);
+        DomainChecks.required(departmentId, "departmentId");
+    }
+
 }

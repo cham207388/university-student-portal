@@ -13,25 +13,29 @@ import java.net.URI;
 import java.util.Arrays;
 
 @Component
-@Profile({ "local-dynamodb", "test-dynamodb", "migration" })
+@Profile({"local-dynamodb", "test-dynamodb", "migration"})
 public class DynamoStartupSummary implements ApplicationRunner {
-	private static final Logger LOGGER = LoggerFactory.getLogger(DynamoStartupSummary.class);
-	private final DynamoDbProperties properties;
-	private final Environment environment;
 
-	public DynamoStartupSummary(DynamoDbProperties properties, Environment environment) {
-		this.properties = properties;
-		this.environment = environment;
-	}
+    private static final Logger LOGGER = LoggerFactory.getLogger(DynamoStartupSummary.class);
 
-	@Override
-	public void run(ApplicationArguments args) {
-		URI endpoint = properties.endpoint();
-		DynamoDbProperties.Tables tables = properties.tables();
-		LOGGER.info("event=startup_configuration persistence=dynamodb profiles={} region={} endpoint={}://{}:{} tableCount=6 tables={}",
-				Arrays.toString(environment.getActiveProfiles()), properties.region(), endpoint.getScheme(),
-				endpoint.getHost(), endpoint.getPort(),
-				java.util.List.of(tables.departments(), tables.students(), tables.studentProfiles(), tables.instructors(),
-						tables.courses(), tables.enrollments()));
-	}
+    private final DynamoDbProperties properties;
+
+    private final Environment environment;
+
+    public DynamoStartupSummary(DynamoDbProperties properties, Environment environment) {
+        this.properties = properties;
+        this.environment = environment;
+    }
+
+    @Override
+    public void run(ApplicationArguments args) {
+        URI endpoint = properties.endpoint();
+        DynamoDbProperties.Tables tables = properties.tables();
+        LOGGER.info("event=startup_configuration persistence=dynamodb profiles={} region={} endpoint={}://{}:{} tableCount=6 tables={}",
+                Arrays.toString(environment.getActiveProfiles()), properties.region(), endpoint.getScheme(),
+                endpoint.getHost(), endpoint.getPort(),
+                java.util.List.of(tables.departments(), tables.students(), tables.studentProfiles(), tables.instructors(),
+                        tables.courses(), tables.enrollments()));
+    }
+
 }
