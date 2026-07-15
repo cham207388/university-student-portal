@@ -62,40 +62,40 @@ public class EnrollmentEntity extends BaseEntity {
         return course.getId();
     }
 
-    public void setId(UUID v) {
-        id = v;
+    public void setId(UUID id) {
+        this.id = id;
     }
 
-    public void setStudent(StudentEntity v) {
-        student = v;
+    public void setStudent(StudentEntity student) {
+        this.student = student;
     }
 
-    public void setCourse(CourseEntity v) {
-        course = v;
+    public void setCourse(CourseEntity course) {
+        this.course = course;
     }
 
-    public void setStatus(EnrollmentStatus v) {
-        status = v;
+    public void setStatus(EnrollmentStatus status) {
+        this.status = status;
     }
 
-    public void setEnrolledAt(Instant v) {
-        enrolledAt = v;
+    public void setEnrolledAt(Instant enrolledAt) {
+        this.enrolledAt = enrolledAt;
     }
 
-    public void setDroppedAt(Instant v) {
-        droppedAt = v;
+    public void setDroppedAt(Instant droppedAt) {
+        this.droppedAt = droppedAt;
     }
 
-    public void setFinalGrade(String v) {
-        finalGrade = v;
+    public void setFinalGrade(String finalGrade) {
+        this.finalGrade = finalGrade;
     }
 
-    public void setCreatedAt(Instant v) {
-        createdAt = v;
+    public void setCreatedAt(Instant createdAt) {
+        this.createdAt = createdAt;
     }
 
-    public void setUpdatedAt(Instant v) {
-        updatedAt = v;
+    public void setUpdatedAt(Instant updatedAt) {
+        this.updatedAt = updatedAt;
     }
 
 }

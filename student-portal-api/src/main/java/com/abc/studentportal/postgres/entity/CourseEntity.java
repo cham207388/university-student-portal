@@ -48,26 +48,26 @@ public class CourseEntity extends BaseEntity {
     @Version
     private long version;
 
-    public void setDepartment(DepartmentEntity d) {
-        department = d;
+    public void setDepartment(DepartmentEntity department) {
+        this.department = department;
     }
 
-    public void setInstructor(InstructorEntity i) {
-        instructor = i;
+    public void setInstructor(InstructorEntity instructor) {
+        this.instructor = instructor;
     }
 
-    public CourseEntity(UUID id, String c, String t, String d, int cr, int cap, CourseStatus s, UUID dept, UUID inst, Instant ca, Instant ua) {
+    public CourseEntity(UUID id, String courseCode, String title, String description, int credits, int capacity, CourseStatus status, UUID departmentId, UUID instructorId, Instant createdAt, Instant updatedAt) {
         this.id = id;
-        courseCode = c;
-        title = t;
-        description = d;
-        credits = cr;
-        capacity = cap;
-        status = s;
-        department = new DepartmentEntity(dept, null, null, null, ca, ua);
-        instructor = new InstructorEntity(inst, null, null, null, null, dept, ca, ua);
-        createdAt = ca;
-        updatedAt = ua;
+        this.courseCode = courseCode;
+        this.title = title;
+        this.description = description;
+        this.credits = credits;
+        this.capacity = capacity;
+        this.status = status;
+        this.department = new DepartmentEntity(departmentId, null, null, null, createdAt, updatedAt);
+        this.instructor = new InstructorEntity(instructorId, null, null, null, null, departmentId, createdAt, updatedAt);
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
     }
 
 }

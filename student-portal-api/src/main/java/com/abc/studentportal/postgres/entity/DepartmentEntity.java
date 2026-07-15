@@ -23,13 +23,13 @@ public class DepartmentEntity extends BaseEntity {
     @Version
     private long version;
 
-    public DepartmentEntity(UUID id, String code, String name, String description, Instant c, Instant u) {
+    public DepartmentEntity(UUID id, String code, String name, String description, Instant createdAt, Instant updatedAt) {
         this.id = id;
         this.code = code;
         this.name = name;
         this.description = description;
-        this.createdAt = c;
-        this.updatedAt = u;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
     }
 
 }

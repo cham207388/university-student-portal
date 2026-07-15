@@ -42,20 +42,20 @@ public class StudentEntity extends BaseEntity {
     @OneToOne(mappedBy = "student", fetch = FetchType.LAZY, orphanRemoval = true)
     private StudentProfileEntity profile;
 
-    public StudentEntity(UUID id, String sn, String fn, String ln, String email, StudentStatus st, UUID departmentId, Instant c, Instant u) {
+    public StudentEntity(UUID id, String studentNumber, String firstName, String lastName, String email, StudentStatus status, UUID departmentId, Instant createdAt, Instant updatedAt) {
         this.id = id;
-        this.studentNumber = sn;
-        this.firstName = fn;
-        this.lastName = ln;
+        this.studentNumber = studentNumber;
+        this.firstName = firstName;
+        this.lastName = lastName;
         this.email = email;
-        this.status = st;
-        this.department = new DepartmentEntity(departmentId, null, null, null, c, u);
-        this.createdAt = c;
-        this.updatedAt = u;
+        this.status = status;
+        this.department = new DepartmentEntity(departmentId, null, null, null, createdAt, updatedAt);
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
     }
 
-    public void setDepartment(DepartmentEntity d) {
-        department = d;
+    public void setDepartment(DepartmentEntity department) {
+        this.department = department;
     }
 
 }

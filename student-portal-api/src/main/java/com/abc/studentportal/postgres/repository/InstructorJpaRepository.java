@@ -7,8 +7,8 @@ import java.util.*;
 
 public interface InstructorJpaRepository extends JpaRepository<InstructorEntity, UUID> {
 
-    Optional<InstructorEntity> findByEmployeeNumber(String n);
+    Optional<InstructorEntity> findByEmployeeNumber(String employeeNumber);
 
-    Optional<InstructorEntity> findByEmail(String e);
+    Optional<InstructorEntity> findByEmail(String email);
 
 }

@@ -28,20 +28,20 @@ public class PostgresEnrollmentRepository implements EnrollmentRepository {
         this.courses = courses;
     }
 
-    public Enrollment create(Enrollment e) {
-        return toDomain(repo.save(toEntity(e)));
+    public Enrollment create(Enrollment enrollment) {
+        return toDomain(repo.save(toEntity(enrollment)));
     }
 
-    public Enrollment update(Enrollment e) {
-        return toDomain(repo.save(toEntity(e)));
+    public Enrollment update(Enrollment enrollment) {
+        return toDomain(repo.save(toEntity(enrollment)));
     }
 
     public Optional<Enrollment> findById(UUID id) {
         return repo.findById(id).map(this::toDomain);
     }
 
-    public boolean existsActiveByStudentIdAndCourseId(UUID s, UUID c) {
-        return repo.existsByStudent_IdAndCourse_IdAndStatusIn(s, c, Set.of(EnrollmentStatus.ENROLLED, EnrollmentStatus.WAITLISTED));
+    public boolean existsActiveByStudentIdAndCourseId(UUID studentId, UUID courseId) {
+        return repo.existsByStudent_IdAndCourse_IdAndStatusIn(studentId, courseId, Set.of(EnrollmentStatus.ENROLLED, EnrollmentStatus.WAITLISTED));
     }
 
     public boolean existsByStudentId(UUID id) {
@@ -52,12 +52,12 @@ public class PostgresEnrollmentRepository implements EnrollmentRepository {
         return repo.existsByCourse_Id(id);
     }
 
-    private EnrollmentEntity toEntity(Enrollment e) {
-        return new EnrollmentEntity(e.id(), students.getReferenceById(e.studentId()), courses.getReferenceById(e.courseId()), e.status(), e.enrolledAt(), e.droppedAt(), e.finalGrade(), e.createdAt(), e.updatedAt(), e.version());
+    private EnrollmentEntity toEntity(Enrollment enrollment) {
+        return new EnrollmentEntity(enrollment.id(), students.getReferenceById(enrollment.studentId()), courses.getReferenceById(enrollment.courseId()), enrollment.status(), enrollment.enrolledAt(), enrollment.droppedAt(), enrollment.finalGrade(), enrollment.createdAt(), enrollment.updatedAt(), enrollment.version());
     }
 
-    private Enrollment toDomain(EnrollmentEntity e) {
-        return new Enrollment(e.getId(), e.getStudentId(), e.getCourseId(), e.getStatus(), e.getEnrolledAt(), e.getDroppedAt(), e.getFinalGrade(), e.getCreatedAt(), e.getUpdatedAt(), e.getVersion());
+    private Enrollment toDomain(EnrollmentEntity enrollmentEntity) {
+        return new Enrollment(enrollmentEntity.getId(), enrollmentEntity.getStudentId(), enrollmentEntity.getCourseId(), enrollmentEntity.getStatus(), enrollmentEntity.getEnrolledAt(), enrollmentEntity.getDroppedAt(), enrollmentEntity.getFinalGrade(), enrollmentEntity.getCreatedAt(), enrollmentEntity.getUpdatedAt(), enrollmentEntity.getVersion());
     }
 
 }

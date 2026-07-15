@@ -7,8 +7,8 @@ import java.util.*;
 
 public interface StudentJpaRepository extends JpaRepository<StudentEntity, UUID> {
 
-    Optional<StudentEntity> findByStudentNumber(String n);
+    Optional<StudentEntity> findByStudentNumber(String studentNumber);
 
-    Optional<StudentEntity> findByEmail(String e);
+    Optional<StudentEntity> findByEmail(String email);
 
 }

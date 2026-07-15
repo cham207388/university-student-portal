@@ -34,19 +34,19 @@ public class InstructorEntity extends BaseEntity {
     @Version
     private long version;
 
-    public void setDepartment(DepartmentEntity d) {
-        department = d;
+    public void setDepartment(DepartmentEntity department) {
+        this.department = department;
     }
 
-    public InstructorEntity(UUID id, String en, String fn, String ln, String email, UUID dept, Instant c, Instant u) {
+    public InstructorEntity(UUID id, String employeeNumber, String firstName, String lastName, String email, UUID departmentId, Instant createdAt, Instant updatedAt) {
         this.id = id;
-        employeeNumber = en;
-        firstName = fn;
-        lastName = ln;
+        this.employeeNumber = employeeNumber;
+        this.firstName = firstName;
+        this.lastName = lastName;
         this.email = email;
-        department = new DepartmentEntity(dept, null, null, null, c, u);
-        createdAt = c;
-        updatedAt = u;
+        department = new DepartmentEntity(departmentId, null, null, null, createdAt, updatedAt);
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
     }
 
 }
