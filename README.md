@@ -98,6 +98,10 @@ make seed-dynamo-data
 make api-smoke
 ```
 
+</details>
+
+---
+
 The seeder runs only with the `local-dynamodb` profile and `STUDENT_PORTAL_SEED_ENABLED=true`. It is disabled by default,
 safe to rerun, and creates three Departments, ten Students with Profiles, five Instructors, ten Courses, and six
 Enrollments. The data includes multiple statuses and a full two-seat Course. See
@@ -161,6 +165,8 @@ Enrollment creation and status transitions lock the Course row, enforce capacity
 concurrent last-seat oversubscription. Start it with `make app-run-postgres` after provisioning RDS.
 
 See [API compatibility matrix](docs/api-compatibility-matrix.md) for the documented ordering and cursor differences.
+
+---
 
 <details>
 <summary><b>Complete clean DynamoDB-to-PostgreSQL learning flow</b></summary>
@@ -255,8 +261,6 @@ curl http://127.0.0.1:8082/api/v1/departments/b6206ea3-c883-3635-8eda-bac4f678ff
 
 Swagger is available at `http://127.0.0.1:8081/swagger-ui.html` and
 `http://127.0.0.1:8082/swagger-ui.html`.
-
-</details>
 
 </details>
 

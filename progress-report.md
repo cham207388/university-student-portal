@@ -2,6 +2,20 @@
 
 ## Completed Tasks
 
+### Domain-oriented PostgreSQL package organization
+
+- Moved each PostgreSQL entity, Spring Data repository, repository-port adapter, and collection-query adapter into its
+  owning feature's `persistence/postgres` package for Department, Student/Profile, Instructor, Course, and Enrollment.
+- Moved only genuinely cross-domain relational support into `common/persistence/postgres`, including base audit state,
+  cursor/page support, version checks, dependency checks, domain mapping, and Student/Course relationship composition.
+- Updated all imports and package visibility without changing persistence behavior or Spring profiles.
+
+Verification results:
+
+- `./gradlew clean check`: successful; unit/MVC, DynamoDB LocalStack, and PostgreSQL Testcontainers suites passed.
+- Legacy centralized `postgres/adapter`, `postgres/entity`, and `postgres/repository` source trees are empty.
+- `git diff --check`: successful.
+
 ### Reproducible DynamoDB-to-PostgreSQL learning workflow
 
 - Added an explicit project-local reset target that removes the Compose stack, named persistence volume, and orphans

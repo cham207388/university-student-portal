@@ -2,8 +2,9 @@ package com.abc.studentportal.enrollment.persistence.postgres;
 
 import com.abc.studentportal.enrollment.application.EnrollmentRepository;
 import com.abc.studentportal.enrollment.domain.*;
-import com.abc.studentportal.postgres.entity.*;
-import com.abc.studentportal.postgres.repository.*;
+import com.abc.studentportal.course.persistence.postgres.CourseEntity;
+import com.abc.studentportal.course.persistence.postgres.CourseJpaRepository;
+import com.abc.studentportal.student.persistence.postgres.StudentJpaRepository;
 
 import java.util.*;
 

@@ -20,12 +20,15 @@ Repository abstractions cover genuinely common business operations. DynamoDB cur
 
 The current top-level Java packages are `common`, `department`, `student`, `instructor`, `course`, and `enrollment`;
 `migration` is reserved for the later migration phase. Each implemented feature contains `api`, `application`, `domain`,
-and persistence packages as needed. Runtime profile configuration lives under `common.configuration`.
+and datasource-specific persistence packages. PostgreSQL entities, Spring Data repositories, port adapters, and
+collection queries live together under each feature's `persistence/postgres` package. Only relational support that
+genuinely spans domains—pagination/cursor support, shared audit identity, version checks, dependency checks, mapping,
+and Student/Course composition—lives under `common/persistence/postgres`. Runtime profile configuration lives under
+`common.configuration`.
 
 The Phase 1 code establishes `domain` records, immutable nested API request/response records, explicit API mappers,
-filter objects, and repository ports. Common repository ports intentionally omit list pagination. DynamoDB cursor
-queries are now separate `Dynamo*Queries` capability interfaces; PostgreSQL pageable queries will use the same
-explicit-capability approach as their adapters are expanded. DynamoDB-profile controllers and application services are implemented for all current
+filter objects, and repository ports. Common repository ports intentionally omit list pagination. Datasource-neutral
+query ports have DynamoDB cursor and PostgreSQL pageable implementations. DynamoDB-profile controllers and application services are implemented for all current
 resources and relationship routes; the application contains no placeholder runtime beans.
 
 Runtime profiles select explicit adapters:
