@@ -20,12 +20,12 @@ public class DepartmentPostgresRepository implements DepartmentRepository {
         this.delegate = delegate;
     }
 
-    public Department create(Department d) {
-        return toDomain(delegate.save(toEntity(d)));
+    public Department create(Department department) {
+        return toDomain(delegate.save(toEntity(department)));
     }
 
-    public Department update(Department d) {
-        return toDomain(delegate.save(toEntity(d)));
+    public Department update(Department department) {
+        return toDomain(delegate.save(toEntity(department)));
     }
 
     public Optional<Department> findById(UUID id) {
@@ -40,16 +40,16 @@ public class DepartmentPostgresRepository implements DepartmentRepository {
         return delegate.findByCode(code).isPresent();
     }
 
-    public void delete(Department d) {
-        delegate.deleteById(d.id());
+    public void delete(Department department) {
+        delegate.deleteById(department.id());
     }
 
-    private DepartmentEntity toEntity(Department d) {
-        return new DepartmentEntity(d.id(), d.code(), d.name(), d.description());
+    private DepartmentEntity toEntity(Department department) {
+        return new DepartmentEntity(department.id(), department.code(), department.name(), department.description());
     }
 
-    private Department toDomain(DepartmentEntity e) {
-        return new Department(e.getId(), e.getCode(), e.getName(), e.getDescription(), e.getCreatedAt(), e.getUpdatedAt(), e.getVersion());
+    private Department toDomain(DepartmentEntity departmentEntity) {
+        return new Department(departmentEntity.getId(), departmentEntity.getCode(), departmentEntity.getName(), departmentEntity.getDescription(), departmentEntity.getCreatedAt(), departmentEntity.getUpdatedAt(), departmentEntity.getVersion());
     }
 
 }

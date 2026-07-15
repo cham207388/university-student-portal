@@ -23,20 +23,20 @@ public class StudentProfilePostgresRepository implements StudentProfileRepositor
         this.studentJpaRepository = studentJpaRepository;
     }
 
-    public StudentProfile create(StudentProfile x) {
-        return toDomain(studentProfileJpaRepository.save(toEntity(x)));
+    public StudentProfile create(StudentProfile studentProfile) {
+        return toDomain(studentProfileJpaRepository.save(toEntity(studentProfile)));
     }
 
-    public StudentProfile update(StudentProfile x) {
-        return toDomain(studentProfileJpaRepository.save(toEntity(x)));
+    public StudentProfile update(StudentProfile studentProfile) {
+        return toDomain(studentProfileJpaRepository.save(toEntity(studentProfile)));
     }
 
     public Optional<StudentProfile> findByStudentId(UUID id) {
         return studentProfileJpaRepository.findByStudentId(id).map(this::toDomain);
     }
 
-    public void delete(StudentProfile x) {
-        studentProfileJpaRepository.deleteById(x.id());
+    public void delete(StudentProfile studentProfile) {
+        studentProfileJpaRepository.deleteById(studentProfile.id());
     }
 
     private StudentProfileEntity toEntity(StudentProfile studentProfile) {

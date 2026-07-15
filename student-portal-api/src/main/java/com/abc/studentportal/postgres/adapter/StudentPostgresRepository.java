@@ -15,48 +15,48 @@ public class StudentPostgresRepository implements StudentRepository {
 
     private final StudentJpaRepository delegate;
 
-    public StudentPostgresRepository(StudentJpaRepository d) {
-        delegate = d;
+    public StudentPostgresRepository(StudentJpaRepository studentJpaRepository) {
+        delegate = studentJpaRepository;
     }
 
-    public Student create(Student s) {
-        return toDomain(delegate.save(toEntity(s)));
+    public Student create(Student student) {
+        return toDomain(delegate.save(toEntity(student)));
     }
 
-    public Student update(Student s) {
-        return toDomain(delegate.save(toEntity(s)));
+    public Student update(Student student) {
+        return toDomain(delegate.save(toEntity(student)));
     }
 
     public Optional<Student> findById(UUID id) {
         return delegate.findById(id).map(this::toDomain);
     }
 
-    public Optional<Student> findByStudentNumber(String n) {
-        return delegate.findByStudentNumber(n).map(this::toDomain);
+    public Optional<Student> findByStudentNumber(String studentNumber) {
+        return delegate.findByStudentNumber(studentNumber).map(this::toDomain);
     }
 
-    public Optional<Student> findByEmail(String e) {
-        return delegate.findByEmail(e).map(this::toDomain);
+    public Optional<Student> findByEmail(String email) {
+        return delegate.findByEmail(email).map(this::toDomain);
     }
 
-    public boolean existsByStudentNumber(String n) {
-        return delegate.findByStudentNumber(n).isPresent();
+    public boolean existsByStudentNumber(String studentNumber) {
+        return delegate.findByStudentNumber(studentNumber).isPresent();
     }
 
-    public boolean existsByEmail(String e) {
-        return delegate.findByEmail(e).isPresent();
+    public boolean existsByEmail(String email) {
+        return delegate.findByEmail(email).isPresent();
     }
 
-    public void delete(Student s) {
-        delegate.deleteById(s.id());
+    public void delete(Student student) {
+        delegate.deleteById(student.id());
     }
 
-    private StudentEntity toEntity(Student s) {
-        return new StudentEntity(s.id(), s.studentNumber(), s.firstName(), s.lastName(), s.email(), s.status(), s.departmentId());
+    private StudentEntity toEntity(Student student) {
+        return new StudentEntity(student.id(), student.studentNumber(), student.firstName(), student.lastName(), student.email(), student.status(), student.departmentId());
     }
 
-    private Student toDomain(StudentEntity e) {
-        return new Student(e.getId(), e.getStudentNumber(), e.getFirstName(), e.getLastName(), e.getEmail(), e.getStatus(), e.getDepartment().getId(), e.getCreatedAt(), e.getUpdatedAt(), e.getVersion());
+    private Student toDomain(StudentEntity studentEntity) {
+        return new Student(studentEntity.getId(), studentEntity.getStudentNumber(), studentEntity.getFirstName(), studentEntity.getLastName(), studentEntity.getEmail(), studentEntity.getStatus(), studentEntity.getDepartment().getId(), studentEntity.getCreatedAt(), studentEntity.getUpdatedAt(), studentEntity.getVersion());
     }
 
 }

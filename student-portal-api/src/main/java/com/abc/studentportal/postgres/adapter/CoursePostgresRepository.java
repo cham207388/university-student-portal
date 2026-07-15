@@ -13,42 +13,42 @@ import java.util.*;
 @Profile({"local-postgres", "test-postgres"})
 public class CoursePostgresRepository implements CourseRepository {
 
-    private final CourseJpaRepository d;
+    private final CourseJpaRepository courseJpaRepository;
 
-    public CoursePostgresRepository(CourseJpaRepository d) {
-        this.d = d;
+    public CoursePostgresRepository(CourseJpaRepository courseJpaRepository) {
+        this.courseJpaRepository = courseJpaRepository;
     }
 
-    public Course create(Course x) {
-        return toDomain(d.save(toEntity(x)));
+    public Course create(Course course) {
+        return toDomain(courseJpaRepository.save(toEntity(course)));
     }
 
-    public Course update(Course x) {
-        return toDomain(d.save(toEntity(x)));
+    public Course update(Course course) {
+        return toDomain(courseJpaRepository.save(toEntity(course)));
     }
 
     public Optional<Course> findById(UUID id) {
-        return d.findById(id).map(this::toDomain);
+        return courseJpaRepository.findById(id).map(this::toDomain);
     }
 
-    public Optional<Course> findByCourseCode(String c) {
-        return d.findByCode(c).map(this::toDomain);
+    public Optional<Course> findByCourseCode(String courseCode) {
+        return courseJpaRepository.findByCode(courseCode).map(this::toDomain);
     }
 
-    public boolean existsByCourseCode(String c) {
-        return d.findByCode(c).isPresent();
+    public boolean existsByCourseCode(String courseCode) {
+        return courseJpaRepository.findByCode(courseCode).isPresent();
     }
 
-    public void delete(Course x) {
-        d.deleteById(x.id());
+    public void delete(Course course) {
+        courseJpaRepository.deleteById(course.id());
     }
 
-    private CourseEntity toEntity(Course x) {
-        return new CourseEntity(x.id(), x.courseCode(), x.title(), x.description(), x.credits(), x.capacity(), x.status(), x.departmentId(), x.instructorId());
+    private CourseEntity toEntity(Course course) {
+        return new CourseEntity(course.id(), course.courseCode(), course.title(), course.description(), course.credits(), course.capacity(), course.status(), course.departmentId(), course.instructorId());
     }
 
-    private Course toDomain(CourseEntity e) {
-        return new Course(e.getId(), e.getCourseCode(), e.getTitle(), e.getDescription(), e.getCredits(), e.getCapacity(), e.getStatus(), e.getDepartment().getId(), e.getInstructor().getId(), e.getCreatedAt(), e.getUpdatedAt(), e.getVersion());
+    private Course toDomain(CourseEntity entity) {
+        return new Course(entity.getId(), entity.getCourseCode(), entity.getTitle(), entity.getDescription(), entity.getCredits(), entity.getCapacity(), entity.getStatus(), entity.getDepartment().getId(), entity.getInstructor().getId(), entity.getCreatedAt(), entity.getUpdatedAt(), entity.getVersion());
     }
 
 }

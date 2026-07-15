@@ -13,50 +13,50 @@ import java.util.*;
 @Profile({"local-postgres", "test-postgres"})
 public class InstructorPostgresRepository implements InstructorRepository {
 
-    private final InstructorJpaRepository d;
+    private final InstructorJpaRepository instructorJpaRepository;
 
-    public InstructorPostgresRepository(InstructorJpaRepository d) {
-        this.d = d;
+    public InstructorPostgresRepository(InstructorJpaRepository instructorJpaRepository) {
+        this.instructorJpaRepository = instructorJpaRepository;
     }
 
-    public Instructor create(Instructor x) {
-        return toDomain(d.save(toEntity(x)));
+    public Instructor create(Instructor instructor) {
+        return toDomain(instructorJpaRepository.save(toEntity(instructor)));
     }
 
-    public Instructor update(Instructor x) {
-        return toDomain(d.save(toEntity(x)));
+    public Instructor update(Instructor instructor) {
+        return toDomain(instructorJpaRepository.save(toEntity(instructor)));
     }
 
     public Optional<Instructor> findById(UUID id) {
-        return d.findById(id).map(this::toDomain);
+        return instructorJpaRepository.findById(id).map(this::toDomain);
     }
 
-    public Optional<Instructor> findByEmployeeNumber(String n) {
-        return d.findByEmployeeNumber(n).map(this::toDomain);
+    public Optional<Instructor> findByEmployeeNumber(String employeeNumber) {
+        return instructorJpaRepository.findByEmployeeNumber(employeeNumber).map(this::toDomain);
     }
 
-    public Optional<Instructor> findByEmail(String e) {
-        return d.findByEmail(e).map(this::toDomain);
+    public Optional<Instructor> findByEmail(String email) {
+        return instructorJpaRepository.findByEmail(email).map(this::toDomain);
     }
 
-    public boolean existsByEmployeeNumber(String n) {
-        return d.findByEmployeeNumber(n).isPresent();
+    public boolean existsByEmployeeNumber(String employeeNumber) {
+        return instructorJpaRepository.findByEmployeeNumber(employeeNumber).isPresent();
     }
 
-    public boolean existsByEmail(String e) {
-        return d.findByEmail(e).isPresent();
+    public boolean existsByEmail(String email) {
+        return instructorJpaRepository.findByEmail(email).isPresent();
     }
 
-    public void delete(Instructor x) {
-        d.deleteById(x.id());
+    public void delete(Instructor instructor) {
+        instructorJpaRepository.deleteById(instructor.id());
     }
 
-    private InstructorEntity toEntity(Instructor x) {
-        return new InstructorEntity(x.id(), x.employeeNumber(), x.firstName(), x.lastName(), x.email(), x.departmentId());
+    private InstructorEntity toEntity(Instructor instructor) {
+        return new InstructorEntity(instructor.id(), instructor.employeeNumber(), instructor.firstName(), instructor.lastName(), instructor.email(), instructor.departmentId());
     }
 
-    private Instructor toDomain(InstructorEntity e) {
-        return new Instructor(e.getId(), e.getEmployeeNumber(), e.getFirstName(), e.getLastName(), e.getEmail(), e.getDepartment().getId(), e.getCreatedAt(), e.getUpdatedAt(), e.getVersion());
+    private Instructor toDomain(InstructorEntity instructorEntity) {
+        return new Instructor(instructorEntity.getId(), instructorEntity.getEmployeeNumber(), instructorEntity.getFirstName(), instructorEntity.getLastName(), instructorEntity.getEmail(), instructorEntity.getDepartment().getId(), instructorEntity.getCreatedAt(), instructorEntity.getUpdatedAt(), instructorEntity.getVersion());
     }
 
 }
