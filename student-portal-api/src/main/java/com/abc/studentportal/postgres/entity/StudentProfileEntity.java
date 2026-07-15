@@ -25,7 +25,7 @@ public class StudentProfileEntity extends BaseEntity {
     @JoinColumn(name = "student_id", nullable = false)
     private StudentEntity student;
 
-    @Column(name = "date_of_birth", nullable = false)
+    @Column(name = "date_of_birth")
     private LocalDate dateOfBirth;
 
     @Column(name = "phone")
