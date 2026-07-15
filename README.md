@@ -60,7 +60,7 @@ cd student-portal-api
 The initial health endpoint is available at `http://localhost:8080/actuator/health`.
 
 <details>
-<summary>dynamo-to-pg</summary>
+<summary><b>dynamo-to-pg</b></summary>
 
 ## LocalStack Pro and DynamoDB infrastructure
 
@@ -68,23 +68,22 @@ Export your LocalStack token; do not place it in a committed file:
 
 ```shell
 export LOCALSTACK_AUTH_TOKEN="<your-token>"
-docker compose up -d localstack
+make compose-up
 ```
 
 Provision the six access-pattern-driven source tables:
 
 ```shell
-terraform -chdir=infrastructure/local init
-terraform -chdir=infrastructure/local validate
-terraform -chdir=infrastructure/local plan
-terraform -chdir=infrastructure/local apply
+make tf-init
+make tf-validate
+make tf-plan
+make tf-apply
 ```
 
 Run the application with the typed local configuration profile:
 
 ```shell
-cd student-portal-api
-./gradlew bootRun --args='--spring.profiles.active=local-dynamodb'
+make app-run-dynamodb
 ```
 
 The profile reads `AWS_REGION`, `DYNAMODB_ENDPOINT`, and six table-name variables; safe local defaults are shown in
@@ -115,8 +114,8 @@ filters, and DynamoDB opaque cursor behavior.
 To remove the local tables and services:
 
 ```shell
-terraform -chdir=infrastructure/local destroy
-docker compose down
+make tf-destroy
+make compose-down
 ```
 
 If port `4566` is already in use, check for an existing LocalStack container before starting another. A healthy existing
