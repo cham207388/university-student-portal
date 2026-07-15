@@ -10,9 +10,22 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-@Component @Profile({"local-postgres", "test-postgres"}) @Transactional(readOnly = true)
+@Component
+@Profile({"local-postgres", "test-postgres"})
+@Transactional(readOnly = true)
 public class PostgresDepartmentQueries extends PostgresPageSupport implements DepartmentQueries {
+
     private final DepartmentJpaRepository repository;
-    public PostgresDepartmentQueries(DepartmentJpaRepository repository, PostgresCursorCodec cursors) { super(cursors); this.repository = repository; }
-    public CursorPage<Department> findAll(CursorRequest request) { return page("departments", request, repository::findAll, PostgresDomainMapper::department); }
+
+    public PostgresDepartmentQueries(DepartmentJpaRepository repository, PostgresCursorCodec cursors) {
+
+        super(cursors);
+        this.repository = repository;
+    }
+
+    public CursorPage<Department> findAll(CursorRequest request) {
+
+        return page("departments", request, repository::findAll, PostgresDomainMapper::department);
+    }
+
 }

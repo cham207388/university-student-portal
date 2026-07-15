@@ -9,6 +9,7 @@ import com.abc.studentportal.course.domain.CourseStatus;
 import com.abc.studentportal.department.application.DepartmentRepository;
 import com.abc.studentportal.instructor.application.InstructorRepository;
 import com.abc.studentportal.instructor.domain.Instructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
@@ -18,6 +19,7 @@ import java.util.UUID;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 @Profile({"local-dynamodb", "test-dynamodb"})
 public class CourseService {
 
@@ -30,15 +32,6 @@ public class CourseService {
     private final Clock clock;
 
     private final DependencyChecker dependencies;
-
-    public CourseService(CourseRepository courses, DepartmentRepository departments,
-                         InstructorRepository instructors, Clock clock, DependencyChecker dependencies) {
-        this.courses = courses;
-        this.departments = departments;
-        this.instructors = instructors;
-        this.clock = clock;
-        this.dependencies = dependencies;
-    }
 
     public Course create(CreateCommand command) {
         validateRelationships(command.departmentId(), command.instructorId());

@@ -18,6 +18,7 @@ public record Enrollment(UUID id, UUID studentId, UUID courseId, EnrollmentStatu
             EnrollmentStatus.COMPLETED, Set.of());
 
     public Enrollment {
+
         DomainChecks.audit(id, createdAt, updatedAt, version);
         DomainChecks.required(studentId, "studentId");
         DomainChecks.required(courseId, "courseId");
@@ -36,14 +37,17 @@ public record Enrollment(UUID id, UUID studentId, UUID courseId, EnrollmentStatu
     }
 
     public boolean isActive() {
+
         return status == EnrollmentStatus.ENROLLED || status == EnrollmentStatus.WAITLISTED;
     }
 
     public boolean consumesCapacity() {
+
         return status == EnrollmentStatus.ENROLLED || status == EnrollmentStatus.COMPLETED;
     }
 
     public Enrollment transitionTo(EnrollmentStatus target, String grade, Instant changedAt) {
+
         DomainChecks.required(target, "status");
         DomainChecks.required(changedAt, "changedAt");
         if (target == status) {

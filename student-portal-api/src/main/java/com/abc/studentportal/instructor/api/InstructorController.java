@@ -9,6 +9,7 @@ import com.abc.studentportal.course.application.CourseQueries;
 import com.abc.studentportal.instructor.application.InstructorQueries;
 import com.abc.studentportal.instructor.application.InstructorService;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,8 +20,9 @@ import java.util.List;
 import java.util.function.Function;
 
 @RestController
-@Profile({"local-dynamodb", "test-dynamodb", "local-postgres", "test-postgres"})
+@RequiredArgsConstructor
 @RequestMapping("/api/v1/instructors")
+@Profile({"local-dynamodb", "test-dynamodb", "local-postgres", "test-postgres"})
 public class InstructorController {
 
     private final InstructorService service;
@@ -28,13 +30,6 @@ public class InstructorController {
     private final InstructorQueries queries;
 
     private final CourseQueries courses;
-
-    public InstructorController(InstructorService service, InstructorQueries queries,
-                                CourseQueries courses) {
-        this.service = service;
-        this.queries = queries;
-        this.courses = courses;
-    }
 
     @PostMapping
     ResponseEntity<InstructorApi.Response> create(@Valid @RequestBody InstructorApi.CreateRequest request) {

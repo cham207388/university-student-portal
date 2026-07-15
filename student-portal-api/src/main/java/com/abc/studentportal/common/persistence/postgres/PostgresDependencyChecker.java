@@ -5,25 +5,19 @@ import com.abc.studentportal.course.persistence.postgres.CourseJpaRepository;
 import com.abc.studentportal.enrollment.persistence.postgres.EnrollmentJpaRepository;
 import com.abc.studentportal.instructor.persistence.postgres.InstructorJpaRepository;
 import com.abc.studentportal.student.persistence.postgres.StudentJpaRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import java.util.UUID;
 
 @Component
+@RequiredArgsConstructor
 @Profile({"local-postgres", "test-postgres"})
 public class PostgresDependencyChecker implements DependencyChecker {
     private final StudentJpaRepository students;
     private final InstructorJpaRepository instructors;
     private final CourseJpaRepository courses;
     private final EnrollmentJpaRepository enrollments;
-
-    public PostgresDependencyChecker(StudentJpaRepository students, InstructorJpaRepository instructors,
-                                     CourseJpaRepository courses, EnrollmentJpaRepository enrollments) {
-        this.students = students;
-        this.instructors = instructors;
-        this.courses = courses;
-        this.enrollments = enrollments;
-    }
 
     public boolean departmentHasDependents(UUID departmentId) {
         return students.existsByDepartment_Id(departmentId)

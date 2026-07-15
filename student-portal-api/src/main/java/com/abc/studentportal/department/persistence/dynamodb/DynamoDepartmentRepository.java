@@ -1,5 +1,5 @@
 package com.abc.studentportal.department.persistence.dynamodb;
-
+import com.abc.studentportal.common.exception.ConflictException;
 import com.abc.studentportal.common.persistence.dynamodb.AbstractDynamoRepository;
 import com.abc.studentportal.common.persistence.dynamodb.DynamoDbTables;
 import com.abc.studentportal.common.persistence.dynamodb.DynamoPersistenceAdapter;
@@ -14,6 +14,7 @@ import com.abc.studentportal.department.application.DynamoDepartmentQueries;
 import com.abc.studentportal.department.application.DepartmentRepository;
 import com.abc.studentportal.department.domain.Department;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -36,7 +37,7 @@ public class DynamoDepartmentRepository extends AbstractDynamoRepository<Departm
     @Override
     public Department create(Department value) {
         return DepartmentDynamoMapper.toDomain(writer.create(table(), "id", DepartmentDynamoMapper.toRecord(value),
-                java.util.List.of(claim(value))));
+                List.of(claim(value))));
     }
 
     @Override
@@ -44,7 +45,7 @@ public class DynamoDepartmentRepository extends AbstractDynamoRepository<Departm
         DepartmentDynamoRecord currentRecord = table()
                 .getItem(request -> request.key(key(value.id().toString())).consistentRead(true));
         if (currentRecord == null)
-            throw new com.abc.studentportal.common.exception.ConflictException(
+            throw new ConflictException(
                     "Resource does not exist or was modified by another request");
         Department current = DepartmentDynamoMapper.toDomain(currentRecord);
         DepartmentDynamoRecord next = DepartmentDynamoMapper.toRecord(value);
@@ -52,7 +53,7 @@ public class DynamoDepartmentRepository extends AbstractDynamoRepository<Departm
         next.setInstructorCount(currentRecord.getInstructorCount());
         next.setCourseCount(currentRecord.getCourseCount());
         return DepartmentDynamoMapper.toDomain(writer.update(table(), "id", next,
-                value.version(), java.util.List.of(claim(current)), java.util.List.of(claim(value))));
+                value.version(), List.of(claim(current)), List.of(claim(value))));
     }
 
     @Override

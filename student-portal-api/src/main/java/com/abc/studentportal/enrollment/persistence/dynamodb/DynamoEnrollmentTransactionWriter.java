@@ -3,6 +3,7 @@ package com.abc.studentportal.enrollment.persistence.dynamodb;
 import com.abc.studentportal.common.exception.ConflictException;
 import com.abc.studentportal.common.persistence.dynamodb.DynamoDbTables;
 import com.abc.studentportal.enrollment.domain.Enrollment;
+import lombok.RequiredArgsConstructor;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import software.amazon.awssdk.services.dynamodb.model.Delete;
@@ -15,16 +16,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+@RequiredArgsConstructor
 public final class DynamoEnrollmentTransactionWriter {
 
     private final DynamoDbClient client;
 
     private final DynamoDbTables tables;
-
-    public DynamoEnrollmentTransactionWriter(DynamoDbClient client, DynamoDbTables tables) {
-        this.client = client;
-        this.tables = tables;
-    }
 
     public Enrollment create(Enrollment value) {
         EnrollmentDynamoRecord record = EnrollmentDynamoMapper.toRecord(value);

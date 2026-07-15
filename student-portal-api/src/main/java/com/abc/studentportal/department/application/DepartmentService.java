@@ -4,6 +4,7 @@ import com.abc.studentportal.common.exception.ResourceNotFoundException;
 import com.abc.studentportal.common.exception.ConflictException;
 import com.abc.studentportal.common.application.DependencyChecker;
 import com.abc.studentportal.department.domain.Department;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
@@ -13,6 +14,7 @@ import java.util.UUID;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 @Profile({"local-dynamodb", "test-dynamodb"})
 public class DepartmentService {
 
@@ -21,12 +23,6 @@ public class DepartmentService {
     private final Clock clock;
 
     private final DependencyChecker dependencies;
-
-    public DepartmentService(DepartmentRepository repository, Clock clock, DependencyChecker dependencies) {
-        this.repository = repository;
-        this.clock = clock;
-        this.dependencies = dependencies;
-    }
 
     public Department create(CreateCommand command) {
         Instant now = clock.instant();

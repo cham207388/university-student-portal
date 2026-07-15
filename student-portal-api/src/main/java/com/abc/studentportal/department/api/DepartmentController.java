@@ -15,6 +15,7 @@ import com.abc.studentportal.student.api.StudentApi;
 import com.abc.studentportal.student.api.StudentMapper;
 import com.abc.studentportal.student.application.StudentQueries;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,8 +26,9 @@ import java.util.List;
 import java.util.function.Function;
 
 @RestController
-@Profile({"local-dynamodb", "test-dynamodb", "local-postgres", "test-postgres"})
+@RequiredArgsConstructor
 @RequestMapping("/api/v1/departments")
+@Profile({"local-dynamodb", "test-dynamodb", "local-postgres", "test-postgres"})
 public class DepartmentController {
 
     private final DepartmentService service;
@@ -38,15 +40,6 @@ public class DepartmentController {
     private final InstructorQueries instructors;
 
     private final CourseQueries courses;
-
-    public DepartmentController(DepartmentService service, DepartmentQueries departments,
-                                StudentQueries students, InstructorQueries instructors, CourseQueries courses) {
-        this.service = service;
-        this.departments = departments;
-        this.students = students;
-        this.instructors = instructors;
-        this.courses = courses;
-    }
 
     @PostMapping
     ResponseEntity<DepartmentApi.Response> create(@Valid @RequestBody DepartmentApi.CreateRequest request) {

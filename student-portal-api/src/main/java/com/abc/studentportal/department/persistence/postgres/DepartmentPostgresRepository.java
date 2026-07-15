@@ -3,6 +3,7 @@ package com.abc.studentportal.department.persistence.postgres;
 import com.abc.studentportal.department.application.DepartmentRepository;
 import com.abc.studentportal.department.domain.Department;
 import com.abc.studentportal.common.persistence.postgres.PostgresVersions;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Repository;
@@ -12,14 +13,11 @@ import java.util.UUID;
 
 @Repository
 @Primary
+@RequiredArgsConstructor
 @Profile({"local-postgres", "test-postgres", "migration"})
 public class DepartmentPostgresRepository implements DepartmentRepository {
 
     private final DepartmentJpaRepository delegate;
-
-    public DepartmentPostgresRepository(DepartmentJpaRepository delegate) {
-        this.delegate = delegate;
-    }
 
     public Department create(Department department) {
         return toDomain(delegate.save(toEntity(department)));

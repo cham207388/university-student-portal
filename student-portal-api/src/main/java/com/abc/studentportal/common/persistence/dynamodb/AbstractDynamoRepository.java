@@ -1,6 +1,7 @@
 package com.abc.studentportal.common.persistence.dynamodb;
 
 import com.abc.studentportal.common.exception.ConflictException;
+import lombok.RequiredArgsConstructor;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
 import software.amazon.awssdk.enhanced.dynamodb.Expression;
 import software.amazon.awssdk.enhanced.dynamodb.Key;
@@ -11,6 +12,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 
+@RequiredArgsConstructor
 public abstract class AbstractDynamoRepository<D, R extends VersionedDynamoRecord> {
 
     private final DynamoDbTable<R> table;
@@ -22,15 +24,6 @@ public abstract class AbstractDynamoRepository<D, R extends VersionedDynamoRecor
     private final Function<R, D> toDomain;
 
     private final Function<D, String> domainKey;
-
-    protected AbstractDynamoRepository(DynamoDbTable<R> table, String partitionKeyName,
-                                       Function<D, R> toRecord, Function<R, D> toDomain, Function<D, String> domainKey) {
-        this.table = table;
-        this.partitionKeyName = partitionKeyName;
-        this.toRecord = toRecord;
-        this.toDomain = toDomain;
-        this.domainKey = domainKey;
-    }
 
     protected D createItem(D value) {
         R record = toRecord.apply(value);

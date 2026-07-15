@@ -16,6 +16,7 @@ import com.abc.studentportal.course.application.CourseRepository;
 import com.abc.studentportal.course.application.DynamoCourseQueries;
 import com.abc.studentportal.course.domain.Course;
 import com.abc.studentportal.course.domain.CourseStatus;
+import software.amazon.awssdk.services.dynamodb.model.TransactWriteItem;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -58,7 +59,7 @@ public class DynamoCourseRepository extends AbstractDynamoRepository<Course, Cou
         record.setOccupiedSeats(current.getOccupiedSeats());
         record.setEnrollmentCount(current.getEnrollmentCount());
         Course old = CourseDynamoMapper.toDomain(current);
-        java.util.List<software.amazon.awssdk.services.dynamodb.model.TransactWriteItem> moves = new java.util.ArrayList<>();
+        java.util.List<TransactWriteItem> moves = new java.util.ArrayList<>();
         if (!old.departmentId().equals(value.departmentId())) {
             moves.add(counters.department(old.departmentId().toString(), "courseCount", -1));
             moves.add(counters.department(value.departmentId().toString(), "courseCount", 1));

@@ -6,11 +6,10 @@ import com.abc.studentportal.common.pagination.CursorPage;
 import com.abc.studentportal.common.pagination.CursorRequest;
 import com.abc.studentportal.course.domain.Course;
 import com.abc.studentportal.course.persistence.dynamodb.CourseDynamoMapper;
-import com.abc.studentportal.course.persistence.dynamodb.CourseDynamoRecord;
 import com.abc.studentportal.enrollment.persistence.dynamodb.EnrollmentDynamoRecord;
 import com.abc.studentportal.student.domain.Student;
 import com.abc.studentportal.student.persistence.dynamodb.StudentDynamoMapper;
-import com.abc.studentportal.student.persistence.dynamodb.StudentDynamoRecord;
+import lombok.RequiredArgsConstructor;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import software.amazon.awssdk.services.dynamodb.model.KeysAndAttributes;
@@ -23,6 +22,7 @@ import java.util.UUID;
 import java.util.function.Function;
 
 @DynamoPersistenceAdapter
+@RequiredArgsConstructor
 public class DynamoStudentCourseQueryService implements DynamoStudentCourseQueries {
 
     private final DynamoDbClient client;
@@ -30,13 +30,6 @@ public class DynamoStudentCourseQueryService implements DynamoStudentCourseQueri
     private final DynamoDbTables tables;
 
     private final DynamoCursorCodec cursorCodec;
-
-    public DynamoStudentCourseQueryService(DynamoDbClient client, DynamoDbTables tables,
-                                           DynamoCursorCodec cursorCodec) {
-        this.client = client;
-        this.tables = tables;
-        this.cursorCodec = cursorCodec;
-    }
 
     @Override
     public CursorPage<Course> findCoursesByStudent(UUID studentId, CursorRequest request) {

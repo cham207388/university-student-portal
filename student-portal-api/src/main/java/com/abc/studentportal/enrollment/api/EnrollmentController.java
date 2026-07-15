@@ -8,6 +8,7 @@ import com.abc.studentportal.enrollment.application.EnrollmentQueries;
 import com.abc.studentportal.enrollment.application.EnrollmentService;
 import com.abc.studentportal.enrollment.domain.EnrollmentStatus;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,6 +19,7 @@ import java.util.UUID;
 import java.util.function.Function;
 
 @RestController
+@RequiredArgsConstructor
 @Profile({"local-dynamodb", "test-dynamodb", "local-postgres", "test-postgres"})
 @RequestMapping("/api/v1/enrollments")
 public class EnrollmentController {
@@ -25,11 +27,6 @@ public class EnrollmentController {
     private final EnrollmentService service;
 
     private final EnrollmentQueries queries;
-
-    public EnrollmentController(EnrollmentService service, EnrollmentQueries queries) {
-        this.service = service;
-        this.queries = queries;
-    }
 
     @PostMapping
     ResponseEntity<EnrollmentApi.Response> create(@Valid @RequestBody EnrollmentApi.CreateRequest request) {

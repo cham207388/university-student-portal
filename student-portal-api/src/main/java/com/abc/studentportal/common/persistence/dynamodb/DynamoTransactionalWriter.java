@@ -1,6 +1,7 @@
 package com.abc.studentportal.common.persistence.dynamodb;
 
 import com.abc.studentportal.common.exception.ConflictException;
+import lombok.RequiredArgsConstructor;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
@@ -13,13 +14,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+@RequiredArgsConstructor
 public final class DynamoTransactionalWriter {
 
     private final DynamoDbClient client;
-
-    public DynamoTransactionalWriter(DynamoDbClient client) {
-        this.client = client;
-    }
 
     public <R extends VersionedDynamoRecord> R create(DynamoDbTable<R> table, String partitionKey, R record,
                                                       List<DynamoUniqueClaim> claims) {

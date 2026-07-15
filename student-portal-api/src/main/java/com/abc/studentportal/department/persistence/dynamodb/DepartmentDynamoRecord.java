@@ -1,5 +1,6 @@
 package com.abc.studentportal.department.persistence.dynamodb;
 
+import com.abc.studentportal.common.persistence.dynamodb.VersionedDynamoRecord;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -13,7 +14,7 @@ import software.amazon.awssdk.enhanced.dynamodb.extensions.annotations.DynamoDbV
 @Getter
 @Setter
 @NoArgsConstructor
-public class DepartmentDynamoRecord implements com.abc.studentportal.common.persistence.dynamodb.VersionedDynamoRecord {
+public class DepartmentDynamoRecord implements VersionedDynamoRecord {
 
     private String id;
 

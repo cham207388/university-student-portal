@@ -5,28 +5,22 @@ import com.abc.studentportal.course.domain.Course;
 import com.abc.studentportal.common.persistence.postgres.PostgresVersions;
 import com.abc.studentportal.department.persistence.postgres.DepartmentJpaRepository;
 import com.abc.studentportal.instructor.persistence.postgres.InstructorJpaRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Repository;
-import org.springframework.orm.ObjectOptimisticLockingFailureException;
 
 import java.util.*;
 
 @Repository
 @Primary
+@RequiredArgsConstructor
 @Profile({"local-postgres", "test-postgres", "migration"})
 public class CoursePostgresRepository implements CourseRepository {
 
     private final CourseJpaRepository courseJpaRepository;
     private final DepartmentJpaRepository departmentJpaRepository;
     private final InstructorJpaRepository instructorJpaRepository;
-
-    public CoursePostgresRepository(CourseJpaRepository courseJpaRepository, DepartmentJpaRepository departmentJpaRepository,
-            InstructorJpaRepository instructorJpaRepository) {
-        this.courseJpaRepository = courseJpaRepository;
-        this.departmentJpaRepository = departmentJpaRepository;
-        this.instructorJpaRepository = instructorJpaRepository;
-    }
 
     public Course create(Course course) {
         return toDomain(courseJpaRepository.save(toEntity(course)));

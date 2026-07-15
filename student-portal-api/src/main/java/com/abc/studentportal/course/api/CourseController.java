@@ -7,6 +7,7 @@ import com.abc.studentportal.common.pagination.CursorPage;
 import com.abc.studentportal.common.pagination.CursorRequest;
 import com.abc.studentportal.course.application.CourseService;
 import com.abc.studentportal.course.application.CourseQueries;
+import com.abc.studentportal.course.domain.Course;
 import com.abc.studentportal.course.domain.CourseStatus;
 import com.abc.studentportal.enrollment.api.EnrollmentApi;
 import com.abc.studentportal.enrollment.api.EnrollmentMapper;
@@ -14,6 +15,7 @@ import com.abc.studentportal.enrollment.application.EnrollmentQueries;
 import com.abc.studentportal.student.api.StudentApi;
 import com.abc.studentportal.student.api.StudentMapper;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,8 +27,9 @@ import java.util.List;
 import java.util.function.Function;
 
 @RestController
-@Profile({"local-dynamodb", "test-dynamodb", "local-postgres", "test-postgres"})
+@RequiredArgsConstructor
 @RequestMapping("/api/v1/courses")
+@Profile({"local-dynamodb", "test-dynamodb", "local-postgres", "test-postgres"})
 public class CourseController {
 
     private final CourseService service;
@@ -36,14 +39,6 @@ public class CourseController {
     private final EnrollmentQueries enrollments;
 
     private final StudentCourseQueries relationships;
-
-    public CourseController(CourseService service, CourseQueries queries, EnrollmentQueries enrollments,
-                            StudentCourseQueries relationships) {
-        this.service = service;
-        this.queries = queries;
-        this.enrollments = enrollments;
-        this.relationships = relationships;
-    }
 
     @PostMapping
     ResponseEntity<CourseApi.Response> create(@Valid @RequestBody CourseApi.CreateRequest request) {
@@ -74,7 +69,7 @@ public class CourseController {
             return exact(service.findByCourseCode(courseCode).map(CourseMapper::toResponse).stream().toList());
         }
         var request = new CursorRequest(limit, cursor);
-        CursorPage<com.abc.studentportal.course.domain.Course> page = departmentId != null
+        CursorPage<Course> page = departmentId != null
                 ? queries.findByDepartment(departmentId, request)
                 : instructorId != null ? queries.findByInstructor(instructorId, request)
                   : status != null ? queries.findByStatus(status, request) : queries.findAll(request);
