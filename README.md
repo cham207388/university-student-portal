@@ -59,6 +59,9 @@ cd student-portal-api
 
 The initial health endpoint is available at `http://localhost:8080/actuator/health`.
 
+<details>
+<summary>dynamo-to-pg</summary>
+
 ## LocalStack Pro and DynamoDB infrastructure
 
 Export your LocalStack token; do not place it in a committed file:
@@ -142,6 +145,8 @@ The DynamoDB-to-PostgreSQL data-copy runner is not implemented yet. Starting the
 the schema, but it does not copy existing DynamoDB records. Until that migration runner is added, data must be created
 through PostgreSQL services/tests independently. PostgreSQL REST controllers are also still pending; the current HTTP
 controllers are DynamoDB-profiled.
+
+</details>
 
 ## Design documents
 
