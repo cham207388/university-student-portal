@@ -73,5 +73,17 @@ api-smoke-dynamodb:
 api-smoke-postgres:
 	STUDENT_PORTAL_API_URL=http://127.0.0.1:8082 ./scripts/api-smoke.sh
 
-check:
+gradle-clean:
 	cd student-portal-api && ./gradlew clean check
+
+gradle-build:
+	cd student-portal-api && ./gradlew build
+
+gradle-test:
+	cd student-portal-api && ./gradlew test
+
+gradle-integration-test:
+	cd student-portal-api && ./gradlew integrationTest
+
+gradle-jacoco-report:
+	cd student-portal-api && ./gradlew jacocoTestReport

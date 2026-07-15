@@ -2,7 +2,12 @@ package com.abc.studentportal.instructor.application;
 
 import com.abc.studentportal.common.application.DependencyChecker;
 import com.abc.studentportal.common.exception.ConflictException;
+import com.abc.studentportal.common.exception.InvalidRequestException;
 import com.abc.studentportal.common.exception.ResourceNotFoundException;
+import com.abc.studentportal.common.pagination.CursorPage;
+import com.abc.studentportal.common.pagination.CursorRequest;
+import com.abc.studentportal.course.application.CourseQueries;
+import com.abc.studentportal.course.domain.Course;
 import com.abc.studentportal.department.application.DepartmentRepository;
 import com.abc.studentportal.instructor.domain.Instructor;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +32,10 @@ public class InstructorService {
     private final Clock clock;
 
     private final DependencyChecker dependencies;
+
+    private final InstructorQueries queries;
+
+    private final CourseQueries courses;
 
     public Instructor create(CreateCommand command) {
 
@@ -64,6 +73,29 @@ public class InstructorService {
                 .toLowerCase(Locale.ROOT));
     }
 
+    public CursorPage<Instructor> list(InstructorListQuery query) {
+        int filters = (query.departmentId() == null ? 0 : 1) + (query.employeeNumber() == null ? 0 : 1)
+                + (query.email() == null ? 0 : 1);
+        if (filters > 1)
+            throw new InvalidRequestException("Instructor lists support one filter at a time");
+        if (query.employeeNumber() != null || query.email() != null) {
+            if (query.cursor() != null)
+                throw new InvalidRequestException("cursor cannot be combined with an exact instructor lookup");
+            Optional<Instructor> value = query.employeeNumber() != null
+                    ? findByEmployeeNumber(query.employeeNumber())
+                    : findByEmail(query.email());
+            return CursorPage.exact(value);
+        }
+        var request = new CursorRequest(query.limit(), query.cursor());
+        return query.departmentId() == null ? queries.findAll(request)
+                : queries.findByDepartment(query.departmentId(), request);
+    }
+
+    public CursorPage<Course> listCourses(UUID instructorId, CursorRequest request) {
+        get(instructorId);
+        return courses.findByInstructor(instructorId, request);
+    }
+
     public void delete(UUID id, long version) {
 
         Instructor current = get(id);
@@ -78,6 +110,11 @@ public class InstructorService {
 
         if (departments.findById(id).isEmpty())
             throw new ResourceNotFoundException("Department", id);
+    }
+
+    public record InstructorListQuery(UUID departmentId, String employeeNumber, String email, int limit,
+                                      String cursor) {
+
     }
 
     public record CreateCommand(String employeeNumber, String firstName, String lastName, String email,

@@ -6,6 +6,7 @@ import com.abc.studentportal.enrollment.application.EnrollmentRepository;
 import com.abc.studentportal.enrollment.domain.Enrollment;
 import com.abc.studentportal.enrollment.domain.EnrollmentStatus;
 import com.abc.studentportal.student.persistence.postgres.StudentJpaRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.Profile;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
@@ -16,10 +17,11 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
-@Repository
 @Primary
-@Profile({"local-postgres", "test-postgres", "migration"})
+@Repository
 @Transactional
+@RequiredArgsConstructor
+@Profile({"local-postgres", "test-postgres", "migration"})
 public class PostgresEnrollmentRepository implements EnrollmentRepository {
 
     private final EnrollmentJpaRepository repo;
@@ -27,13 +29,6 @@ public class PostgresEnrollmentRepository implements EnrollmentRepository {
     private final StudentJpaRepository students;
 
     private final CourseJpaRepository courses;
-
-    public PostgresEnrollmentRepository(EnrollmentJpaRepository repo, StudentJpaRepository students, CourseJpaRepository courses) {
-
-        this.repo = repo;
-        this.students = students;
-        this.courses = courses;
-    }
 
     public Enrollment create(Enrollment enrollment) {
 

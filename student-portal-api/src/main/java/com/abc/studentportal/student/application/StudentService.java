@@ -1,12 +1,20 @@
 package com.abc.studentportal.student.application;
 
 import com.abc.studentportal.common.application.DependencyChecker;
+import com.abc.studentportal.common.application.StudentCourseQueries;
 import com.abc.studentportal.common.exception.ConflictException;
+import com.abc.studentportal.common.exception.InvalidRequestException;
 import com.abc.studentportal.common.exception.ResourceNotFoundException;
+import com.abc.studentportal.common.pagination.CursorPage;
+import com.abc.studentportal.common.pagination.CursorRequest;
+import com.abc.studentportal.course.domain.Course;
 import com.abc.studentportal.department.application.DepartmentRepository;
+import com.abc.studentportal.enrollment.application.EnrollmentQueries;
+import com.abc.studentportal.enrollment.domain.Enrollment;
 import com.abc.studentportal.student.domain.Student;
 import com.abc.studentportal.student.domain.StudentProfile;
 import com.abc.studentportal.student.domain.StudentStatus;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
@@ -18,6 +26,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
 @Profile({"local-dynamodb", "test-dynamodb"})
 public class StudentService {
 
@@ -31,15 +40,11 @@ public class StudentService {
 
     private final DependencyChecker dependencies;
 
-    public StudentService(StudentRepository students, StudentProfileRepository profiles,
-                          DepartmentRepository departments, Clock clock, DependencyChecker dependencies) {
+    private final StudentQueries queries;
 
-        this.students = students;
-        this.profiles = profiles;
-        this.departments = departments;
-        this.clock = clock;
-        this.dependencies = dependencies;
-    }
+    private final EnrollmentQueries enrollments;
+
+    private final StudentCourseQueries relationships;
 
     public Student create(CreateCommand command) {
 
@@ -95,6 +100,38 @@ public class StudentService {
                 .toLowerCase(Locale.ROOT));
     }
 
+    public CursorPage<Student> list(StudentListQuery query) {
+        int filters = (query.departmentId() == null ? 0 : 1) + (query.status() == null ? 0 : 1)
+                + (query.studentNumber() == null ? 0 : 1) + (query.email() == null ? 0 : 1);
+        if (filters > 1)
+            throw new InvalidRequestException("Student lists support one filter at a time");
+        if (query.lastName() != null && query.departmentId() == null)
+            throw new InvalidRequestException("lastName requires departmentId");
+        if (query.studentNumber() != null || query.email() != null) {
+            if (query.cursor() != null)
+                throw new InvalidRequestException("cursor cannot be combined with an exact student lookup");
+            Optional<Student> value = query.studentNumber() != null ? findByStudentNumber(query.studentNumber())
+                    : findByEmail(query.email());
+            return CursorPage.exact(value);
+        }
+        var request = new CursorRequest(query.limit(), query.cursor());
+        if (query.departmentId() != null)
+            return queries.findByDepartment(query.departmentId(), query.lastName(), request);
+        if (query.status() != null)
+            return queries.findByStatus(query.status(), request);
+        return queries.findAll(request);
+    }
+
+    public CursorPage<Enrollment> listEnrollments(UUID studentId, Instant from, Instant to, CursorRequest request) {
+        get(studentId);
+        return enrollments.findByStudent(studentId, from, to, request);
+    }
+
+    public CursorPage<Course> listCourses(UUID studentId, CursorRequest request) {
+        get(studentId);
+        return relationships.findCoursesByStudent(studentId, request);
+    }
+
     public StudentProfile getProfile(UUID studentId) {
 
         get(studentId);
@@ -135,6 +172,11 @@ public class StudentService {
 
         if (departments.findById(id).isEmpty())
             throw new ResourceNotFoundException("Department", id);
+    }
+
+    public record StudentListQuery(UUID departmentId, StudentStatus status, String lastName, String studentNumber,
+                                   String email, int limit, String cursor) {
+
     }
 
     public record CreateCommand(String studentNumber, String firstName, String lastName, String email,

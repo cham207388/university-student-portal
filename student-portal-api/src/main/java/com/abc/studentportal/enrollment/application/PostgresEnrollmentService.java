@@ -46,11 +46,12 @@ public class PostgresEnrollmentService extends EnrollmentService {
                                      StudentRepository students,
                                      CourseRepository courses,
                                      Clock clock,
+                                     EnrollmentQueries queries,
                                      EnrollmentJpaRepository enrollmentEntities,
                                      StudentJpaRepository studentEntities,
                                      CourseJpaRepository courseEntities) {
 
-        super(enrollments, students, courses, clock);
+        super(enrollments, students, courses, clock, queries);
         this.enrollmentEntities = enrollmentEntities;
         this.studentEntities = studentEntities;
         this.courseEntities = courseEntities;
