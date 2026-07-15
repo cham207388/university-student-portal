@@ -1,12 +1,16 @@
-.PHONY: compose-up compose-down postgres-up postgres-health postgres-secret \
+.PHONY: local-reset compose-up compose-down postgres-health postgres-secret \
 	tf-init tf-validate tf-plan tf-apply tf-destroy \
-	app-run-dynamodb seed-dynamo-data app-run-dynamodb-seeded app-run-postgres migrate-dynamo-to-postgres api-smoke check
+	app-run-dynamodb seed-dynamo-data app-run-dynamodb-seeded app-run-postgres migrate-dynamo-to-postgres \
+	api-smoke api-smoke-dynamodb api-smoke-postgres check
+
+local-reset:
+	docker compose down -v --remove-orphans
 
 compose-up:
 	docker compose up -d
 
 compose-down:
-	docker compose down -v
+	docker compose down -v --remove-orphans
 
 postgres-health:
 	@aws --endpoint-url="$${AWS_ENDPOINT_URL:-http://127.0.0.1:4566}" rds describe-db-instances \
@@ -34,22 +38,28 @@ tf-destroy: tf-init
 	terraform -chdir=infrastructure/local destroy -auto-approve
 
 app-run-dynamodb:
-	cd student-portal-api && ./gradlew bootRun --args='--spring.profiles.active=local-dynamodb'
+	cd student-portal-api && ./gradlew bootRun --args='--spring.profiles.active=local-dynamodb --server.port=8081'
 
 seed-dynamo-data:
-	cd student-portal-api && STUDENT_PORTAL_SEED_ENABLED=true ./gradlew bootRun --args='--spring.profiles.active=local-dynamodb --student-portal.seed.exit=true'
+	cd student-portal-api && STUDENT_PORTAL_SEED_ENABLED=true ./gradlew bootRun --args='--spring.profiles.active=local-dynamodb --spring.main.web-application-type=none --student-portal.seed.exit=true'
 
 app-run-dynamodb-seeded:
-	cd student-portal-api && STUDENT_PORTAL_SEED_ENABLED=true ./gradlew bootRun --args='--spring.profiles.active=local-dynamodb'
+	cd student-portal-api && STUDENT_PORTAL_SEED_ENABLED=true ./gradlew bootRun --args='--spring.profiles.active=local-dynamodb --server.port=8081'
 
 app-run-postgres:
-	cd student-portal-api && ./gradlew bootRun --args='--spring.profiles.active=local-postgres'
+	cd student-portal-api && ./gradlew bootRun --args='--spring.profiles.active=local-postgres --server.port=8082'
 
 migrate-dynamo-to-postgres:
 	cd student-portal-api && ./gradlew bootRun --args='--spring.profiles.active=migration --spring.main.web-application-type=none --migration.run=true'
 
 api-smoke:
 	./scripts/dynamodb-api-smoke.sh
+
+api-smoke-dynamodb:
+	STUDENT_PORTAL_API_URL=http://127.0.0.1:8081 ./scripts/dynamodb-api-smoke.sh
+
+api-smoke-postgres:
+	STUDENT_PORTAL_API_URL=http://127.0.0.1:8082 ./scripts/dynamodb-api-smoke.sh
 
 check:
 	cd student-portal-api && ./gradlew clean check

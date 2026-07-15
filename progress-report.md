@@ -2,6 +2,20 @@
 
 ## Completed Tasks
 
+### Reproducible DynamoDB-to-PostgreSQL learning workflow
+
+- Added an explicit project-local reset target that removes the Compose stack, named persistence volume, and orphans
+  without pruning unrelated Docker volumes.
+- Assigned the DynamoDB API to port 8081 and PostgreSQL API to port 8082, made standalone seeding non-web, and added
+  datasource-specific smoke targets that exercise the same deterministic workflow against both adapters.
+- Added a collapsible README runbook covering clean infrastructure creation, DynamoDB-only seeding, simultaneous API
+  startup, before/after inspection, explicit migration, parity smoke checks, and Swagger endpoints.
+
+Verification results:
+
+- `make -n` rendered the complete reset/provision/seed/run/migrate/smoke workflow successfully.
+- Smoke script syntax and `git diff --check`: successful.
+
 ### LocalStack RDS Terraform convergence
 
 - Separated the requested PostgreSQL listener port from LocalStack's host-mapped edge port and made the local secret use

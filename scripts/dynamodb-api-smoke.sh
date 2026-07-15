@@ -43,4 +43,4 @@ request 400 GET '/api/v1/courses?title=ignored'
 request 400 POST /api/v1/students '{}'
 request 404 GET /api/v1/courses/00000000-0000-0000-0000-000000000000
 
-printf 'DynamoDB API smoke workflow passed.\n'
+printf 'Student Portal API smoke workflow passed for %s.\n' "$base_url"

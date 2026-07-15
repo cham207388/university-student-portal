@@ -162,6 +162,87 @@ concurrent last-seat oversubscription. Start it with `make app-run-postgres` aft
 
 See [API compatibility matrix](docs/api-compatibility-matrix.md) for the documented ordering and cursor differences.
 
+<details>
+<summary><b>Complete clean DynamoDB-to-PostgreSQL learning flow</b></summary>
+
+This workflow deliberately starts with empty LocalStack persistence, creates both databases, seeds only DynamoDB,
+copies the logical records to PostgreSQL, and runs the same HTTP smoke workflow against both adapters.
+
+Prerequisites: Docker must be running, `LOCALSTACK_AUTH_TOKEN` must be exported, and ports `4566`, `4510-4559`, `8081`,
+and `8082` must be available.
+
+1. Remove the project LocalStack container, its named persistent volume, and orphaned Compose services:
+
+```shell
+make local-reset
+```
+
+   This is destructive for the project-local DynamoDB and RDS data. It does not prune unrelated Docker volumes.
+
+2. Start LocalStack and provision all DynamoDB, RDS PostgreSQL, and Secrets Manager resources:
+
+   ```shell
+   make compose-up
+   make tf-apply
+   make postgres-health
+   ```
+
+   Wait until `make postgres-health` returns `available` before continuing.
+
+3. Seed deterministic data into DynamoDB only. The seed process is non-web and exits when complete:
+
+   ```shell
+   make seed-dynamo-data
+   ```
+
+4. In terminal A, run the DynamoDB-backed API on port `8081`:
+
+   ```shell
+   make app-run-dynamodb
+   ```
+
+5. In terminal B, run the initially empty PostgreSQL-backed API on port `8082`:
+
+   ```shell
+   make app-run-postgres
+   ```
+
+6. Optionally prove the source works and the target is still empty before copying:
+
+   ```shell
+   curl 'http://127.0.0.1:8081/api/v1/departments?limit=20'
+   curl 'http://127.0.0.1:8082/api/v1/departments?limit=20'
+   ```
+
+7. In terminal C, run the explicit, non-web migration job:
+
+   ```shell
+   make migrate-dynamo-to-postgres
+   ```
+
+   The job reads DynamoDB in referential order, preserves source identifiers/audit state, writes PostgreSQL
+   idempotently, records its lifecycle in the migration tracking tables, and exits. It is safe to run again without
+   duplicating logical rows.
+
+8. Run the same seeded-data smoke workflow against both running APIs:
+
+   ```shell
+   make api-smoke-dynamodb
+   make api-smoke-postgres
+   ```
+
+9. Compare representative resources directly:
+
+   ```shell
+   curl http://127.0.0.1:8081/api/v1/departments/b6206ea3-c883-3635-8eda-bac4f678ff66
+   curl http://127.0.0.1:8082/api/v1/departments/b6206ea3-c883-3635-8eda-bac4f678ff66
+   ```
+
+Swagger is available at `http://127.0.0.1:8081/swagger-ui.html` and
+`http://127.0.0.1:8082/swagger-ui.html`.
+
+</details>
+
 </details>
 
 ## Design documents
@@ -248,6 +329,10 @@ make tf-apply
 ```
 
 ```bash
+make postgres-health
+```
+
+```bash
 make app-run-dynamodb
 ```
 
@@ -255,8 +340,6 @@ make app-run-dynamodb
 make seed-dynamo-data
 ```
 
-```bash
-make postgres-health
-```
+
 
 </details>
