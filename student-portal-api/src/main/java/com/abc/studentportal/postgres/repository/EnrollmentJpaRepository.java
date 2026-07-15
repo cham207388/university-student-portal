@@ -4,7 +4,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import com.abc.studentportal.postgres.entity.EnrollmentEntity;
 import com.abc.studentportal.enrollment.domain.EnrollmentStatus;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.UUID;
 
 public interface EnrollmentJpaRepository extends JpaRepository<EnrollmentEntity, UUID> {
 

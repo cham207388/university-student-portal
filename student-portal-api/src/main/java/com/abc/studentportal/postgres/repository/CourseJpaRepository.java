@@ -5,7 +5,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import com.abc.studentportal.postgres.entity.CourseEntity;
 
-import java.util.*;
+import java.util.Optional;
+import java.util.UUID;
 
 public interface CourseJpaRepository extends JpaRepository<CourseEntity, UUID> {
 

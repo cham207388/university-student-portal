@@ -9,10 +9,11 @@ import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
-@Table(name = "courses")
 @Getter
+@Table(name = "courses")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class CourseEntity extends BaseEntity {
 
@@ -33,10 +34,12 @@ public class CourseEntity extends BaseEntity {
     @Column(name = "occupied_seats", nullable = false)
     private int occupiedSeats;
 
+    @Setter
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "department_id", nullable = false)
     private DepartmentEntity department;
 
+    @Setter
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "instructor_id", nullable = false)
     private InstructorEntity instructor;
@@ -47,14 +50,6 @@ public class CourseEntity extends BaseEntity {
 
     @Version
     private long version;
-
-    public void setDepartment(DepartmentEntity department) {
-        this.department = department;
-    }
-
-    public void setInstructor(InstructorEntity instructor) {
-        this.instructor = instructor;
-    }
 
     public CourseEntity(UUID id, String courseCode, String title, String description, int credits, int capacity, CourseStatus status, UUID departmentId, UUID instructorId, Instant createdAt, Instant updatedAt) {
         this.id = id;

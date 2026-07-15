@@ -14,9 +14,9 @@ import lombok.NoArgsConstructor;
  * Profile is a shared-primary-key extension of students (student_id is both PK and FK).
  */
 @Entity
+@Getter
 @Table(name = "student_profiles")
 @AttributeOverride(name = "id", column = @Column(name = "student_id", nullable = false))
-@Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class StudentProfileEntity extends BaseEntity {
 

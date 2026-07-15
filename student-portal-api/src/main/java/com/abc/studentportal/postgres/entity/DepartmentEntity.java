@@ -10,8 +10,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "departments")
 @Getter
+@Table(name = "departments")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class DepartmentEntity extends BaseEntity {
 

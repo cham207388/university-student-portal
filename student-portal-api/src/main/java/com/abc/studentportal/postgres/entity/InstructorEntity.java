@@ -8,10 +8,11 @@ import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
-@Table(name = "instructors")
 @Getter
+@Table(name = "instructors")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class InstructorEntity extends BaseEntity {
 
@@ -27,16 +28,13 @@ public class InstructorEntity extends BaseEntity {
     @Column(name = "last_name", nullable = false)
     private String lastName;
 
+    @Setter
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "department_id", nullable = false)
     private DepartmentEntity department;
 
     @Version
     private long version;
-
-    public void setDepartment(DepartmentEntity department) {
-        this.department = department;
-    }
 
     public InstructorEntity(UUID id, String employeeNumber, String firstName, String lastName, String email, UUID departmentId, Instant createdAt, Instant updatedAt) {
         this.id = id;
