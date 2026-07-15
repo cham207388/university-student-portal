@@ -5,14 +5,18 @@ import com.abc.studentportal.department.application.DepartmentRepository;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.time.Clock;
 
 @Service
 @Profile({"local-postgres", "test-postgres"})
 @Transactional
 public class PostgresInstructorService extends InstructorService {
+
     public PostgresInstructorService(InstructorRepository instructors, DepartmentRepository departments,
                                      Clock clock, DependencyChecker dependencies) {
+
         super(instructors, departments, clock, dependencies);
     }
+
 }

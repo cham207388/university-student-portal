@@ -4,24 +4,21 @@ import com.abc.studentportal.instructor.application.InstructorRepository;
 import com.abc.studentportal.instructor.domain.Instructor;
 import com.abc.studentportal.common.persistence.postgres.PostgresVersions;
 import com.abc.studentportal.department.persistence.postgres.DepartmentJpaRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Repository;
 
 import java.util.*;
 
-@Repository
 @Primary
+@Repository
+@RequiredArgsConstructor
 @Profile({"local-postgres", "test-postgres", "migration"})
 public class InstructorPostgresRepository implements InstructorRepository {
 
     private final InstructorJpaRepository instructorJpaRepository;
     private final DepartmentJpaRepository departmentJpaRepository;
-
-    public InstructorPostgresRepository(InstructorJpaRepository instructorJpaRepository, DepartmentJpaRepository departmentJpaRepository) {
-        this.instructorJpaRepository = instructorJpaRepository;
-        this.departmentJpaRepository = departmentJpaRepository;
-    }
 
     public Instructor create(Instructor instructor) {
         return toDomain(instructorJpaRepository.save(toEntity(instructor)));

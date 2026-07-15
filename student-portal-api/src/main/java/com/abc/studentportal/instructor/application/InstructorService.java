@@ -5,6 +5,7 @@ import com.abc.studentportal.common.exception.ConflictException;
 import com.abc.studentportal.common.application.DependencyChecker;
 import com.abc.studentportal.department.application.DepartmentRepository;
 import com.abc.studentportal.instructor.domain.Instructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
@@ -15,6 +16,7 @@ import java.util.Locale;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 @Profile({"local-dynamodb", "test-dynamodb"})
 public class InstructorService {
 
@@ -25,14 +27,6 @@ public class InstructorService {
     private final Clock clock;
 
     private final DependencyChecker dependencies;
-
-    public InstructorService(InstructorRepository instructors, DepartmentRepository departments, Clock clock,
-                             DependencyChecker dependencies) {
-        this.instructors = instructors;
-        this.departments = departments;
-        this.clock = clock;
-        this.dependencies = dependencies;
-    }
 
     public Instructor create(CreateCommand command) {
         requireDepartment(command.departmentId());

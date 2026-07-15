@@ -1,9 +1,5 @@
 package com.abc.studentportal.instructor.application;
 
-import com.abc.studentportal.common.pagination.CursorPage;
-import com.abc.studentportal.common.pagination.CursorRequest;
-import com.abc.studentportal.instructor.domain.Instructor;
+public interface DynamoInstructorQueries extends InstructorQueries {
 
-import java.util.UUID;
-
-public interface DynamoInstructorQueries extends InstructorQueries { }
+}
