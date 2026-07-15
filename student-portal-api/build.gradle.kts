@@ -22,6 +22,7 @@ dependencies {
 	implementation(libs.bundles.aws.dynamodb)
 	implementation(libs.spring.boot.starter.actuator)
 	implementation(libs.spring.boot.starter.validation)
+	implementation(libs.spring.boot.starter.flyway)
 	implementation(libs.spring.boot.starter.webmvc)
 	implementation(libs.springdoc.openapi.webmvc.ui)
 	implementation(libs.spring.boot.starter.data.jpa)
@@ -49,6 +50,8 @@ tasks.test {
     systemProperty("spring.autoconfigure.exclude", "org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration")
 	useJUnitPlatform {
 		excludeTags("dynamodb-integration")
+		excludeTags("postgres-integration")
+		excludeTags("localstack-rds")
 	}
 }
 
@@ -71,6 +74,15 @@ val postgresIntegrationTest by tasks.registering(Test::class) {
 	shouldRunAfter(tasks.test)
 	systemProperty("spring.autoconfigure.exclude", "")
 	useJUnitPlatform { includeTags("postgres-integration") }
+}
+
+val localstackRdsIntegrationTest by tasks.registering(Test::class) {
+    description = "Runs CRUD validation against the provisioned LocalStack RDS PostgreSQL instance."
+    group = LifecycleBasePlugin.VERIFICATION_GROUP
+    testClassesDirs = sourceSets.test.get().output.classesDirs
+    classpath = sourceSets.test.get().runtimeClasspath
+    useJUnitPlatform { includeTags("localstack-rds") }
+    systemProperty("spring.autoconfigure.exclude", "")
 }
 
 tasks.check {
