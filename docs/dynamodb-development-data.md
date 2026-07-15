@@ -27,7 +27,7 @@ export LOCALSTACK_AUTH_TOKEN="<your-token>"
 make localstack-up
 make terraform-init
 make terraform-apply
-make app-run-dynamodb-seeded
+make seed-dynamo-data
 ```
 
 Keep the application running and execute this in another terminal:

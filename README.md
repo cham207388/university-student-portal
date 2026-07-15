@@ -91,7 +91,7 @@ migration learning, but reference attributes are not foreign keys and DynamoDB p
 To load deterministic development data and test the running API:
 
 ```shell
-make app-run-dynamodb-seeded
+make seed-dynamo-data
 # In another terminal:
 make api-smoke
 ```
@@ -103,7 +103,7 @@ Enrollments. The data includes multiple statuses and a full two-seat Course. See
 
 For interactive testing, import [postman.json](postman.json) into Postman. The collection includes seeded reads, error
 examples, and an ordered Department → Instructor → Student/Profile → Course → Enrollment workflow that captures generated
-IDs and optimistic versions automatically. Keep `make app-run-dynamodb-seeded` running while using the collection.
+IDs and optimistic versions automatically. Keep the seeded server running while using the collection.
 
 Swagger UI is available at `http://localhost:8080/swagger-ui.html`; the generated OpenAPI JSON is available at
 `http://localhost:8080/v3/api-docs`. The contract documents validation constraints, RFC 9457 errors, exact alternate-key
