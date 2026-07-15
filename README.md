@@ -221,3 +221,42 @@ make api-smoke
 ```
 
 </details>
+
+---
+
+<details>
+<summary><b>complete flow dynamo and postgres</b></summary>
+
+```bash
+export LOCALSTACK_AUTH_TOKEN="<your-token>"
+```
+
+```bash
+make compose-down
+```
+
+```bash
+make compose-up
+```
+
+```bash
+make tf-init
+```
+
+```bash
+make tf-apply
+```
+
+```bash
+make app-run-dynamodb
+```
+
+```bash
+make seed-dynamo-data
+```
+
+```bash
+make postgres-health
+```
+
+</details>

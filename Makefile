@@ -46,8 +46,7 @@ app-run-postgres:
 	cd student-portal-api && ./gradlew bootRun --args='--spring.profiles.active=local-postgres'
 
 migrate-dynamo-to-postgres:
-	cd student-portal-api && ./gradlew bootRun --args='--spring.profiles.active=migration --spring.main.web-application-type=none --student-portal.migration.execute=true'
-
+	cd student-portal-api && ./gradlew bootRun --args='--spring.profiles.active=migration --spring.main.web-application-type=none --migration.run=true'
 
 api-smoke:
 	./scripts/dynamodb-api-smoke.sh
