@@ -487,3 +487,11 @@ Verification results:
 - `./gradlew clean check`: successful; unit/MVC and LocalStack integration suites all passed.
 - `git diff --check`: no whitespace errors.
 - LocalStack integration tests require Docker only and do not depend on the project Compose stack or Pro token.
+
+### PostgreSQL transactional application services
+
+- Added PostgreSQL-profiled transactional services for departments, instructors, courses, students, profiles, and enrollments.
+- Added a PostgreSQL dependency checker backed by authoritative JPA relationship queries.
+- Added LocalStack RDS service-level tests covering invalid relationship rollback and stale optimistic-lock updates.
+- Added explicit course version validation before persistence to reject stale updates.
+- Regression verification: `./gradlew test dynamodbIntegrationTest localstackRdsIntegrationTest` successful.
