@@ -22,7 +22,7 @@ postgres-secret:
 		--query SecretString --output text
 
 tf-init:
-	terraform -chdir=infrastructure/local init
+	terraform -chdir=infrastructure/local init -upgrade
 
 tf-validate:
 	terraform -chdir=infrastructure/local validate
@@ -30,19 +30,20 @@ tf-validate:
 tf-plan:
 	terraform -chdir=infrastructure/local plan
 
-tf-apply:
+tf-apply: tf-init
 	terraform -chdir=infrastructure/local apply -auto-approve
 
-tf-destroy:
+tf-destroy: tf-init
 	terraform -chdir=infrastructure/local destroy -auto-approve
 
 app-run-dynamodb:
 	cd student-portal-api && ./gradlew bootRun --args='--spring.profiles.active=local-dynamodb'
 
 seed-dynamo-data:
-	cd student-portal-api && STUDENT_PORTAL_SEED_ENABLED=true ./gradlew bootRun --args='--spring.profiles.active=local-dynamodb'
+	cd student-portal-api && STUDENT_PORTAL_SEED_ENABLED=true ./gradlew bootRun --args='--spring.profiles.active=local-dynamodb --student-portal.seed.exit=true'
 
-app-run-dynamodb-seeded: seed-dynamo-data
+app-run-dynamodb-seeded:
+	cd student-portal-api && STUDENT_PORTAL_SEED_ENABLED=true ./gradlew bootRun --args='--spring.profiles.active=local-dynamodb'
 
 app-run-postgres:
 	cd student-portal-api && ./gradlew bootRun --args='--spring.profiles.active=local-postgres'

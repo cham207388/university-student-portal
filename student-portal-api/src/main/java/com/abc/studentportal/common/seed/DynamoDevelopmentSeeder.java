@@ -20,8 +20,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.boot.SpringApplication;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Profile;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.stereotype.Component;
 
 import java.nio.charset.StandardCharsets;
@@ -52,10 +55,14 @@ public class DynamoDevelopmentSeeder implements ApplicationRunner {
     private final EnrollmentRepository enrollments;
 
     private final DynamoEnrollmentTransactionWriter enrollmentWriter;
+    private final ConfigurableApplicationContext applicationContext;
+    private final boolean exitAfterSeed;
 
     public DynamoDevelopmentSeeder(DepartmentRepository departments, StudentRepository students,
                                    StudentProfileRepository profiles, InstructorRepository instructors, CourseRepository courses,
-                                   EnrollmentRepository enrollments, DynamoEnrollmentTransactionWriter enrollmentWriter) {
+                                   EnrollmentRepository enrollments, DynamoEnrollmentTransactionWriter enrollmentWriter,
+                                   ConfigurableApplicationContext applicationContext,
+                                   @Value("${student-portal.seed.exit:false}") boolean exitAfterSeed) {
         this.departments = departments;
         this.students = students;
         this.profiles = profiles;
@@ -63,11 +70,15 @@ public class DynamoDevelopmentSeeder implements ApplicationRunner {
         this.courses = courses;
         this.enrollments = enrollments;
         this.enrollmentWriter = enrollmentWriter;
+        this.applicationContext = applicationContext;
+        this.exitAfterSeed = exitAfterSeed;
     }
 
     @Override
     public void run(ApplicationArguments args) {
         seed();
+        if (exitAfterSeed)
+            System.exit(SpringApplication.exit(applicationContext));
     }
 
     public void seed() {

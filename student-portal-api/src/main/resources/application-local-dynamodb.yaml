@@ -11,3 +11,9 @@ student-portal:
       instructors: ${DYNAMODB_INSTRUCTORS_TABLE:student-portal-instructors}
       courses: ${DYNAMODB_COURSES_TABLE:student-portal-courses}
       enrollments: ${DYNAMODB_ENROLLMENTS_TABLE:student-portal-enrollments}
+spring:
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration
+      - org.springframework.boot.flyway.autoconfigure.FlywayAutoConfiguration
+      - org.springframework.boot.hibernate.autoconfigure.HibernateJpaAutoConfiguration
