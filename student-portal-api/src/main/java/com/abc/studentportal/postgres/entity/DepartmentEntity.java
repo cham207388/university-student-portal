@@ -13,21 +13,12 @@ import lombok.NoArgsConstructor;
 @Table(name = "departments")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class DepartmentEntity {
-
-    @Id
-    private UUID id;
+public class DepartmentEntity extends BaseEntity {
 
     @Column(nullable = false, unique = true)
     private String code;
 
     private String name, description;
-
-    @Column(name = "created_at")
-    private Instant createdAt;
-
-    @Column(name = "updated_at")
-    private Instant updatedAt;
 
     @Version
     private long version;

@@ -14,10 +14,7 @@ import lombok.NoArgsConstructor;
 @Table(name = "courses")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class CourseEntity {
-
-    @Id
-    private UUID id;
+public class CourseEntity extends BaseEntity {
 
     @Column(name = "code", nullable = false, unique = true)
     private String courseCode;
@@ -47,12 +44,6 @@ public class CourseEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private CourseStatus status;
-
-    @Column(name = "created_at", nullable = false)
-    private Instant createdAt;
-
-    @Column(name = "updated_at", nullable = false)
-    private Instant updatedAt;
 
     @Version
     private long version;

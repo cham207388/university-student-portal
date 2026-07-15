@@ -15,13 +15,10 @@ import lombok.NoArgsConstructor;
  */
 @Entity
 @Table(name = "student_profiles")
+@AttributeOverride(name = "id", column = @Column(name = "student_id", nullable = false))
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class StudentProfileEntity {
-
-    @Id
-    @Column(name = "student_id", nullable = false)
-    private UUID studentId;
+public class StudentProfileEntity extends BaseEntity {
 
     @OneToOne(fetch = FetchType.LAZY, optional = false)
     @MapsId
@@ -37,19 +34,13 @@ public class StudentProfileEntity {
     @Column(name = "address")
     private String addressLine1;
 
-    @Column(name = "created_at", nullable = false)
-    private Instant createdAt;
-
-    @Column(name = "updated_at", nullable = false)
-    private Instant updatedAt;
-
     @Version
     @Column(nullable = false)
     private long version;
 
     public StudentProfileEntity(UUID id, UUID studentId, LocalDate dateOfBirth, String phone, String address,
                                 Instant createdAt, Instant updatedAt) {
-        this.studentId = studentId;
+        this.id = studentId;
         this.dateOfBirth = dateOfBirth;
         this.phoneNumber = phone;
         this.addressLine1 = address;
@@ -58,7 +49,7 @@ public class StudentProfileEntity {
     }
 
     public UUID getId() {
-        return studentId;
+        return id;
     }
 
     public String getAddressLine2() {

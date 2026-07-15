@@ -14,10 +14,7 @@ import lombok.NoArgsConstructor;
 @Table(name = "enrollments")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class EnrollmentEntity {
-
-    @Id
-    private UUID id;
+public class EnrollmentEntity extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "student_id", nullable = false)
@@ -39,12 +36,6 @@ public class EnrollmentEntity {
 
     @Column(name = "final_grade")
     private String finalGrade;
-
-    @Column(name = "created_at", nullable = false)
-    private Instant createdAt;
-
-    @Column(name = "updated_at", nullable = false)
-    private Instant updatedAt;
 
     @Version
     @Column(nullable = false)

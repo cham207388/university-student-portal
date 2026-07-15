@@ -13,10 +13,7 @@ import lombok.NoArgsConstructor;
 @Table(name = "instructors")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class InstructorEntity {
-
-    @Id
-    private UUID id;
+public class InstructorEntity extends BaseEntity {
 
     @Column(name = "employee_number", nullable = false, unique = true)
     private String employeeNumber;
@@ -33,12 +30,6 @@ public class InstructorEntity {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "department_id", nullable = false)
     private DepartmentEntity department;
-
-    @Column(name = "created_at", nullable = false)
-    private Instant createdAt;
-
-    @Column(name = "updated_at", nullable = false)
-    private Instant updatedAt;
 
     @Version
     private long version;
