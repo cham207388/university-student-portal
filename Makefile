@@ -3,7 +3,7 @@
 	app-run-dynamodb seed-dynamo-data app-run-dynamodb-seeded app-run-postgres api-smoke check
 
 compose-up:
-	docker compose up -d --remove-orphans localstack
+	docker compose up -d --remove-orphans
 
 compose-down:
 	docker compose down -v
