@@ -18,11 +18,13 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Profile;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Component
 @Profile("migration")
+@ConditionalOnProperty(name = "student-portal.migration.execute", havingValue = "true", matchIfMissing = true)
 public class DynamoToPostgresMigrationRunner implements ApplicationRunner {
     private static final CursorRequest PAGE = new CursorRequest(100, null);
     private final DynamoDepartmentQueries dynamoDepartments;
@@ -63,6 +65,16 @@ public class DynamoToPostgresMigrationRunner implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments arguments) {
+        try {
+            migrate();
+            System.exit(SpringApplication.exit(context, () -> 0));
+        } catch (Exception exception) {
+            exception.printStackTrace();
+            System.exit(SpringApplication.exit(context, () -> 1));
+        }
+    }
+
+    public void migrate() {
         try {
             AtomicInteger departmentCount = new AtomicInteger();
             dynamoDepartments.findAll(PAGE).content().forEach(department -> {
@@ -110,10 +122,8 @@ public class DynamoToPostgresMigrationRunner implements ApplicationRunner {
                 }
             });
             System.out.printf("Migrated enrollments=%d%n", enrollmentCount.get());
-            System.exit(SpringApplication.exit(context, () -> 0));
         } catch (Exception exception) {
-            exception.printStackTrace();
-            System.exit(SpringApplication.exit(context, () -> 1));
+            throw new IllegalStateException("DynamoDB to PostgreSQL migration failed", exception);
         }
     }
 }
