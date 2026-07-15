@@ -11,7 +11,7 @@ import java.util.UUID;
 
 @DynamoPersistenceAdapter
 public class DynamoStudentProfileRepository extends AbstractDynamoRepository<StudentProfile, StudentProfileDynamoRecord>
-        implements StudentProfileRepository {
+        implements StudentProfileRepository, com.abc.studentportal.student.application.DynamoStudentProfileQueries {
 
     public DynamoStudentProfileRepository(DynamoDbTables tables) {
         super(tables.studentProfiles(), "studentId", StudentProfileDynamoMapper::toRecord,

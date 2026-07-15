@@ -6,12 +6,14 @@ import com.abc.studentportal.postgres.entity.StudentEntity;
 import com.abc.studentportal.postgres.repository.StudentJpaRepository;
 import com.abc.studentportal.postgres.repository.DepartmentJpaRepository;
 import org.springframework.context.annotation.Profile;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Repository;
 
 import java.util.*;
 
 @Repository
-@Profile({"local-postgres", "test-postgres"})
+@Primary
+@Profile({"local-postgres", "test-postgres", "migration"})
 public class StudentPostgresRepository implements StudentRepository {
 
     private final StudentJpaRepository delegate;

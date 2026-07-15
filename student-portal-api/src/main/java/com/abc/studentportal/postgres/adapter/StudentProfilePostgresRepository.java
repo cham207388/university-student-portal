@@ -6,6 +6,7 @@ import com.abc.studentportal.postgres.entity.StudentProfileEntity;
 import com.abc.studentportal.postgres.repository.StudentProfileJpaRepository;
 import com.abc.studentportal.postgres.repository.StudentJpaRepository;
 import org.springframework.context.annotation.Profile;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Repository;
 import jakarta.persistence.EntityManager;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,7 +14,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
 
 @Repository
-@Profile({"local-postgres", "test-postgres"})
+@Primary
+@Profile({"local-postgres", "test-postgres", "migration"})
 public class StudentProfilePostgresRepository implements StudentProfileRepository {
 
     private final StudentProfileJpaRepository studentProfileJpaRepository;

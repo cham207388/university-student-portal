@@ -6,11 +6,13 @@ import com.abc.studentportal.postgres.entity.InstructorEntity;
 import com.abc.studentportal.postgres.repository.InstructorJpaRepository;
 import com.abc.studentportal.postgres.repository.DepartmentJpaRepository;
 import org.springframework.context.annotation.Profile;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Repository;
 
 import java.util.*;
 
 @Repository
+@Primary
 @Profile({"local-postgres", "test-postgres", "migration"})
 public class InstructorPostgresRepository implements InstructorRepository {
 

@@ -5,12 +5,14 @@ import com.abc.studentportal.department.domain.Department;
 import com.abc.studentportal.postgres.entity.DepartmentEntity;
 import com.abc.studentportal.postgres.repository.DepartmentJpaRepository;
 import org.springframework.context.annotation.Profile;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 import java.util.UUID;
 
 @Repository
+@Primary
 @Profile({"local-postgres", "test-postgres", "migration"})
 public class DepartmentPostgresRepository implements DepartmentRepository {
 
