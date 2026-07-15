@@ -119,6 +119,30 @@ docker compose down
 If port `4566` is already in use, check for an existing LocalStack container before starting another. A healthy existing
 LocalStack instance can be used by Terraform at the same endpoint; do not stop unrelated containers.
 
+## PostgreSQL datasource and migration workflow
+
+Start LocalStack and provision its RDS-compatible PostgreSQL instance:
+
+```shell
+make postgres-up
+make postgres-health
+```
+
+When the application starts with the PostgreSQL profile, Flyway automatically applies the relational schema from
+`V1__initial_schema.sql`:
+
+```shell
+make app-run-postgres
+```
+
+The local JDBC endpoint is `jdbc:postgresql://localhost.localstack.cloud:4510/student_portal`. PostgreSQL entities,
+repositories, transactional services, and LocalStack RDS integration tests are implemented.
+
+The DynamoDB-to-PostgreSQL data-copy runner is not implemented yet. Starting the PostgreSQL profile creates and migrates
+the schema, but it does not copy existing DynamoDB records. Until that migration runner is added, data must be created
+through PostgreSQL services/tests independently. PostgreSQL REST controllers are also still pending; the current HTTP
+controllers are DynamoDB-profiled.
+
 ## Design documents
 
 - [Architecture overview](docs/architecture-overview.md)
