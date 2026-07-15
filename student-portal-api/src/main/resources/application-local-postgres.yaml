@@ -1,8 +1,6 @@
 spring:
-  autoconfigure:
-    exclude: ""
   datasource:
-    url: ${POSTGRES_JDBC_URL:jdbc:postgresql://localhost.localstack.cloud:5432/student_portal}
+    url: ${POSTGRES_JDBC_URL:jdbc:postgresql://localhost.localstack.cloud:4510/student_portal}
     username: ${POSTGRES_USER:student_portal}
     password: ${POSTGRES_PASSWORD:student_portal_local}
     driver-class-name: org.postgresql.Driver

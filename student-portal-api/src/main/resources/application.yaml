@@ -1,12 +1,6 @@
 spring:
   application:
     name: student-portal-api
-  # PostgreSQL/JPA is opt-in until the PostgreSQL adapter phase. This keeps
-  # the existing DynamoDB/default test context free of a required database.
-  autoconfigure:
-    exclude:
-      - org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration
-
 management:
   endpoints:
     web:
