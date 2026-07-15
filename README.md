@@ -123,10 +123,10 @@ LocalStack instance can be used by Terraform at the same endpoint; do not stop u
 
 ## PostgreSQL datasource and migration workflow
 
-Start LocalStack and provision its RDS-compatible PostgreSQL instance:
+Reuse the LocalStack instance started above and provision its RDS-compatible PostgreSQL instance:
 
 ```shell
-make postgres-up
+make tf-apply
 make postgres-health
 ```
 
