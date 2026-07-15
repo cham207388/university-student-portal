@@ -1,39 +1,32 @@
-.PHONY: localstack-up localstack-down postgres-up postgres-down postgres-health \
-	terraform-init terraform-validate terraform-plan terraform-apply terraform-destroy \
+.PHONY: compose-up compose-down postgres-health \
+	tf-init tf-validate tf-plan tf-apply tf-destroy \
 	app-run-dynamodb app-run-dynamodb-seeded api-smoke check
 
-localstack-up:
+compose-up:
 	docker compose up -d --remove-orphans localstack
 
-localstack-down:
-	docker compose down
-
-postgres-up:
-	docker compose up -d --remove-orphans localstack
-	terraform -chdir=infrastructure/local apply -auto-approve
-
-postgres-down:
-	terraform -chdir=infrastructure/local destroy -auto-approve
+compose-down:
+	docker compose down -v
 
 postgres-health:
 	@aws --endpoint-url="$${AWS_ENDPOINT_URL:-http://127.0.0.1:4566}" rds describe-db-instances \
 		--db-instance-identifier "$${POSTGRES_INSTANCE_ID:-student-portal-postgres}" \
 		--query 'DBInstances[0].DBInstanceStatus' --output text
 
-terraform-init:
+tf-init:
 	terraform -chdir=infrastructure/local init
 
-terraform-validate:
+tf-validate:
 	terraform -chdir=infrastructure/local validate
 
-terraform-plan:
+tf-plan:
 	terraform -chdir=infrastructure/local plan
 
-terraform-apply:
-	terraform -chdir=infrastructure/local apply
+tf-apply:
+	terraform -chdir=infrastructure/local apply -auto-approve
 
-terraform-destroy:
-	terraform -chdir=infrastructure/local destroy
+tf-destroy:
+	terraform -chdir=infrastructure/local destroy -auto-approve
 
 app-run-dynamodb:
 	cd student-portal-api && ./gradlew bootRun --args='--spring.profiles.active=local-dynamodb'

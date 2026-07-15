@@ -2,6 +2,14 @@
 
 ## Completed Tasks
 
+### PostgreSQL JPA adapters and relationship mappings
+
+- Added profile-scoped PostgreSQL adapters for all six application repository ports, mapping domain records to separate
+  JPA entities and Spring Data repositories.
+- Corrected relational mappings for Department references, Student/Profile shared primary keys, Instructor/Course
+  references, and Enrollment foreign keys with active-enrollment queries.
+- Added LocalStack RDS port exposure and verified compilation, unit tests, and PostgreSQL Testcontainers integration.
+
 ### LocalStack RDS PostgreSQL foundation revision
 
 - Documented LocalStack Pro RDS as the supported local PostgreSQL engine, with

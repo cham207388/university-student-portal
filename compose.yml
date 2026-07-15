@@ -6,6 +6,7 @@ services:
     container_name: student-portal-localstack
     ports:
       - "127.0.0.1:4566:4566"
+      - "127.0.0.1:4510-4559:4510-4559"
     environment:
       LOCALSTACK_AUTH_TOKEN: ${LOCALSTACK_AUTH_TOKEN}
       SERVICES: dynamodb,rds,secretsmanager
