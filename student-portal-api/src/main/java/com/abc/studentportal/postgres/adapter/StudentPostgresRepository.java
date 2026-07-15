@@ -30,8 +30,10 @@ public class StudentPostgresRepository implements StudentRepository {
 
     public Student update(Student student) {
         StudentEntity existing = delegate.findById(student.id()).orElseThrow();
+        PostgresVersions.require(StudentEntity.class, student.id(), student.version(), existing.getVersion());
         existing.updateDetails(student.studentNumber(), student.firstName(), student.lastName(), student.email(), student.status(),
                 departmentRepository.getReferenceById(student.departmentId()));
+        existing.touch(student.updatedAt());
         return toDomain(delegate.save(existing));
     }
 
@@ -56,11 +58,16 @@ public class StudentPostgresRepository implements StudentRepository {
     }
 
     public void delete(Student student) {
-        delegate.deleteById(student.id());
+        StudentEntity existing = delegate.findById(student.id()).orElseThrow();
+        PostgresVersions.require(StudentEntity.class, student.id(), student.version(), existing.getVersion());
+        delegate.delete(existing);
+        delegate.flush();
     }
 
     private StudentEntity toEntity(Student student) {
-        StudentEntity studentEntity = new StudentEntity(student.id(), student.studentNumber(), student.firstName(), student.lastName(), student.email(), student.status(), student.departmentId());
+        StudentEntity studentEntity = new StudentEntity(student.id(), student.studentNumber(), student.firstName(),
+                student.lastName(), student.email(), student.status(), student.departmentId(), student.createdAt(),
+                student.updatedAt(), student.version());
         studentEntity.setDepartment(departmentRepository.getReferenceById(student.departmentId()));
         return studentEntity;
     }

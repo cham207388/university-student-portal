@@ -7,14 +7,4 @@ import com.abc.studentportal.course.domain.CourseStatus;
 
 import java.util.UUID;
 
-public interface DynamoCourseQueries {
-
-    CursorPage<Course> findAll(CursorRequest request);
-
-    CursorPage<Course> findByDepartment(UUID departmentId, CursorRequest request);
-
-    CursorPage<Course> findByInstructor(UUID instructorId, CursorRequest request);
-
-    CursorPage<Course> findByStatus(CourseStatus status, CursorRequest request);
-
-}
+public interface DynamoCourseQueries extends CourseQueries { }

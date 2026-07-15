@@ -35,11 +35,11 @@ public class CoursePostgresRepository implements CourseRepository {
 
     public Course update(Course course) {
         CourseEntity existing = courseJpaRepository.findById(course.id()).orElseThrow();
-        if (existing.getVersion() != course.version())
-            throw new ObjectOptimisticLockingFailureException(CourseEntity.class, course.id());
+        PostgresVersions.require(CourseEntity.class, course.id(), course.version(), existing.getVersion());
         existing.updateDetails(course.courseCode(), course.title(), course.description(), course.credits(), course.capacity(), course.status(),
                 departmentJpaRepository.getReferenceById(course.departmentId()),
                 instructorJpaRepository.getReferenceById(course.instructorId()));
+        existing.touch(course.updatedAt());
         return toDomain(courseJpaRepository.save(existing));
     }
 
@@ -56,11 +56,16 @@ public class CoursePostgresRepository implements CourseRepository {
     }
 
     public void delete(Course course) {
-        courseJpaRepository.deleteById(course.id());
+        CourseEntity existing = courseJpaRepository.findById(course.id()).orElseThrow();
+        PostgresVersions.require(CourseEntity.class, course.id(), course.version(), existing.getVersion());
+        courseJpaRepository.delete(existing);
+        courseJpaRepository.flush();
     }
 
     private CourseEntity toEntity(Course course) {
-        return new CourseEntity(course.id(), course.courseCode(), course.title(), course.description(), course.credits(), course.capacity(), course.status(), course.departmentId(), course.instructorId());
+        return new CourseEntity(course.id(), course.courseCode(), course.title(), course.description(), course.credits(),
+                course.capacity(), course.status(), course.departmentId(), course.instructorId(), course.createdAt(),
+                course.updatedAt(), course.version());
     }
 
     private Course toDomain(CourseEntity entity) {

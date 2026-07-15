@@ -3,6 +3,7 @@ package com.abc.studentportal.postgres.entity;
 import jakarta.persistence.*;
 
 import java.util.UUID;
+import java.time.Instant;
 
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -36,12 +37,19 @@ public class InstructorEntity extends BaseEntity {
     private long version;
 
     public InstructorEntity(UUID id, String employeeNumber, String firstName, String lastName, String email, UUID departmentId) {
+        this(id, employeeNumber, firstName, lastName, email, departmentId, null, null, 0);
+    }
+
+    public InstructorEntity(UUID id, String employeeNumber, String firstName, String lastName, String email, UUID departmentId,
+            Instant createdAt, Instant updatedAt, long version) {
         this.id = id;
         this.employeeNumber = employeeNumber;
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
         department = new DepartmentEntity(departmentId, null, null, null);
+        this.version = version;
+        audit(createdAt, updatedAt);
     }
 
     public void updateDetails(String employeeNumber, String firstName, String lastName, String email, DepartmentEntity department) {

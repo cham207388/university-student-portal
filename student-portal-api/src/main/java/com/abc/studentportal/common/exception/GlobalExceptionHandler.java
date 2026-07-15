@@ -18,6 +18,8 @@ import java.net.URI;
 import java.util.List;
 
 import org.slf4j.MDC;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -36,6 +38,15 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(DomainRuleViolationException.class)
     ResponseEntity<ProblemDetail> handleDomainRule(DomainRuleViolationException exception) {
         ProblemDetail problem = problem(HttpStatus.CONFLICT, "domain-rule-violation", exception.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(problem);
+    }
+
+    @ExceptionHandler({ObjectOptimisticLockingFailureException.class, DataIntegrityViolationException.class})
+    ResponseEntity<ProblemDetail> handlePostgresConflict(Exception exception) {
+        ProblemDetail problem = problem(HttpStatus.CONFLICT, "conflict",
+                exception instanceof ObjectOptimisticLockingFailureException
+                        ? "The resource was modified by another request"
+                        : "The request conflicts with existing data");
         return ResponseEntity.status(HttpStatus.CONFLICT).body(problem);
     }
 

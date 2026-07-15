@@ -4,11 +4,13 @@ import com.abc.studentportal.course.domain.CourseStatus;
 import jakarta.persistence.*;
 
 import java.util.UUID;
+import java.time.Instant;
 
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import com.abc.studentportal.common.exception.ConflictException;
 
 @Entity
 @Getter
@@ -51,6 +53,11 @@ public class CourseEntity extends BaseEntity {
     private long version;
 
     public CourseEntity(UUID id, String courseCode, String title, String description, int credits, int capacity, CourseStatus status, UUID departmentId, UUID instructorId) {
+        this(id, courseCode, title, description, credits, capacity, status, departmentId, instructorId, null, null, 0);
+    }
+
+    public CourseEntity(UUID id, String courseCode, String title, String description, int credits, int capacity,
+            CourseStatus status, UUID departmentId, UUID instructorId, Instant createdAt, Instant updatedAt, long version) {
         this.id = id;
         this.courseCode = courseCode;
         this.title = title;
@@ -60,6 +67,8 @@ public class CourseEntity extends BaseEntity {
         this.status = status;
         this.department = new DepartmentEntity(departmentId, null, null, null);
         this.instructor = new InstructorEntity(instructorId, null, null, null, null, departmentId);
+        this.version = version;
+        audit(createdAt, updatedAt);
     }
 
     public void updateDetails(String courseCode, String title, String description, int credits, int capacity, CourseStatus status,
@@ -67,6 +76,16 @@ public class CourseEntity extends BaseEntity {
         this.courseCode = courseCode; this.title = title; this.description = description;
         this.credits = credits; this.capacity = capacity; this.status = status;
         this.department = department; this.instructor = instructor;
+    }
+
+    public void reserveSeat() {
+        if (occupiedSeats >= capacity) throw new ConflictException("Course capacity has been reached");
+        occupiedSeats++;
+    }
+
+    public void releaseSeat() {
+        if (occupiedSeats <= 0) throw new IllegalStateException("Course occupied seat count cannot become negative");
+        occupiedSeats--;
     }
 
 }

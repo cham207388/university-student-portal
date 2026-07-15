@@ -42,6 +42,11 @@ public class EnrollmentEntity extends BaseEntity {
     private long version;
 
     public EnrollmentEntity(UUID id, StudentEntity student, CourseEntity course, EnrollmentStatus status, Instant enrolledAt, Instant droppedAt, String finalGrade) {
+        this(id, student, course, status, enrolledAt, droppedAt, finalGrade, enrolledAt, enrolledAt, 0);
+    }
+
+    public EnrollmentEntity(UUID id, StudentEntity student, CourseEntity course, EnrollmentStatus status, Instant enrolledAt,
+            Instant droppedAt, String finalGrade, Instant createdAt, Instant updatedAt, long version) {
         this.id = id;
         this.student = student;
         this.course = course;
@@ -49,6 +54,8 @@ public class EnrollmentEntity extends BaseEntity {
         this.enrolledAt = enrolledAt;
         this.droppedAt = droppedAt;
         this.finalGrade = finalGrade;
+        this.version = version;
+        audit(createdAt, updatedAt);
     }
 
     public UUID getStudentId() {
@@ -57,6 +64,12 @@ public class EnrollmentEntity extends BaseEntity {
 
     public UUID getCourseId() {
         return course.getId();
+    }
+
+    public void transition(EnrollmentStatus status, Instant droppedAt, String finalGrade) {
+        this.status = status;
+        this.droppedAt = droppedAt;
+        this.finalGrade = finalGrade;
     }
 
 }

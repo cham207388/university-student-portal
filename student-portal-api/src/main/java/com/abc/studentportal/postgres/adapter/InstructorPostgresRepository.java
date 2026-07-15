@@ -30,8 +30,10 @@ public class InstructorPostgresRepository implements InstructorRepository {
 
     public Instructor update(Instructor instructor) {
         InstructorEntity existing = instructorJpaRepository.findById(instructor.id()).orElseThrow();
+        PostgresVersions.require(InstructorEntity.class, instructor.id(), instructor.version(), existing.getVersion());
         existing.updateDetails(instructor.employeeNumber(), instructor.firstName(), instructor.lastName(), instructor.email(),
                 departmentJpaRepository.getReferenceById(instructor.departmentId()));
+        existing.touch(instructor.updatedAt());
         return toDomain(instructorJpaRepository.save(existing));
     }
 
@@ -56,11 +58,15 @@ public class InstructorPostgresRepository implements InstructorRepository {
     }
 
     public void delete(Instructor instructor) {
-        instructorJpaRepository.deleteById(instructor.id());
+        InstructorEntity existing = instructorJpaRepository.findById(instructor.id()).orElseThrow();
+        PostgresVersions.require(InstructorEntity.class, instructor.id(), instructor.version(), existing.getVersion());
+        instructorJpaRepository.delete(existing);
+        instructorJpaRepository.flush();
     }
 
     private InstructorEntity toEntity(Instructor instructor) {
-        return new InstructorEntity(instructor.id(), instructor.employeeNumber(), instructor.firstName(), instructor.lastName(), instructor.email(), instructor.departmentId());
+        return new InstructorEntity(instructor.id(), instructor.employeeNumber(), instructor.firstName(), instructor.lastName(),
+                instructor.email(), instructor.departmentId(), instructor.createdAt(), instructor.updatedAt(), instructor.version());
     }
 
     private Instructor toDomain(InstructorEntity instructorEntity) {

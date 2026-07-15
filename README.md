@@ -140,10 +140,27 @@ make app-run-postgres
 The local JDBC endpoint is `jdbc:postgresql://localhost.localstack.cloud:4510/student_portal`. PostgreSQL entities,
 repositories, transactional services, and LocalStack RDS integration tests are implemented.
 
-The DynamoDB-to-PostgreSQL data-copy runner is not implemented yet. Starting the PostgreSQL profile creates and migrates
-the schema, but it does not copy existing DynamoDB records. Until that migration runner is added, data must be created
-through PostgreSQL services/tests independently. PostgreSQL REST controllers are also still pending; the current HTTP
-controllers are DynamoDB-profiled.
+The PostgreSQL profile serves the same REST controllers using JPA adapters. To explicitly copy DynamoDB data into
+PostgreSQL in referential order, run:
+
+```shell
+cd student-portal-api
+./gradlew bootRun --args='--spring.profiles.active=migration --migration.run=true'
+```
+
+The migration profile is inert unless `migration.run=true` is supplied. It supports cursor pagination, configurable
+pages with `--migration.batch-size=100`, idempotent insert-if-absent behavior, and a no-write preview with
+`--migration.dry-run=true`. Each execution and completed entity stage is recorded in `migration_runs` and
+`migration_checkpoints`; terminal failures are recorded in `migration_errors`. Per-page resume checkpoints, bounded
+retry, rejected-record continuation, and reconciliation reports are the remaining migration-phase work.
+
+PostgreSQL is now a complete live datasource for the current API surface. Collection, filter, and relationship routes
+use JPA query adapters behind datasource-neutral ports. The external API retains the opaque `limit`/`cursor` envelope;
+PostgreSQL cursors are query-bound and use stable UUID ordering, so cursors must not be reused after switching profiles.
+Enrollment creation and status transitions lock the Course row, enforce capacity, maintain occupied seats, and reject
+concurrent last-seat oversubscription. Start it with `make app-run-postgres` after provisioning RDS.
+
+See [API compatibility matrix](docs/api-compatibility-matrix.md) for the documented ordering and cursor differences.
 
 </details>
 

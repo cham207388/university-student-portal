@@ -22,3 +22,8 @@ student-portal:
       instructors: ${DYNAMODB_INSTRUCTORS_TABLE:student-portal-instructors}
       courses: ${DYNAMODB_COURSES_TABLE:student-portal-courses}
       enrollments: ${DYNAMODB_ENROLLMENTS_TABLE:student-portal-enrollments}
+
+migration:
+  run: ${MIGRATION_RUN:false}
+  dry-run: ${MIGRATION_DRY_RUN:false}
+  batch-size: ${MIGRATION_BATCH_SIZE:100}

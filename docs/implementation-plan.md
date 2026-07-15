@@ -46,9 +46,19 @@ Add Flyway migrations, separate JPA entities, repositories, filtering, page
 pagination, and relational transaction enforcement. Testcontainers PostgreSQL
 remains the isolated automated-test dependency.
 
+Status: complete. The `local-postgres` and `test-postgres` profiles provide repositories, datasource-neutral collection
+query adapters, strict controller contracts, query-bound opaque pagination, relational relationship queries, complete
+profile state, optimistic mutation checks, and capacity-safe enrollment transactions with concurrent last-seat coverage.
+
 ## Phase 5 — persistence switch and migration
 
 Make PostgreSQL the normal primary adapter. Retain DynamoDB as a migration source and build explicit, restartable, batched, idempotent migration with tracking, retry, dry-run, and rejected-record handling.
+
+Status: in progress. PostgreSQL is available through the normal controllers, and the explicitly enabled migration
+runner copies all six entity types in referential order with DynamoDB cursor pagination, configurable page size,
+insert-if-absent idempotency, and dry-run support. PostgreSQL now records run lifecycle, per-entity counters/checkpoints,
+and terminal errors. Per-page resume, bounded retry, rejected-record continuation/output, and automatic reconciliation
+remain before this phase is complete.
 
 ## Phase 6 — reconciliation and parity
 

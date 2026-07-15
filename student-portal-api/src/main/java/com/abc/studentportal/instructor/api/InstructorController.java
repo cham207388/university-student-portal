@@ -5,8 +5,8 @@ import com.abc.studentportal.common.pagination.CursorPage;
 import com.abc.studentportal.common.pagination.CursorRequest;
 import com.abc.studentportal.course.api.CourseApi;
 import com.abc.studentportal.course.api.CourseMapper;
-import com.abc.studentportal.course.application.DynamoCourseQueries;
-import com.abc.studentportal.instructor.application.DynamoInstructorQueries;
+import com.abc.studentportal.course.application.CourseQueries;
+import com.abc.studentportal.instructor.application.InstructorQueries;
 import com.abc.studentportal.instructor.application.InstructorService;
 import jakarta.validation.Valid;
 import org.springframework.context.annotation.Profile;
@@ -25,12 +25,12 @@ public class InstructorController {
 
     private final InstructorService service;
 
-    private final DynamoInstructorQueries queries;
+    private final InstructorQueries queries;
 
-    private final DynamoCourseQueries courses;
+    private final CourseQueries courses;
 
-    public InstructorController(InstructorService service, DynamoInstructorQueries queries,
-                                DynamoCourseQueries courses) {
+    public InstructorController(InstructorService service, InstructorQueries queries,
+                                CourseQueries courses) {
         this.service = service;
         this.queries = queries;
         this.courses = courses;

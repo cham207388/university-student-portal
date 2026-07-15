@@ -4,6 +4,7 @@ import com.abc.studentportal.student.domain.StudentStatus;
 import jakarta.persistence.*;
 
 import java.util.UUID;
+import java.time.Instant;
 
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -44,6 +45,11 @@ public class StudentEntity extends BaseEntity {
     private StudentProfileEntity profile;
 
     public StudentEntity(UUID id, String studentNumber, String firstName, String lastName, String email, StudentStatus status, UUID departmentId) {
+        this(id, studentNumber, firstName, lastName, email, status, departmentId, null, null, 0);
+    }
+
+    public StudentEntity(UUID id, String studentNumber, String firstName, String lastName, String email, StudentStatus status,
+            UUID departmentId, Instant createdAt, Instant updatedAt, long version) {
         this.id = id;
         this.studentNumber = studentNumber;
         this.firstName = firstName;
@@ -51,6 +57,8 @@ public class StudentEntity extends BaseEntity {
         this.email = email;
         this.status = status;
         this.department = new DepartmentEntity(departmentId, null, null, null);
+        this.version = version;
+        audit(createdAt, updatedAt);
     }
 
     public void updateDetails(String studentNumber, String firstName, String lastName, String email, StudentStatus status, DepartmentEntity department) {

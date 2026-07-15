@@ -4,7 +4,7 @@ import com.abc.studentportal.common.api.CursorPageResponse;
 import com.abc.studentportal.common.exception.InvalidRequestException;
 import com.abc.studentportal.common.pagination.CursorPage;
 import com.abc.studentportal.common.pagination.CursorRequest;
-import com.abc.studentportal.enrollment.application.DynamoEnrollmentQueries;
+import com.abc.studentportal.enrollment.application.EnrollmentQueries;
 import com.abc.studentportal.enrollment.application.EnrollmentService;
 import com.abc.studentportal.enrollment.domain.EnrollmentStatus;
 import jakarta.validation.Valid;
@@ -24,9 +24,9 @@ public class EnrollmentController {
 
     private final EnrollmentService service;
 
-    private final DynamoEnrollmentQueries queries;
+    private final EnrollmentQueries queries;
 
-    public EnrollmentController(EnrollmentService service, DynamoEnrollmentQueries queries) {
+    public EnrollmentController(EnrollmentService service, EnrollmentQueries queries) {
         this.service = service;
         this.queries = queries;
     }

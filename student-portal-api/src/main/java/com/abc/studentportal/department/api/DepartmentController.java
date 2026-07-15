@@ -5,15 +5,15 @@ import com.abc.studentportal.common.pagination.CursorPage;
 import com.abc.studentportal.common.pagination.CursorRequest;
 import com.abc.studentportal.course.api.CourseApi;
 import com.abc.studentportal.course.api.CourseMapper;
-import com.abc.studentportal.course.application.DynamoCourseQueries;
+import com.abc.studentportal.course.application.CourseQueries;
 import com.abc.studentportal.department.application.DepartmentService;
-import com.abc.studentportal.department.application.DynamoDepartmentQueries;
+import com.abc.studentportal.department.application.DepartmentQueries;
 import com.abc.studentportal.instructor.api.InstructorApi;
 import com.abc.studentportal.instructor.api.InstructorMapper;
-import com.abc.studentportal.instructor.application.DynamoInstructorQueries;
+import com.abc.studentportal.instructor.application.InstructorQueries;
 import com.abc.studentportal.student.api.StudentApi;
 import com.abc.studentportal.student.api.StudentMapper;
-import com.abc.studentportal.student.application.DynamoStudentQueries;
+import com.abc.studentportal.student.application.StudentQueries;
 import jakarta.validation.Valid;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
@@ -31,16 +31,16 @@ public class DepartmentController {
 
     private final DepartmentService service;
 
-    private final DynamoDepartmentQueries departments;
+    private final DepartmentQueries departments;
 
-    private final DynamoStudentQueries students;
+    private final StudentQueries students;
 
-    private final DynamoInstructorQueries instructors;
+    private final InstructorQueries instructors;
 
-    private final DynamoCourseQueries courses;
+    private final CourseQueries courses;
 
-    public DepartmentController(DepartmentService service, DynamoDepartmentQueries departments,
-                                DynamoStudentQueries students, DynamoInstructorQueries instructors, DynamoCourseQueries courses) {
+    public DepartmentController(DepartmentService service, DepartmentQueries departments,
+                                StudentQueries students, InstructorQueries instructors, CourseQueries courses) {
         this.service = service;
         this.departments = departments;
         this.students = students;

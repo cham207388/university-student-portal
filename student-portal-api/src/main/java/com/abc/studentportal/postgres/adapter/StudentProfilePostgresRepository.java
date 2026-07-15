@@ -40,7 +40,11 @@ public class StudentProfilePostgresRepository implements StudentProfileRepositor
     @Transactional
     public StudentProfile update(StudentProfile studentProfile) {
         StudentProfileEntity existing = studentProfileJpaRepository.findById(studentProfile.id()).orElseThrow();
-        existing.updateDetails(studentProfile.dateOfBirth(), studentProfile.phoneNumber(), studentProfile.addressLine1());
+        PostgresVersions.require(StudentProfileEntity.class, studentProfile.id(), studentProfile.version(), existing.getVersion());
+        existing.updateDetails(studentProfile.dateOfBirth(), studentProfile.phoneNumber(), studentProfile.addressLine1(),
+                studentProfile.addressLine2(), studentProfile.city(), studentProfile.state(), studentProfile.postalCode(),
+                studentProfile.country());
+        existing.touch(studentProfile.updatedAt());
         return toDomain(studentProfileJpaRepository.saveAndFlush(existing));
     }
 
@@ -50,13 +54,20 @@ public class StudentProfilePostgresRepository implements StudentProfileRepositor
 
     @Transactional
     public void delete(StudentProfile studentProfile) {
-        studentProfileJpaRepository.deleteById(studentProfile.id());
+        StudentProfileEntity existing = studentProfileJpaRepository.findById(studentProfile.id()).orElseThrow();
+        PostgresVersions.require(StudentProfileEntity.class, studentProfile.id(), studentProfile.version(), existing.getVersion());
+        studentProfileJpaRepository.delete(existing);
+        studentProfileJpaRepository.flush();
     }
 
     private StudentProfileEntity toEntity(StudentProfile studentProfile) {
         StudentProfileEntity entity = new StudentProfileEntity(studentProfile.id(),
                 studentProfile.studentId(), studentProfile.dateOfBirth(),
-                studentProfile.phoneNumber(), studentProfile.addressLine1());
+                studentProfile.phoneNumber(), studentProfile.addressLine1(), studentProfile.createdAt(),
+                studentProfile.updatedAt(), studentProfile.version());
+        entity.updateDetails(studentProfile.dateOfBirth(), studentProfile.phoneNumber(), studentProfile.addressLine1(),
+                studentProfile.addressLine2(), studentProfile.city(), studentProfile.state(), studentProfile.postalCode(),
+                studentProfile.country());
         entity.attachToStudent(studentJpaRepository.getReferenceById(studentProfile.studentId()));
         return entity;
     }

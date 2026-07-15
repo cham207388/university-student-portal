@@ -2,6 +2,59 @@
 
 ## Completed Tasks
 
+### PostgreSQL live datasource parity
+
+- Replaced DynamoDB-specific controller query dependencies with datasource-neutral collection and relationship ports,
+  retaining the DynamoDB implementations as source-specific subinterfaces for migration.
+- Added PostgreSQL catalog, filter, date-range, and deduplicated relationship adapters with stable UUID ordering and
+  opaque cursors bound to the exact query identity.
+- Made enrollment creation and transitions lock the Course row, enforce capacity and active uniqueness, maintain
+  occupied seats, release seats on drop, and serialize concurrent last-seat attempts.
+- Applied expected-version checks consistently across PostgreSQL updates and deletes, mapped database/optimistic
+  conflicts to RFC 9457 conflict responses, and preserved source audit timestamps, versions, and complete Profile fields.
+- Added a Flyway migration for the previously omitted Profile address fields and enabled strict query-parameter
+  enforcement for PostgreSQL controllers.
+- Added a full `test-postgres` application/API Testcontainers suite covering startup, controllers, pagination, strict
+  query contracts, filters, relationships, capacity release/reuse, concurrent enrollment, audit preservation, and stale
+  mutation rejection.
+
+Verification results:
+
+- Targeted unit/MVC and PostgreSQL integration suites: successful.
+- `./gradlew clean check`: successful; unit/MVC, DynamoDB LocalStack, and PostgreSQL Testcontainers suites passed.
+- `git diff --check`: successful.
+
+### Durable migration lifecycle tracking
+
+- Added a second Flyway migration for `migration_runs`, `migration_checkpoints`, and `migration_errors`, including status,
+  configuration, timestamps, per-entity counters, cursors, and safe terminal error summaries.
+- Added a migration-profile JDBC tracker and wired the runner to record each run, completed entity stage, skipped rows,
+  successful completion, and terminal failure.
+- Extended PostgreSQL integration coverage to verify the tracking schema and persisted lifecycle transitions.
+
+Verification results:
+
+- Focused migration runner tests: successful.
+- `./gradlew postgresIntegrationTest --tests ...PostgresPersistenceIntegrationTest`: successful.
+- `git diff --check`: successful.
+
+### Migration execution safety and complete source pagination
+
+- Made migration execution opt-in through the documented `migration.run=true` property; selecting the migration profile
+  alone no longer copies data or exits the application.
+- Added configurable DynamoDB page sizes and cursor traversal for every migrated entity type, removing the previous
+  first-100-record limit.
+- Added a no-write dry-run mode, retained insert-if-absent rerun behavior, and corrected the copy order to departments,
+  students/profiles, instructors, courses, and enrollments.
+- Updated the README and implementation plan to reflect the implemented PostgreSQL controllers, migration runner, and
+  the remaining Phase 5 tracking/retry/reconciliation work.
+
+Verification results:
+
+- `./gradlew test --tests com.abc.studentportal.common.migration.DynamoToPostgresMigrationRunnerTest`: successful.
+- Regression coverage verifies multi-page traversal and that dry-run performs no target writes.
+- `./gradlew compileJava test`: successful.
+
 ### PostgreSQL JPA adapters and relationship mappings
 
 - Added profile-scoped PostgreSQL adapters for all six application repository ports, mapping domain records to separate

@@ -1,16 +1,16 @@
 package com.abc.studentportal.course.api;
 
 import com.abc.studentportal.common.api.CursorPageResponse;
-import com.abc.studentportal.common.application.DynamoStudentCourseQueries;
+import com.abc.studentportal.common.application.StudentCourseQueries;
 import com.abc.studentportal.common.exception.InvalidRequestException;
 import com.abc.studentportal.common.pagination.CursorPage;
 import com.abc.studentportal.common.pagination.CursorRequest;
 import com.abc.studentportal.course.application.CourseService;
-import com.abc.studentportal.course.application.DynamoCourseQueries;
+import com.abc.studentportal.course.application.CourseQueries;
 import com.abc.studentportal.course.domain.CourseStatus;
 import com.abc.studentportal.enrollment.api.EnrollmentApi;
 import com.abc.studentportal.enrollment.api.EnrollmentMapper;
-import com.abc.studentportal.enrollment.application.DynamoEnrollmentQueries;
+import com.abc.studentportal.enrollment.application.EnrollmentQueries;
 import com.abc.studentportal.student.api.StudentApi;
 import com.abc.studentportal.student.api.StudentMapper;
 import jakarta.validation.Valid;
@@ -31,14 +31,14 @@ public class CourseController {
 
     private final CourseService service;
 
-    private final DynamoCourseQueries queries;
+    private final CourseQueries queries;
 
-    private final DynamoEnrollmentQueries enrollments;
+    private final EnrollmentQueries enrollments;
 
-    private final DynamoStudentCourseQueries relationships;
+    private final StudentCourseQueries relationships;
 
-    public CourseController(CourseService service, DynamoCourseQueries queries, DynamoEnrollmentQueries enrollments,
-                            DynamoStudentCourseQueries relationships) {
+    public CourseController(CourseService service, CourseQueries queries, EnrollmentQueries enrollments,
+                            StudentCourseQueries relationships) {
         this.service = service;
         this.queries = queries;
         this.enrollments = enrollments;

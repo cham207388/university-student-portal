@@ -28,7 +28,9 @@ public class DepartmentPostgresRepository implements DepartmentRepository {
 
     public Department update(Department department) {
         DepartmentEntity existing = delegate.findById(department.id()).orElseThrow();
+        PostgresVersions.require(DepartmentEntity.class, department.id(), department.version(), existing.getVersion());
         existing.updateDetails(department.code(), department.name(), department.description());
+        existing.touch(department.updatedAt());
         return toDomain(delegate.save(existing));
     }
 
@@ -45,11 +47,15 @@ public class DepartmentPostgresRepository implements DepartmentRepository {
     }
 
     public void delete(Department department) {
-        delegate.deleteById(department.id());
+        DepartmentEntity existing = delegate.findById(department.id()).orElseThrow();
+        PostgresVersions.require(DepartmentEntity.class, department.id(), department.version(), existing.getVersion());
+        delegate.delete(existing);
+        delegate.flush();
     }
 
     private DepartmentEntity toEntity(Department department) {
-        return new DepartmentEntity(department.id(), department.code(), department.name(), department.description());
+        return new DepartmentEntity(department.id(), department.code(), department.name(), department.description(),
+                department.createdAt(), department.updatedAt(), department.version());
     }
 
     private Department toDomain(DepartmentEntity departmentEntity) {

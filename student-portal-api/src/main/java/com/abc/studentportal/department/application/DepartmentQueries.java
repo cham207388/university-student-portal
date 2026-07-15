@@ -4,4 +4,6 @@ import com.abc.studentportal.common.pagination.CursorPage;
 import com.abc.studentportal.common.pagination.CursorRequest;
 import com.abc.studentportal.department.domain.Department;
 
-public interface DynamoDepartmentQueries extends DepartmentQueries { }
+public interface DepartmentQueries {
+    CursorPage<Department> findAll(CursorRequest request);
+}

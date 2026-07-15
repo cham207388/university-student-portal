@@ -6,7 +6,7 @@ import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
-@Profile({"local-dynamodb", "test-dynamodb"})
+@Profile({"local-dynamodb", "test-dynamodb", "local-postgres", "test-postgres"})
 class StrictQueryParameterConfiguration implements WebMvcConfigurer {
 
     @Override

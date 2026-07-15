@@ -11,6 +11,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.context.annotation.Profile;
 import org.springframework.context.annotation.Primary;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 
 @Repository
 @Primary
@@ -31,11 +32,20 @@ public class PostgresEnrollmentRepository implements EnrollmentRepository {
     }
 
     public Enrollment create(Enrollment enrollment) {
-        return toDomain(repo.saveAndFlush(toEntity(enrollment)));
+        CourseEntity course = courses.findLockedById(enrollment.courseId()).orElseThrow();
+        if (enrollment.consumesCapacity()) course.reserveSeat();
+        return toDomain(repo.saveAndFlush(new EnrollmentEntity(enrollment.id(),
+                students.getReferenceById(enrollment.studentId()), course, enrollment.status(), enrollment.enrolledAt(),
+                enrollment.droppedAt(), enrollment.finalGrade(), enrollment.createdAt(), enrollment.updatedAt(), enrollment.version())));
     }
 
     public Enrollment update(Enrollment enrollment) {
-        return toDomain(repo.saveAndFlush(toEntity(enrollment)));
+        EnrollmentEntity existing = repo.findById(enrollment.id()).orElseThrow();
+        if (existing.getVersion() != enrollment.version())
+            throw new ObjectOptimisticLockingFailureException(EnrollmentEntity.class, enrollment.id());
+        existing.transition(enrollment.status(), enrollment.droppedAt(), enrollment.finalGrade());
+        existing.touch(enrollment.updatedAt());
+        return toDomain(repo.saveAndFlush(existing));
     }
 
     public Optional<Enrollment> findById(UUID id) {
@@ -55,7 +65,9 @@ public class PostgresEnrollmentRepository implements EnrollmentRepository {
     }
 
     private EnrollmentEntity toEntity(Enrollment enrollment) {
-        return new EnrollmentEntity(enrollment.id(), students.getReferenceById(enrollment.studentId()), courses.getReferenceById(enrollment.courseId()), enrollment.status(), enrollment.enrolledAt(), enrollment.droppedAt(), enrollment.finalGrade());
+        return new EnrollmentEntity(enrollment.id(), students.getReferenceById(enrollment.studentId()),
+                courses.getReferenceById(enrollment.courseId()), enrollment.status(), enrollment.enrolledAt(),
+                enrollment.droppedAt(), enrollment.finalGrade(), enrollment.createdAt(), enrollment.updatedAt(), enrollment.version());
     }
 
     private Enrollment toDomain(EnrollmentEntity enrollmentEntity) {
