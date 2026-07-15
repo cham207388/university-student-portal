@@ -2,177 +2,1633 @@
   "info": {
     "_postman_id": "1d20fa95-5eb4-4fe0-a6a4-e4b15706140d",
     "name": "University Student Portal API",
-    "description": "DynamoDB API checks. Start the seeded server with `make app-run-dynamodb-seeded`, then run requests individually or run the collection in order. Workflow requests capture IDs and optimistic versions automatically.",
+    "description": "Dual-datasource API collection.\n\n- `dynamo-as-datasource` \u2192 `http://127.0.0.1:8081` (`make app-run-dynamodb-seeded`)\n- `postgres-as-datasource` \u2192 `http://127.0.0.1:8082` (`make app-run-postgres` after migrate)\n\nSeed IDs match the DynamoDB development seeder (and Postgres after `make migrate-dynamo-to-postgres`). Run workflow folders in order; they capture IDs and optimistic versions automatically.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
-    { "key": "baseUrl", "value": "http://127.0.0.1:8080" },
-    { "key": "seedDepartmentId", "value": "b6206ea3-c883-3635-8eda-bac4f678ff66" },
-    { "key": "seedStudentId", "value": "19bc8b48-9f9d-3ca2-b63c-4ffbee93e9cd" },
-    { "key": "seedInstructorId", "value": "5bb6835f-93e2-3c94-975d-3e2d9dd942a9" },
-    { "key": "seedCourseId", "value": "edc7779c-00ae-38a1-b016-9f3b2971a722" },
-    { "key": "seedEnrollmentId", "value": "2abc2136-f9fd-397f-be90-22c7d9422fa7" },
-    { "key": "departmentId", "value": "" },
-    { "key": "departmentVersion", "value": "" },
-    { "key": "instructorId", "value": "" },
-    { "key": "instructorVersion", "value": "" },
-    { "key": "studentId", "value": "" },
-    { "key": "studentVersion", "value": "" },
-    { "key": "profileVersion", "value": "" },
-    { "key": "courseId", "value": "" },
-    { "key": "courseVersion", "value": "" },
-    { "key": "enrollmentId", "value": "" },
-    { "key": "enrollmentVersion", "value": "" }
+    {
+      "key": "seedDepartmentId",
+      "value": "b6206ea3-c883-3635-8eda-bac4f678ff66"
+    },
+    {
+      "key": "seedStudentId",
+      "value": "19bc8b48-9f9d-3ca2-b63c-4ffbee93e9cd"
+    },
+    {
+      "key": "seedInstructorId",
+      "value": "5bb6835f-93e2-3c94-975d-3e2d9dd942a9"
+    },
+    {
+      "key": "seedCourseId",
+      "value": "edc7779c-00ae-38a1-b016-9f3b2971a722"
+    },
+    {
+      "key": "seedEnrollmentId",
+      "value": "2abc2136-f9fd-397f-be90-22c7d9422fa7"
+    },
+    {
+      "key": "departmentId",
+      "value": ""
+    },
+    {
+      "key": "departmentVersion",
+      "value": ""
+    },
+    {
+      "key": "instructorId",
+      "value": ""
+    },
+    {
+      "key": "instructorVersion",
+      "value": ""
+    },
+    {
+      "key": "studentId",
+      "value": ""
+    },
+    {
+      "key": "studentVersion",
+      "value": ""
+    },
+    {
+      "key": "profileVersion",
+      "value": ""
+    },
+    {
+      "key": "courseId",
+      "value": ""
+    },
+    {
+      "key": "courseVersion",
+      "value": ""
+    },
+    {
+      "key": "enrollmentId",
+      "value": ""
+    },
+    {
+      "key": "enrollmentVersion",
+      "value": ""
+    }
   ],
   "item": [
     {
-      "name": "01 - Health and Seeded Data",
+      "name": "dynamo-as-datasource",
+      "description": "Local DynamoDB profile (`local-dynamodb`) on port 8081.",
+      "variable": [
+        {
+          "key": "baseUrl",
+          "value": "http://127.0.0.1:8081"
+        }
+      ],
       "item": [
         {
-          "name": "Health",
-          "request": { "method": "GET", "url": "{{baseUrl}}/actuator/health" },
-          "event": [{ "listen": "test", "script": { "exec": ["pm.test('API is healthy', () => { pm.response.to.have.status(200); pm.expect(pm.response.json().status).to.eql('UP'); });"] } }]
+          "name": "01 - Health",
+          "item": [
+            {
+              "name": "Health",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/actuator/health"
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('API is healthy', () => {",
+                      "  pm.response.to.have.status(200);",
+                      "  pm.expect(pm.response.json().status).to.eql('UP');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
         },
         {
-          "name": "List Departments",
-          "request": { "method": "GET", "url": "{{baseUrl}}/api/v1/departments?limit=10" },
-          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Cursor page returned', () => { pm.response.to.have.status(200); pm.expect(pm.response.json().content).to.be.an('array'); });"] } }]
+          "name": "02 - Departments",
+          "item": [
+            {
+              "name": "List Departments",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/departments?limit=10"
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Cursor page returned', () => {",
+                      "  pm.response.to.have.status(200);",
+                      "  pm.expect(pm.response.json().content).to.be.an('array');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Get Department by Id",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/departments/{{seedDepartmentId}}"
+              }
+            },
+            {
+              "name": "Find Department by Code",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/departments?code=CSE"
+              }
+            },
+            {
+              "name": "Department Students",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/departments/{{seedDepartmentId}}/students?limit=10"
+              }
+            },
+            {
+              "name": "Department Instructors",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/departments/{{seedDepartmentId}}/instructors?limit=10"
+              }
+            },
+            {
+              "name": "Department Courses",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/departments/{{seedDepartmentId}}/courses?limit=10"
+              }
+            }
+          ]
         },
         {
-          "name": "Find Seed Student by Email",
-          "request": { "method": "GET", "url": "{{baseUrl}}/api/v1/students?email=student1%40example.edu" },
-          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Exact alternate key returned one student', () => { pm.response.to.have.status(200); const body = pm.response.json(); pm.expect(body.content).to.have.length(1); pm.expect(body.limit).to.eql(1); });"] } }]
+          "name": "03 - Students",
+          "item": [
+            {
+              "name": "List Students",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/students?limit=10"
+              }
+            },
+            {
+              "name": "Get Student by Id",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/students/{{seedStudentId}}"
+              }
+            },
+            {
+              "name": "Find Student by Email",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/students?email=student1%40example.edu"
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Exact alternate key returned one student', () => {",
+                      "  pm.response.to.have.status(200);",
+                      "  const body = pm.response.json();",
+                      "  pm.expect(body.content).to.have.length(1);",
+                      "  pm.expect(body.limit).to.eql(1);",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Find Student by Number",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/students?studentNumber=S0001"
+              }
+            },
+            {
+              "name": "Get Student Profile",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/students/{{seedStudentId}}/profile"
+              }
+            },
+            {
+              "name": "Get Student Enrollments",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/students/{{seedStudentId}}/enrollments?limit=10"
+              }
+            },
+            {
+              "name": "Get Student Courses",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/students/{{seedStudentId}}/courses?limit=10"
+              }
+            }
+          ]
         },
         {
-          "name": "Reject Unsupported Course Filter",
-          "request": { "method": "GET", "url": "{{baseUrl}}/api/v1/courses?title=ignored" },
-          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Unknown query parameter is rejected', () => { pm.response.to.have.status(400); pm.expect(pm.response.json().type).to.include('invalid-request'); });"] } }]
+          "name": "04 - Instructors",
+          "item": [
+            {
+              "name": "List Instructors",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/instructors?limit=10"
+              }
+            },
+            {
+              "name": "Get Instructor by Id",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/instructors/{{seedInstructorId}}"
+              }
+            },
+            {
+              "name": "Find Instructor by Employee Number",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/instructors?employeeNumber=E1001"
+              }
+            },
+            {
+              "name": "Instructor Courses",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/instructors/{{seedInstructorId}}/courses?limit=10"
+              }
+            }
+          ]
         },
         {
-          "name": "Get Seed Student Profile",
-          "request": { "method": "GET", "url": "{{baseUrl}}/api/v1/students/{{seedStudentId}}/profile" }
+          "name": "05 - Courses",
+          "item": [
+            {
+              "name": "List Courses",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/courses?limit=10"
+              }
+            },
+            {
+              "name": "Get Course by Id",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/courses/{{seedCourseId}}"
+              }
+            },
+            {
+              "name": "Find Course by Code",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/courses?courseCode=CSE-101"
+              }
+            },
+            {
+              "name": "Course Enrollments",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/courses/{{seedCourseId}}/enrollments?limit=10"
+              }
+            },
+            {
+              "name": "Course Students",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/courses/{{seedCourseId}}/students?limit=10"
+              }
+            }
+          ]
         },
         {
-          "name": "Get Seed Student Courses",
-          "request": { "method": "GET", "url": "{{baseUrl}}/api/v1/students/{{seedStudentId}}/courses?limit=10" }
+          "name": "06 - Enrollments",
+          "item": [
+            {
+              "name": "List Enrollments",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/enrollments?limit=10"
+              }
+            },
+            {
+              "name": "Get Enrollment by Id",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/enrollments/{{seedEnrollmentId}}"
+              }
+            },
+            {
+              "name": "List Enrollments by Student",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/enrollments?studentId={{seedStudentId}}&limit=10"
+              }
+            },
+            {
+              "name": "List Enrollments by Course",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/enrollments?courseId={{seedCourseId}}&limit=10"
+              }
+            },
+            {
+              "name": "Drop Enrollment (requires ENROLLED status)",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/enrollments/{{enrollmentId}}?version={{enrollmentVersion}}",
+                "description": "Only valid from ENROLLED or WAITLISTED. Run from the workflow before completing, or against a seeded ENROLLED enrollment."
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Enrollment dropped or rejected', () => {",
+                      "  pm.expect([200, 409, 400]).to.include(pm.response.code);",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
         },
         {
-          "name": "Get Seed Course Students",
-          "request": { "method": "GET", "url": "{{baseUrl}}/api/v1/courses/{{seedCourseId}}/students?limit=10" }
+          "name": "07 - Ordered CRUD and Enrollment Workflow",
+          "item": [
+            {
+              "name": "1. Create Department",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/departments",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"code\": \"P{{$timestamp}}\",\n  \"name\": \"Postman Engineering {{$timestamp}}\",\n  \"description\": \"Created by the Postman workflow\"\n}"
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Department created', () => pm.response.to.have.status(201));",
+                      "const body = pm.response.json();",
+                      "pm.collectionVariables.set('departmentId', body.id);",
+                      "pm.collectionVariables.set('departmentVersion', String(body.version));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "2. Update Department",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/departments/{{departmentId}}",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"code\": \"P{{$timestamp}}\",\n  \"name\": \"Postman Engineering Updated\",\n  \"description\": \"Updated by the Postman workflow\",\n  \"version\": {{departmentVersion}}\n}"
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Department updated', () => pm.response.to.have.status(200));",
+                      "pm.collectionVariables.set('departmentVersion', String(pm.response.json().version));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "3. Create Instructor",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/instructors",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"employeeNumber\": \"E{{$timestamp}}\",\n  \"firstName\": \"Morgan\",\n  \"lastName\": \"Tutor\",\n  \"email\": \"instructor-{{$timestamp}}@example.edu\",\n  \"departmentId\": \"{{departmentId}}\"\n}"
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Instructor created', () => pm.response.to.have.status(201));",
+                      "const body = pm.response.json();",
+                      "pm.collectionVariables.set('instructorId', body.id);",
+                      "pm.collectionVariables.set('instructorVersion', String(body.version));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "4. Create Student",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/students",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"studentNumber\": \"S{{$timestamp}}\",\n  \"firstName\": \"Taylor\",\n  \"lastName\": \"Learner\",\n  \"email\": \"student-{{$timestamp}}@example.edu\",\n  \"status\": \"ACTIVE\",\n  \"departmentId\": \"{{departmentId}}\"\n}"
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Student created', () => pm.response.to.have.status(201));",
+                      "const body = pm.response.json();",
+                      "pm.collectionVariables.set('studentId', body.id);",
+                      "pm.collectionVariables.set('studentVersion', String(body.version));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "5. Put Student Profile",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/students/{{studentId}}/profile",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"dateOfBirth\": \"2000-05-10\",\n  \"phoneNumber\": \"555-0199\",\n  \"addressLine1\": \"500 Postman Way\",\n  \"addressLine2\": null,\n  \"city\": \"Austin\",\n  \"state\": \"TX\",\n  \"postalCode\": \"78701\",\n  \"country\": \"US\",\n  \"version\": 0\n}"
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Profile stored', () => pm.response.to.have.status(200));",
+                      "pm.collectionVariables.set('profileVersion', String(pm.response.json().version));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "6. Patch Student Status",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/students/{{studentId}}/status",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"ACTIVE\",\n  \"version\": {{studentVersion}}\n}"
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Student status patched', () => pm.response.to.have.status(200));",
+                      "pm.collectionVariables.set('studentVersion', String(pm.response.json().version));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "7. Create Open Course",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/courses",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"courseCode\": \"PM{{$timestamp}}\",\n  \"title\": \"Postman API Testing\",\n  \"description\": \"Created by the ordered workflow\",\n  \"credits\": 3,\n  \"capacity\": 2,\n  \"status\": \"OPEN\",\n  \"departmentId\": \"{{departmentId}}\",\n  \"instructorId\": \"{{instructorId}}\"\n}"
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Course created', () => pm.response.to.have.status(201));",
+                      "const body = pm.response.json();",
+                      "pm.collectionVariables.set('courseId', body.id);",
+                      "pm.collectionVariables.set('courseVersion', String(body.version));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "8. Patch Course Status Open",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/courses/{{courseId}}/status",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"OPEN\",\n  \"version\": {{courseVersion}}\n}"
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Course status patched', () => pm.response.to.have.status(200));",
+                      "pm.collectionVariables.set('courseVersion', String(pm.response.json().version));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "9. Enroll Student",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/enrollments",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"studentId\": \"{{studentId}}\",\n  \"courseId\": \"{{courseId}}\"\n}"
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Enrollment created', () => pm.response.to.have.status(201));",
+                      "const body = pm.response.json();",
+                      "pm.collectionVariables.set('enrollmentId', body.id);",
+                      "pm.collectionVariables.set('enrollmentVersion', String(body.version));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "10. Get Student Courses",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/students/{{studentId}}/courses?limit=10"
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Created course is related', () => {",
+                      "  pm.response.to.have.status(200);",
+                      "  pm.expect(pm.response.json().content.map(x => x.id)).to.include(pm.collectionVariables.get('courseId'));",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "11. Get Course Students",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/courses/{{courseId}}/students?limit=10"
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Created student is related', () => {",
+                      "  pm.response.to.have.status(200);",
+                      "  pm.expect(pm.response.json().content.map(x => x.id)).to.include(pm.collectionVariables.get('studentId'));",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "12. Complete Enrollment",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/enrollments/{{enrollmentId}}/status",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"COMPLETED\",\n  \"finalGrade\": \"A\",\n  \"version\": {{enrollmentVersion}}\n}"
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Enrollment completed', () => pm.response.to.have.status(200));",
+                      "const body = pm.response.json();",
+                      "pm.expect(body.status).to.eql('COMPLETED');",
+                      "pm.collectionVariables.set('enrollmentVersion', String(body.version));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "13. Get Enrollment",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/enrollments/{{enrollmentId}}"
+              }
+            }
+          ],
+          "description": "Run this folder in order. Unique fields use Postman's dynamic timestamp variable."
         },
         {
-          "name": "Get Seed Enrollment",
-          "request": { "method": "GET", "url": "{{baseUrl}}/api/v1/enrollments/{{seedEnrollmentId}}" }
+          "name": "08 - Error Examples",
+          "item": [
+            {
+              "name": "Validation Problem",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/students",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}"
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Validation returns Problem Details', () => {",
+                      "  pm.response.to.have.status(400);",
+                      "  pm.expect(pm.response.json().type).to.include('validation-failed');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Unsupported Query Parameter",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/courses?title=ignored"
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Unknown query parameter is rejected', () => {",
+                      "  pm.response.to.have.status(400);",
+                      "  pm.expect(pm.response.json().type).to.include('invalid-request');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Unsupported Filter Combination",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/courses?departmentId={{seedDepartmentId}}&status=OPEN"
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Unsupported query rejected', () => pm.response.to.have.status(400));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Resource Not Found",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/courses/00000000-0000-0000-0000-000000000000"
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Missing resource returns 404', () => pm.response.to.have.status(404));"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
         }
       ]
     },
     {
-      "name": "02 - Ordered CRUD and Enrollment Workflow",
-      "description": "Run this folder in order. Unique fields use Postman's dynamic timestamp variable.",
-      "item": [
+      "name": "postgres-as-datasource",
+      "description": "Local PostgreSQL profile (`local-postgres`) on port 8082.",
+      "variable": [
         {
-          "name": "1. Create Department",
-          "request": {
-            "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": { "mode": "raw", "raw": "{\n  \"code\": \"P{{$timestamp}}\",\n  \"name\": \"Postman Engineering {{$timestamp}}\",\n  \"description\": \"Created by the Postman workflow\"\n}" },
-            "url": "{{baseUrl}}/api/v1/departments"
-          },
-          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Department created', () => pm.response.to.have.status(201));", "const body = pm.response.json();", "pm.collectionVariables.set('departmentId', body.id);", "pm.collectionVariables.set('departmentVersion', body.version);"] } }]
-        },
-        {
-          "name": "2. Create Instructor",
-          "request": {
-            "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": { "mode": "raw", "raw": "{\n  \"employeeNumber\": \"E{{$timestamp}}\",\n  \"firstName\": \"Morgan\",\n  \"lastName\": \"Tutor\",\n  \"email\": \"instructor-{{$timestamp}}@example.edu\",\n  \"departmentId\": \"{{departmentId}}\"\n}" },
-            "url": "{{baseUrl}}/api/v1/instructors"
-          },
-          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Instructor created', () => pm.response.to.have.status(201));", "const body = pm.response.json();", "pm.collectionVariables.set('instructorId', body.id);", "pm.collectionVariables.set('instructorVersion', body.version);"] } }]
-        },
-        {
-          "name": "3. Create Student",
-          "request": {
-            "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": { "mode": "raw", "raw": "{\n  \"studentNumber\": \"S{{$timestamp}}\",\n  \"firstName\": \"Taylor\",\n  \"lastName\": \"Learner\",\n  \"email\": \"student-{{$timestamp}}@example.edu\",\n  \"status\": \"ACTIVE\",\n  \"departmentId\": \"{{departmentId}}\"\n}" },
-            "url": "{{baseUrl}}/api/v1/students"
-          },
-          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Student created', () => pm.response.to.have.status(201));", "const body = pm.response.json();", "pm.collectionVariables.set('studentId', body.id);", "pm.collectionVariables.set('studentVersion', body.version);"] } }]
-        },
-        {
-          "name": "4. Put Student Profile",
-          "request": {
-            "method": "PUT",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": { "mode": "raw", "raw": "{\n  \"dateOfBirth\": \"2000-05-10\",\n  \"phoneNumber\": \"555-0199\",\n  \"addressLine1\": \"500 Postman Way\",\n  \"addressLine2\": null,\n  \"city\": \"Austin\",\n  \"state\": \"TX\",\n  \"postalCode\": \"78701\",\n  \"country\": \"US\",\n  \"version\": 0\n}" },
-            "url": "{{baseUrl}}/api/v1/students/{{studentId}}/profile"
-          },
-          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Profile stored', () => pm.response.to.have.status(200));", "pm.collectionVariables.set('profileVersion', pm.response.json().version);"] } }]
-        },
-        {
-          "name": "5. Create Open Course",
-          "request": {
-            "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": { "mode": "raw", "raw": "{\n  \"courseCode\": \"PM{{$timestamp}}\",\n  \"title\": \"Postman API Testing\",\n  \"description\": \"Created by the ordered workflow\",\n  \"credits\": 3,\n  \"capacity\": 2,\n  \"status\": \"OPEN\",\n  \"departmentId\": \"{{departmentId}}\",\n  \"instructorId\": \"{{instructorId}}\"\n}" },
-            "url": "{{baseUrl}}/api/v1/courses"
-          },
-          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Course created', () => pm.response.to.have.status(201));", "const body = pm.response.json();", "pm.collectionVariables.set('courseId', body.id);", "pm.collectionVariables.set('courseVersion', body.version);"] } }]
-        },
-        {
-          "name": "6. Enroll Student",
-          "request": {
-            "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": { "mode": "raw", "raw": "{\n  \"studentId\": \"{{studentId}}\",\n  \"courseId\": \"{{courseId}}\"\n}" },
-            "url": "{{baseUrl}}/api/v1/enrollments"
-          },
-          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Enrollment created', () => pm.response.to.have.status(201));", "const body = pm.response.json();", "pm.collectionVariables.set('enrollmentId', body.id);", "pm.collectionVariables.set('enrollmentVersion', body.version);"] } }]
-        },
-        {
-          "name": "7. Get Student Courses",
-          "request": { "method": "GET", "url": "{{baseUrl}}/api/v1/students/{{studentId}}/courses?limit=10" },
-          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Created course is related', () => { pm.response.to.have.status(200); pm.expect(pm.response.json().content.map(x => x.id)).to.include(pm.collectionVariables.get('courseId')); });"] } }]
-        },
-        {
-          "name": "8. Get Course Students",
-          "request": { "method": "GET", "url": "{{baseUrl}}/api/v1/courses/{{courseId}}/students?limit=10" },
-          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Created student is related', () => { pm.response.to.have.status(200); pm.expect(pm.response.json().content.map(x => x.id)).to.include(pm.collectionVariables.get('studentId')); });"] } }]
-        },
-        {
-          "name": "9. Complete Enrollment",
-          "request": {
-            "method": "PATCH",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": { "mode": "raw", "raw": "{\n  \"status\": \"COMPLETED\",\n  \"finalGrade\": \"A\",\n  \"version\": {{enrollmentVersion}}\n}" },
-            "url": "{{baseUrl}}/api/v1/enrollments/{{enrollmentId}}/status"
-          },
-          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Enrollment completed', () => pm.response.to.have.status(200));", "const body = pm.response.json();", "pm.expect(body.status).to.eql('COMPLETED');", "pm.collectionVariables.set('enrollmentVersion', body.version);"] } }]
-        },
-        {
-          "name": "10. Get Enrollment",
-          "request": { "method": "GET", "url": "{{baseUrl}}/api/v1/enrollments/{{enrollmentId}}" }
+          "key": "baseUrl",
+          "value": "http://127.0.0.1:8082"
         }
-      ]
-    },
-    {
-      "name": "03 - Error Examples",
+      ],
       "item": [
         {
-          "name": "Validation Problem",
-          "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "body": { "mode": "raw", "raw": "{}" }, "url": "{{baseUrl}}/api/v1/students" },
-          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Validation returns Problem Details', () => { pm.response.to.have.status(400); pm.expect(pm.response.json().type).to.include('validation-failed'); });"] } }]
+          "name": "01 - Health",
+          "item": [
+            {
+              "name": "Health",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/actuator/health"
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('API is healthy', () => {",
+                      "  pm.response.to.have.status(200);",
+                      "  pm.expect(pm.response.json().status).to.eql('UP');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
         },
         {
-          "name": "Unsupported DynamoDB Filter Combination",
-          "request": { "method": "GET", "url": "{{baseUrl}}/api/v1/courses?departmentId={{seedDepartmentId}}&status=OPEN" },
-          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Unsupported query rejected', () => pm.response.to.have.status(400));"] } }]
+          "name": "02 - Departments",
+          "item": [
+            {
+              "name": "List Departments",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/departments?limit=10"
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Cursor page returned', () => {",
+                      "  pm.response.to.have.status(200);",
+                      "  pm.expect(pm.response.json().content).to.be.an('array');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Get Department by Id",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/departments/{{seedDepartmentId}}"
+              }
+            },
+            {
+              "name": "Find Department by Code",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/departments?code=CSE"
+              }
+            },
+            {
+              "name": "Department Students",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/departments/{{seedDepartmentId}}/students?limit=10"
+              }
+            },
+            {
+              "name": "Department Instructors",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/departments/{{seedDepartmentId}}/instructors?limit=10"
+              }
+            },
+            {
+              "name": "Department Courses",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/departments/{{seedDepartmentId}}/courses?limit=10"
+              }
+            }
+          ]
         },
         {
-          "name": "Resource Not Found",
-          "request": { "method": "GET", "url": "{{baseUrl}}/api/v1/courses/00000000-0000-0000-0000-000000000000" },
-          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Missing resource returns 404', () => pm.response.to.have.status(404));"] } }]
+          "name": "03 - Students",
+          "item": [
+            {
+              "name": "List Students",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/students?limit=10"
+              }
+            },
+            {
+              "name": "Get Student by Id",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/students/{{seedStudentId}}"
+              }
+            },
+            {
+              "name": "Find Student by Email",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/students?email=student1%40example.edu"
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Exact alternate key returned one student', () => {",
+                      "  pm.response.to.have.status(200);",
+                      "  const body = pm.response.json();",
+                      "  pm.expect(body.content).to.have.length(1);",
+                      "  pm.expect(body.limit).to.eql(1);",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Find Student by Number",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/students?studentNumber=S0001"
+              }
+            },
+            {
+              "name": "Get Student Profile",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/students/{{seedStudentId}}/profile"
+              }
+            },
+            {
+              "name": "Get Student Enrollments",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/students/{{seedStudentId}}/enrollments?limit=10"
+              }
+            },
+            {
+              "name": "Get Student Courses",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/students/{{seedStudentId}}/courses?limit=10"
+              }
+            }
+          ]
+        },
+        {
+          "name": "04 - Instructors",
+          "item": [
+            {
+              "name": "List Instructors",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/instructors?limit=10"
+              }
+            },
+            {
+              "name": "Get Instructor by Id",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/instructors/{{seedInstructorId}}"
+              }
+            },
+            {
+              "name": "Find Instructor by Employee Number",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/instructors?employeeNumber=E1001"
+              }
+            },
+            {
+              "name": "Instructor Courses",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/instructors/{{seedInstructorId}}/courses?limit=10"
+              }
+            }
+          ]
+        },
+        {
+          "name": "05 - Courses",
+          "item": [
+            {
+              "name": "List Courses",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/courses?limit=10"
+              }
+            },
+            {
+              "name": "Get Course by Id",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/courses/{{seedCourseId}}"
+              }
+            },
+            {
+              "name": "Find Course by Code",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/courses?courseCode=CSE-101"
+              }
+            },
+            {
+              "name": "Course Enrollments",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/courses/{{seedCourseId}}/enrollments?limit=10"
+              }
+            },
+            {
+              "name": "Course Students",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/courses/{{seedCourseId}}/students?limit=10"
+              }
+            }
+          ]
+        },
+        {
+          "name": "06 - Enrollments",
+          "item": [
+            {
+              "name": "List Enrollments",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/enrollments?limit=10"
+              }
+            },
+            {
+              "name": "Get Enrollment by Id",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/enrollments/{{seedEnrollmentId}}"
+              }
+            },
+            {
+              "name": "List Enrollments by Student",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/enrollments?studentId={{seedStudentId}}&limit=10"
+              }
+            },
+            {
+              "name": "List Enrollments by Course",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/enrollments?courseId={{seedCourseId}}&limit=10"
+              }
+            },
+            {
+              "name": "Drop Enrollment (requires ENROLLED status)",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/enrollments/{{enrollmentId}}?version={{enrollmentVersion}}",
+                "description": "Only valid from ENROLLED or WAITLISTED. Run from the workflow before completing, or against a seeded ENROLLED enrollment."
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Enrollment dropped or rejected', () => {",
+                      "  pm.expect([200, 409, 400]).to.include(pm.response.code);",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "07 - Ordered CRUD and Enrollment Workflow",
+          "item": [
+            {
+              "name": "1. Create Department",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/departments",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"code\": \"P{{$timestamp}}\",\n  \"name\": \"Postman Engineering {{$timestamp}}\",\n  \"description\": \"Created by the Postman workflow\"\n}"
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Department created', () => pm.response.to.have.status(201));",
+                      "const body = pm.response.json();",
+                      "pm.collectionVariables.set('departmentId', body.id);",
+                      "pm.collectionVariables.set('departmentVersion', String(body.version));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "2. Update Department",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/departments/{{departmentId}}",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"code\": \"P{{$timestamp}}\",\n  \"name\": \"Postman Engineering Updated\",\n  \"description\": \"Updated by the Postman workflow\",\n  \"version\": {{departmentVersion}}\n}"
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Department updated', () => pm.response.to.have.status(200));",
+                      "pm.collectionVariables.set('departmentVersion', String(pm.response.json().version));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "3. Create Instructor",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/instructors",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"employeeNumber\": \"E{{$timestamp}}\",\n  \"firstName\": \"Morgan\",\n  \"lastName\": \"Tutor\",\n  \"email\": \"instructor-{{$timestamp}}@example.edu\",\n  \"departmentId\": \"{{departmentId}}\"\n}"
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Instructor created', () => pm.response.to.have.status(201));",
+                      "const body = pm.response.json();",
+                      "pm.collectionVariables.set('instructorId', body.id);",
+                      "pm.collectionVariables.set('instructorVersion', String(body.version));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "4. Create Student",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/students",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"studentNumber\": \"S{{$timestamp}}\",\n  \"firstName\": \"Taylor\",\n  \"lastName\": \"Learner\",\n  \"email\": \"student-{{$timestamp}}@example.edu\",\n  \"status\": \"ACTIVE\",\n  \"departmentId\": \"{{departmentId}}\"\n}"
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Student created', () => pm.response.to.have.status(201));",
+                      "const body = pm.response.json();",
+                      "pm.collectionVariables.set('studentId', body.id);",
+                      "pm.collectionVariables.set('studentVersion', String(body.version));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "5. Put Student Profile",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/students/{{studentId}}/profile",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"dateOfBirth\": \"2000-05-10\",\n  \"phoneNumber\": \"555-0199\",\n  \"addressLine1\": \"500 Postman Way\",\n  \"addressLine2\": null,\n  \"city\": \"Austin\",\n  \"state\": \"TX\",\n  \"postalCode\": \"78701\",\n  \"country\": \"US\",\n  \"version\": 0\n}"
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Profile stored', () => pm.response.to.have.status(200));",
+                      "pm.collectionVariables.set('profileVersion', String(pm.response.json().version));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "6. Patch Student Status",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/students/{{studentId}}/status",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"ACTIVE\",\n  \"version\": {{studentVersion}}\n}"
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Student status patched', () => pm.response.to.have.status(200));",
+                      "pm.collectionVariables.set('studentVersion', String(pm.response.json().version));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "7. Create Open Course",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/courses",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"courseCode\": \"PM{{$timestamp}}\",\n  \"title\": \"Postman API Testing\",\n  \"description\": \"Created by the ordered workflow\",\n  \"credits\": 3,\n  \"capacity\": 2,\n  \"status\": \"OPEN\",\n  \"departmentId\": \"{{departmentId}}\",\n  \"instructorId\": \"{{instructorId}}\"\n}"
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Course created', () => pm.response.to.have.status(201));",
+                      "const body = pm.response.json();",
+                      "pm.collectionVariables.set('courseId', body.id);",
+                      "pm.collectionVariables.set('courseVersion', String(body.version));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "8. Patch Course Status Open",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/courses/{{courseId}}/status",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"OPEN\",\n  \"version\": {{courseVersion}}\n}"
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Course status patched', () => pm.response.to.have.status(200));",
+                      "pm.collectionVariables.set('courseVersion', String(pm.response.json().version));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "9. Enroll Student",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/enrollments",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"studentId\": \"{{studentId}}\",\n  \"courseId\": \"{{courseId}}\"\n}"
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Enrollment created', () => pm.response.to.have.status(201));",
+                      "const body = pm.response.json();",
+                      "pm.collectionVariables.set('enrollmentId', body.id);",
+                      "pm.collectionVariables.set('enrollmentVersion', String(body.version));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "10. Get Student Courses",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/students/{{studentId}}/courses?limit=10"
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Created course is related', () => {",
+                      "  pm.response.to.have.status(200);",
+                      "  pm.expect(pm.response.json().content.map(x => x.id)).to.include(pm.collectionVariables.get('courseId'));",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "11. Get Course Students",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/courses/{{courseId}}/students?limit=10"
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Created student is related', () => {",
+                      "  pm.response.to.have.status(200);",
+                      "  pm.expect(pm.response.json().content.map(x => x.id)).to.include(pm.collectionVariables.get('studentId'));",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "12. Complete Enrollment",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/enrollments/{{enrollmentId}}/status",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"COMPLETED\",\n  \"finalGrade\": \"A\",\n  \"version\": {{enrollmentVersion}}\n}"
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Enrollment completed', () => pm.response.to.have.status(200));",
+                      "const body = pm.response.json();",
+                      "pm.expect(body.status).to.eql('COMPLETED');",
+                      "pm.collectionVariables.set('enrollmentVersion', String(body.version));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "13. Get Enrollment",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/enrollments/{{enrollmentId}}"
+              }
+            }
+          ],
+          "description": "Run this folder in order. Unique fields use Postman's dynamic timestamp variable."
+        },
+        {
+          "name": "08 - Error Examples",
+          "item": [
+            {
+              "name": "Validation Problem",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/v1/students",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{}"
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Validation returns Problem Details', () => {",
+                      "  pm.response.to.have.status(400);",
+                      "  pm.expect(pm.response.json().type).to.include('validation-failed');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Unsupported Query Parameter",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/courses?title=ignored"
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Unknown query parameter is rejected', () => {",
+                      "  pm.response.to.have.status(400);",
+                      "  pm.expect(pm.response.json().type).to.include('invalid-request');",
+                      "});"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Unsupported Filter Combination",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/courses?departmentId={{seedDepartmentId}}&status=OPEN"
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Unsupported query rejected', () => pm.response.to.have.status(400));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Resource Not Found",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/api/v1/courses/00000000-0000-0000-0000-000000000000"
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Missing resource returns 404', () => pm.response.to.have.status(404));"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
         }
       ]
     }
