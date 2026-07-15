@@ -1,6 +1,6 @@
 .PHONY: compose-up compose-down postgres-up postgres-health postgres-secret \
 	tf-init tf-validate tf-plan tf-apply tf-destroy \
-	app-run-dynamodb seed-dynamo-data app-run-dynamodb-seeded app-run-postgres api-smoke check
+	app-run-dynamodb seed-dynamo-data app-run-dynamodb-seeded app-run-postgres migrate-dynamo-to-postgres api-smoke check
 
 compose-up:
 	docker compose up -d --remove-orphans
@@ -47,6 +47,10 @@ app-run-dynamodb-seeded:
 
 app-run-postgres:
 	cd student-portal-api && ./gradlew bootRun --args='--spring.profiles.active=local-postgres'
+
+migrate-dynamo-to-postgres:
+	cd student-portal-api && ./gradlew bootRun --args='--spring.profiles.active=migration --spring.main.web-application-type=none'
+
 
 api-smoke:
 	./scripts/dynamodb-api-smoke.sh

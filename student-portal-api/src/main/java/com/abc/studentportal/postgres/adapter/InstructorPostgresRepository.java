@@ -11,7 +11,7 @@ import org.springframework.stereotype.Repository;
 import java.util.*;
 
 @Repository
-@Profile({"local-postgres", "test-postgres"})
+@Profile({"local-postgres", "test-postgres", "migration"})
 public class InstructorPostgresRepository implements InstructorRepository {
 
     private final InstructorJpaRepository instructorJpaRepository;

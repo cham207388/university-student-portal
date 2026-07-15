@@ -11,7 +11,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Repository
-@Profile({"local-postgres", "test-postgres"})
+@Profile({"local-postgres", "test-postgres", "migration"})
 public class DepartmentPostgresRepository implements DepartmentRepository {
 
     private final DepartmentJpaRepository delegate;
