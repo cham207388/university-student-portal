@@ -7,13 +7,15 @@ import com.abc.studentportal.postgres.repository.CourseJpaRepository;
 import com.abc.studentportal.postgres.repository.DepartmentJpaRepository;
 import com.abc.studentportal.postgres.repository.InstructorJpaRepository;
 import org.springframework.context.annotation.Profile;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Repository;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 
 import java.util.*;
 
 @Repository
-@Profile({"local-postgres", "test-postgres"})
+@Primary
+@Profile({"local-postgres", "test-postgres", "migration"})
 public class CoursePostgresRepository implements CourseRepository {
 
     private final CourseJpaRepository courseJpaRepository;

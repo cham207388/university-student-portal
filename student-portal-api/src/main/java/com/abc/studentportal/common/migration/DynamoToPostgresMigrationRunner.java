@@ -5,6 +5,8 @@ import com.abc.studentportal.department.application.DepartmentRepository;
 import com.abc.studentportal.department.application.DynamoDepartmentQueries;
 import com.abc.studentportal.instructor.application.DynamoInstructorQueries;
 import com.abc.studentportal.instructor.application.InstructorRepository;
+import com.abc.studentportal.course.application.DynamoCourseQueries;
+import com.abc.studentportal.course.application.CourseRepository;
 import com.abc.studentportal.student.application.DynamoStudentQueries;
 import com.abc.studentportal.student.application.StudentRepository;
 import com.abc.studentportal.student.application.StudentProfileRepository;
@@ -30,12 +32,15 @@ public class DynamoToPostgresMigrationRunner implements ApplicationRunner {
     private final StudentRepository students;
     private final StudentProfileRepository profiles;
     private final DynamoStudentProfileQueries dynamoProfiles;
+    private final DynamoCourseQueries dynamoCourses;
+    private final CourseRepository courses;
 
     public DynamoToPostgresMigrationRunner(DynamoDepartmentQueries dynamoDepartments,
             DynamoInstructorQueries dynamoInstructors, DepartmentRepository departments,
             InstructorRepository instructors, ConfigurableApplicationContext context,
             DynamoStudentQueries dynamoStudents, StudentRepository students,
-            StudentProfileRepository profiles, DynamoStudentProfileQueries dynamoProfiles) {
+            StudentProfileRepository profiles, DynamoStudentProfileQueries dynamoProfiles,
+            DynamoCourseQueries dynamoCourses, CourseRepository courses) {
         this.dynamoDepartments = dynamoDepartments;
         this.dynamoInstructors = dynamoInstructors;
         this.departments = departments;
@@ -45,6 +50,8 @@ public class DynamoToPostgresMigrationRunner implements ApplicationRunner {
         this.students = students;
         this.profiles = profiles;
         this.dynamoProfiles = dynamoProfiles;
+        this.dynamoCourses = dynamoCourses;
+        this.courses = courses;
     }
 
     @Override
@@ -78,8 +85,16 @@ public class DynamoToPostgresMigrationRunner implements ApplicationRunner {
                     }
                 });
             });
+            AtomicInteger courseCount = new AtomicInteger();
+            dynamoCourses.findAll(PAGE).content().forEach(course -> {
+                if (courses.findById(course.id()).isEmpty()) {
+                    courses.create(course);
+                    courseCount.incrementAndGet();
+                }
+            });
             System.out.printf("Migrated departments=%d instructors=%d students=%d profiles=%d%n",
                     departmentCount.get(), instructorCount.get(), studentCount.get(), profileCount.get());
+            System.out.printf("Migrated courses=%d%n", courseCount.get());
             System.exit(SpringApplication.exit(context, () -> 0));
         } catch (Exception exception) {
             exception.printStackTrace();
