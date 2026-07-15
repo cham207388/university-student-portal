@@ -40,3 +40,15 @@ variable "postgres_password" {
   sensitive   = true
   default     = "student_portal_local"
 }
+
+variable "postgres_host" {
+  description = "Host name exposed by LocalStack for the emulated PostgreSQL instance."
+  type        = string
+  default     = "localhost.localstack.cloud"
+}
+
+variable "postgres_external_port" {
+  description = "Host port allocated by LocalStack for the emulated PostgreSQL instance."
+  type        = number
+  default     = 4510
+}

@@ -15,11 +15,11 @@ output "dynamodb_endpoint" {
 
 output "postgres_endpoint" {
   description = "LocalStack RDS PostgreSQL endpoint."
-  value       = aws_db_instance.postgres.address
+  value       = var.postgres_host
 }
 
 output "postgres_port" {
-  value = aws_db_instance.postgres.port
+  value = var.postgres_external_port
 }
 
 output "postgres_database" {

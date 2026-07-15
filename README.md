@@ -194,3 +194,30 @@ Use the Terraform endpoint and secret outputs to configure the `local-postgres`
 Spring profile. Flyway applies the schema when the application starts. The
 standalone `postgres` Compose service is intentionally not used; PostgreSQL
 Testcontainers remains available for isolated automated tests.
+
+---
+
+<details>
+<summary><b>with PostgreSQL</b></summary>
+
+```bash
+make compose-up
+```
+
+```bash
+make tf-apply
+```
+
+```bash
+make postgres-health
+```
+
+```bash
+make app-run-postgres
+```
+
+```bash
+make api-smoke
+```
+
+</details>

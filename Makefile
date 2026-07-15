@@ -3,13 +3,10 @@
 	app-run-dynamodb seed-dynamo-data app-run-dynamodb-seeded app-run-postgres migrate-dynamo-to-postgres api-smoke check
 
 compose-up:
-	docker compose up -d --remove-orphans
+	docker compose up -d
 
 compose-down:
 	docker compose down -v
-
-postgres-up: compose-up tf-apply
-	@echo "LocalStack RDS PostgreSQL provisioned; wait for availability with 'make postgres-health'."
 
 postgres-health:
 	@aws --endpoint-url="$${AWS_ENDPOINT_URL:-http://127.0.0.1:4566}" rds describe-db-instances \

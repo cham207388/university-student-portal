@@ -15,6 +15,14 @@ resource "aws_db_instance" "postgres" {
   apply_immediately       = true
   backup_retention_period = 0
   tags                    = merge(local.common_tags, { Domain = "postgres" })
+
+  # LocalStack reports the externally mapped edge port (4510) after creation,
+  # rather than the requested database listener port (5432). Ignoring that
+  # emulator-only readback prevents a perpetual update and an inconsistent
+  # Secrets Manager value during apply.
+  lifecycle {
+    ignore_changes = [port]
+  }
 }
 
 resource "aws_secretsmanager_secret" "postgres" {
@@ -28,8 +36,8 @@ resource "aws_secretsmanager_secret_version" "postgres" {
   secret_id = aws_secretsmanager_secret.postgres.id
   secret_string = jsonencode({
     engine   = "postgres"
-    host     = aws_db_instance.postgres.address
-    port     = aws_db_instance.postgres.port
+    host     = var.postgres_host
+    port     = var.postgres_external_port
     database = var.postgres_database
     username = var.postgres_username
     password = var.postgres_password

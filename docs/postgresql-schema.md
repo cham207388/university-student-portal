@@ -35,6 +35,10 @@ enrollment; this migration intentionally contains no JPA entities or triggers.
    startup.
 
 The RDS emulator has different startup timing and endpoint behavior from AWS.
+LocalStack reports the host-mapped edge port (`4510`) when Terraform refreshes
+the instance even though RDS was requested with its normal listener port
+(`5432`). The local module ignores that emulator-only port readback and writes
+the stable host endpoint to Secrets Manager so repeated applies converge.
 Wait for the instance status to become available before launching Spring Boot,
 and use `make postgres-health` to verify TCP connectivity and Flyway readiness.
 Testcontainers PostgreSQL remains the isolated CI integration path; it does not

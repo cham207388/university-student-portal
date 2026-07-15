@@ -2,6 +2,20 @@
 
 ## Completed Tasks
 
+### LocalStack RDS Terraform convergence
+
+- Separated the requested PostgreSQL listener port from LocalStack's host-mapped edge port and made the local secret use
+  the stable `localhost.localstack.cloud:4510` endpoint.
+- Ignored LocalStack's emulator-only RDS port readback so Terraform no longer plans a perpetual `4510 -> 5432` update
+  that causes the AWS provider to report an inconsistent sensitive `secret_string` during apply.
+- Corrected the example PostgreSQL password to match the Terraform and Spring local defaults.
+
+Verification results:
+
+- `terraform fmt -check -recursive infrastructure/local`: successful.
+- `terraform -chdir=infrastructure/local validate`: successful.
+- Refreshed plan contains only the interrupted Secrets Manager version create; no RDS modification remains.
+
 ### PostgreSQL live datasource parity
 
 - Replaced DynamoDB-specific controller query dependencies with datasource-neutral collection and relationship ports,
