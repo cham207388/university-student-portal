@@ -180,7 +180,7 @@ Verification results:
 - `terraform -chdir=infrastructure/local validate`: successful.
 - `terraform ... plan -detailed-exitcode`: exit `2` at audit time; resolved by the later Terraform convergence recovery.
 - `docker compose config --quiet`, shell syntax, Postman JSON, scan audit, secret audit, and whitespace checks: successful.
-- `./scripts/dynamodb-api-smoke.sh`: successful against the already-running application on port 8080.
+- `./scripts/api-smoke.sh`: successful against the already-running application on port 8080.
 
 ### Documentation reconciliation after the complete DynamoDB API surface
 
@@ -239,10 +239,10 @@ Verification results:
 Verification results:
 
 - `./gradlew clean check`: successful; 34 unit/MVC tests and 10 LocalStack integration tests passed.
-- `bash -n scripts/dynamodb-api-smoke.sh`: successful.
+- `bash -n scripts/api-smoke.sh`: successful.
 - `make -n app-run-dynamodb-seeded api-smoke`: successful.
 - `terraform -chdir=infrastructure/local apply -auto-approve`: successful; six tables matched configuration.
-- `./scripts/dynamodb-api-smoke.sh`: successful against the seeded running application.
+- `./scripts/api-smoke.sh`: successful against the seeded running application.
 - `git diff --check`: no whitespace errors.
 
 ### DynamoDB REST controllers

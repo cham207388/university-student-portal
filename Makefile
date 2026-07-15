@@ -1,10 +1,7 @@
-.PHONY: local-reset compose-up compose-down postgres-health postgres-secret \
+.PHONY: compose-up compose-down dynamodb-health postgres-health postgres-secret \
 	tf-init tf-validate tf-plan tf-apply tf-destroy \
 	app-run-dynamodb seed-dynamo-data app-run-dynamodb-seeded app-run-postgres migrate-dynamo-to-postgres \
 	api-smoke api-smoke-dynamodb api-smoke-postgres check
-
-local-reset:
-	docker compose down -v --remove-orphans
 
 compose-up:
 	docker compose up -d
@@ -16,6 +13,21 @@ postgres-health:
 	@aws --endpoint-url="$${AWS_ENDPOINT_URL:-http://127.0.0.1:4566}" rds describe-db-instances \
 		--db-instance-identifier "$${POSTGRES_INSTANCE_ID:-student-portal-postgres}" \
 		--query 'DBInstances[0].DBInstanceStatus' --output text
+
+dynamodb-health:
+	@set -e; \
+	for table in \
+		"$${DYNAMODB_DEPARTMENTS_TABLE:-student-portal-departments}" \
+		"$${DYNAMODB_STUDENTS_TABLE:-student-portal-students}" \
+		"$${DYNAMODB_STUDENT_PROFILES_TABLE:-student-portal-student-profiles}" \
+		"$${DYNAMODB_INSTRUCTORS_TABLE:-student-portal-instructors}" \
+		"$${DYNAMODB_COURSES_TABLE:-student-portal-courses}" \
+		"$${DYNAMODB_ENROLLMENTS_TABLE:-student-portal-enrollments}"; do \
+		status="$$(aws --endpoint-url="$${AWS_ENDPOINT_URL:-http://127.0.0.1:4566}" dynamodb describe-table \
+			--table-name "$$table" --query 'Table.TableStatus' --output text)"; \
+		printf '%s: %s\n' "$$table" "$$status"; \
+		test "$$status" = "ACTIVE"; \
+	done
 
 postgres-secret:
 	@aws --endpoint-url="$${AWS_ENDPOINT_URL:-http://127.0.0.1:4566}" secretsmanager get-secret-value \
@@ -53,13 +65,13 @@ migrate-dynamo-to-postgres:
 	cd student-portal-api && ./gradlew bootRun --args='--spring.profiles.active=migration --spring.main.web-application-type=none --migration.run=true'
 
 api-smoke:
-	./scripts/dynamodb-api-smoke.sh
+	./scripts/api-smoke.sh
 
 api-smoke-dynamodb:
-	STUDENT_PORTAL_API_URL=http://127.0.0.1:8081 ./scripts/dynamodb-api-smoke.sh
+	STUDENT_PORTAL_API_URL=http://127.0.0.1:8081 ./scripts/api-smoke.sh
 
 api-smoke-postgres:
-	STUDENT_PORTAL_API_URL=http://127.0.0.1:8082 ./scripts/dynamodb-api-smoke.sh
+	STUDENT_PORTAL_API_URL=http://127.0.0.1:8082 ./scripts/api-smoke.sh
 
 check:
 	cd student-portal-api && ./gradlew clean check

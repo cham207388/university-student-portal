@@ -22,7 +22,7 @@ all pass. No known DynamoDB-phase blocker remains.
 | OpenAPI | Swagger UI at `/swagger-ui.html`; JSON at `/v3/api-docs`; 22 resource paths document schemas, errors, validation, and DynamoDB cursor semantics |
 | Observability | Correlation-ID propagation/MDC, safe structured request logs, safe startup summary, and six-table DynamoDB health contributor |
 | REST-to-DynamoDB test | Full Spring web context creates and reads data through controllers against Testcontainers LocalStack and checks health/OpenAPI |
-| Seed and live API | Idempotent transactional seed plus the 14-request `scripts/dynamodb-api-smoke.sh` workflow passed on port 8080 |
+| Seed and live API | Idempotent transactional seed plus the 14-request `scripts/api-smoke.sh` workflow passed on port 8080 |
 | Compose and artifacts | `docker compose config --quiet`, shell syntax, `jq empty postman.json`, and `git diff --check` passed |
 | Terraform | Recursive formatting, validation, real-state no-change plan, disposable six-table create/no-change/destroy cycle all passed |
 | Secrets | No committed LocalStack token value found; logs and health failures omit credentials and raw exception details |
