@@ -9,10 +9,12 @@ import java.util.*;
 
 import org.springframework.stereotype.Repository;
 import org.springframework.context.annotation.Profile;
+import org.springframework.context.annotation.Primary;
 import org.springframework.transaction.annotation.Transactional;
 
 @Repository
-@Profile({"local-postgres", "test-postgres"})
+@Primary
+@Profile({"local-postgres", "test-postgres", "migration"})
 @Transactional
 public class PostgresEnrollmentRepository implements EnrollmentRepository {
 
