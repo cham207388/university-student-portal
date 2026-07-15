@@ -10,6 +10,9 @@ import java.util.UUID;
 
 public interface CourseJpaRepository extends JpaRepository<CourseEntity, UUID> {
 
+    boolean existsByDepartment_Id(UUID departmentId);
+    boolean existsByInstructor_Id(UUID instructorId);
+
     Optional<CourseEntity> findByCourseCode(String courseCode);
 
     @Query("select course from CourseEntity course where course.courseCode = :courseCode")

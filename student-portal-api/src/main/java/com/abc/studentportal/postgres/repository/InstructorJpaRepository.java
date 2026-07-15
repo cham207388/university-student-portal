@@ -8,6 +8,8 @@ import java.util.UUID;
 
 public interface InstructorJpaRepository extends JpaRepository<InstructorEntity, UUID> {
 
+    boolean existsByDepartment_Id(UUID departmentId);
+
     Optional<InstructorEntity> findByEmployeeNumber(String employeeNumber);
 
     Optional<InstructorEntity> findByEmail(String email);

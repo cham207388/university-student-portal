@@ -8,6 +8,8 @@ import java.util.UUID;
 
 public interface StudentJpaRepository extends JpaRepository<StudentEntity, UUID> {
 
+    boolean existsByDepartment_Id(UUID departmentId);
+
     Optional<StudentEntity> findByStudentNumber(String studentNumber);
 
     Optional<StudentEntity> findByEmail(String email);

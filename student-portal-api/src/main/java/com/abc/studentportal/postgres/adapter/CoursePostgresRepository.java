@@ -8,6 +8,7 @@ import com.abc.studentportal.postgres.repository.DepartmentJpaRepository;
 import com.abc.studentportal.postgres.repository.InstructorJpaRepository;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Repository;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 
 import java.util.*;
 
@@ -32,6 +33,8 @@ public class CoursePostgresRepository implements CourseRepository {
 
     public Course update(Course course) {
         CourseEntity existing = courseJpaRepository.findById(course.id()).orElseThrow();
+        if (existing.getVersion() != course.version())
+            throw new ObjectOptimisticLockingFailureException(CourseEntity.class, course.id());
         existing.updateDetails(course.courseCode(), course.title(), course.description(), course.credits(), course.capacity(), course.status(),
                 departmentJpaRepository.getReferenceById(course.departmentId()),
                 instructorJpaRepository.getReferenceById(course.instructorId()));
