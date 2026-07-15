@@ -13,34 +13,43 @@ import java.util.*;
 @Profile({"local-postgres", "test-postgres"})
 public class StudentProfilePostgresRepository implements StudentProfileRepository {
 
-    private final StudentProfileJpaRepository d;
+    private final StudentProfileJpaRepository studentProfileJpaRepository;
 
-    public StudentProfilePostgresRepository(StudentProfileJpaRepository d) {
-        this.d = d;
+    public StudentProfilePostgresRepository(StudentProfileJpaRepository studentProfileJpaRepository) {
+        this.studentProfileJpaRepository = studentProfileJpaRepository;
     }
 
     public StudentProfile create(StudentProfile x) {
-        return toDomain(d.save(toEntity(x)));
+        return toDomain(studentProfileJpaRepository.save(toEntity(x)));
     }
 
     public StudentProfile update(StudentProfile x) {
-        return toDomain(d.save(toEntity(x)));
+        return toDomain(studentProfileJpaRepository.save(toEntity(x)));
     }
 
     public Optional<StudentProfile> findByStudentId(UUID id) {
-        return d.findByStudentId(id).map(this::toDomain);
+        return studentProfileJpaRepository.findByStudentId(id).map(this::toDomain);
     }
 
     public void delete(StudentProfile x) {
-        d.deleteById(x.id());
+        studentProfileJpaRepository.deleteById(x.id());
     }
 
-    private StudentProfileEntity toEntity(StudentProfile x) {
-        return new StudentProfileEntity(x.id(), x.studentId(), x.dateOfBirth(), x.phoneNumber(), x.addressLine1(), x.createdAt(), x.updatedAt());
+    private StudentProfileEntity toEntity(StudentProfile studentProfile) {
+        return new StudentProfileEntity(studentProfile.id(),
+                studentProfile.studentId(), studentProfile.dateOfBirth(),
+                studentProfile.phoneNumber(), studentProfile.addressLine1(),
+                studentProfile.createdAt(), studentProfile.updatedAt());
     }
 
-    private StudentProfile toDomain(StudentProfileEntity e) {
-        return new StudentProfile(e.getId(), e.getStudent().getId(), e.getDateOfBirth(), e.getPhoneNumber(), e.getAddressLine1(), e.getAddressLine2(), e.getCity(), e.getState(), e.getPostalCode(), e.getCountry(), e.getCreatedAt(), e.getUpdatedAt(), e.getVersion());
+    private StudentProfile toDomain(StudentProfileEntity studentProfileEntity) {
+        return new StudentProfile(studentProfileEntity.getId(), studentProfileEntity.getStudent().getId(),
+                studentProfileEntity.getDateOfBirth(), studentProfileEntity.getPhoneNumber(),
+                studentProfileEntity.getAddressLine1(), studentProfileEntity.getAddressLine2(),
+                studentProfileEntity.getCity(), studentProfileEntity.getState(),
+                studentProfileEntity.getPostalCode(), studentProfileEntity.getCountry(),
+                studentProfileEntity.getCreatedAt(), studentProfileEntity.getUpdatedAt(),
+                studentProfileEntity.getVersion());
     }
 
 }
